@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Assessment Dashboard — RMD 2026</title>
+  <link rel="stylesheet" href="css/rmd.css">
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      background: #f0f3f6;
+      font-family: var(--font);
+      margin: 0;
+      padding: 0 0 40px;
+    }
+
+    /* ── Top bar ── */
+    .top-bar {
+      background: var(--rmd-navy);
+      color: white;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .top-bar img { height: 28px; }
+    .top-bar-title { font-size: 15px; font-weight: 700; flex: 1; }
+    .top-bar-time  { font-size: 13px; opacity: 0.7; font-variant-numeric: tabular-nums; }
+
+    /* ── Nav tabs ── */
+    .dash-tabs {
+      display: flex;
+      background: white;
+      border-bottom: 2px solid #dce3ea;
+    }
+    .dash-tab {
+      flex: 1;
+      padding: 11px 6px;
+      text-align: center;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--rmd-muted);
+      cursor: pointer;
+      border: none;
+      background: none;
+      border-bottom: 3px solid transparent;
+      margin-bottom: -2px;
+      font-family: var(--font);
+    }
+    .dash-tab.active {
+      color: var(--rmd-blue);
+      border-bottom-color: var(--rmd-blue);
+    }
+
+    /* ── View panels ── */
+    .view { display: none; padding: 14px 14px 60px; }
+    .view.active { display: block; }
+
+    /* ── Summary pills ── */
+    .summary-strip {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .sum-pill {
+      background: white;
+      border-radius: 8px;
+      padding: 12px 8px;
+      text-align: center;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+      border-top: 4px solid #dce3ea;
+    }
+    .sum-pill .val  { font-size: 26px; font-weight: 700; line-height: 1; }
+    .sum-pill .lbl  { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; margin-top: 3px; color: var(--rmd-muted); }
+    .sum-pill.pass      { border-top-color: #1a6e31; } .sum-pill.pass .val      { color: #1a6e31; }
+    .sum-pill.borderline{ border-top-color: #c17a00; } .sum-pill.borderline .val{ color: #c17a00; }
+    .sum-pill.fail      { border-top-color: #b7410e; } .sum-pill.fail .val      { color: #b7410e; }
+    .sum-pill.pending   { border-top-color: #aab8c2; } .sum-pill.pending .val   { color: var(--rmd-muted); }
+
+    /* ── Gateway deadline notice ── */
+    .deadline-notice {
+      background: #b7410e;
+      color: white;
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 14px;
+      display: none;
+      align-items: center;
+      gap: 8px;
+    }
+    .deadline-notice.visible { display: flex; }
+    .deadline-notice.safe    { background: #1a6e31; }
+    .deadline-notice.close   { background: #c17a00; }
+
+    /* ── Candidate table ── */
+    .filter-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+    .filter-row select, .filter-row input {
+      padding: 8px 10px;
+      border: 2px solid #ccd6dd;
+      border-radius: 6px;
+      font-size: 13px;
+      font-family: var(--font);
+    }
+    .filter-row select { flex: 1; min-width: 140px; }
+    .filter-row input  { flex: 2; min-width: 160px; }
+
+    .cand-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+      font-size: 13px;
+    }
+    .cand-table th {
+      background: var(--rmd-navy);
+      color: white;
+      padding: 10px 12px;
+      text-align: left;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .cand-table td {
+      padding: 10px 12px;
+      border-bottom: 1px solid #edf0f2;
+      vertical-align: middle;
+    }
+    .cand-table tr:last-child td { border-bottom: none; }
+    .cand-table tr:hover td { background: #f7f9fb; cursor: pointer; }
+
+    .cand-name { font-weight: 700; color: var(--rmd-navy); }
+    .cand-room { font-size: 11px; color: var(--rmd-muted); }
+
+    .badge {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 9px;
+      border-radius: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      white-space: nowrap;
+      display: inline-block;
+    }
+    .badge-pass        { background: #e6f4ea; color: #1a6e31; }
+    .badge-borderline  { background: #fff3cd; color: #856404; }
+    .badge-fail        { background: #fde8e4; color: #b7410e; }
+    .badge-pending     { background: #e8edf2; color: #637282; }
+
+    /* skill dot strip */
+    .dot-strip { display: flex; gap: 3px; }
+    .dot { width: 10px; height: 10px; border-radius: 50%; background: #dce3ea; flex-shrink: 0; }
+    .dot-green  { background: #1a6e31; }
+    .dot-amber  { background: #c17a00; }
+    .dot-red    { background: #b7410e; }
+
+    /* dev rating strip */
+    .dev-strip { display: flex; gap: 2px; }
+    .dev-cell  { width: 14px; height: 14px; border-radius: 3px; background: #e8edf2; font-size: 9px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+    .dev-1 { background: #b7410e; color: white; }
+    .dev-2 { background: #c17a00; color: white; }
+    .dev-3 { background: #456b8c; color: white; }
+    .dev-4 { background: #1a6e31; color: white; }
+    .dev-5 { background: #0b5394; color: white; }
+
+    .flag-icons { display: flex; gap: 4px; font-size: 14px; }
+
+    /* ── Concerns / standouts panel ── */
+    .panel-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    @media (max-width: 560px) { .panel-row { grid-template-columns: 1fr; } }
+
+    .alert-panel {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+      overflow: hidden;
+    }
+    .alert-panel-header {
+      padding: 9px 12px;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .alert-panel-header.concern  { background: #fde8e4; color: #b7410e; }
+    .alert-panel-header.standout { background: #e6f4ea; color: #1a6e31; }
+    .alert-panel-body { padding: 10px 12px; }
+
+    .alert-item {
+      font-size: 13px;
+      padding: 5px 0;
+      border-bottom: 1px solid #f0f3f6;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+    .alert-item:last-child { border-bottom: none; }
+    .alert-name { font-weight: 700; color: var(--rmd-navy); }
+    .alert-detail { font-size: 11px; color: var(--rmd-muted); margin-top: 1px; }
+    .alert-ts { font-size: 10px; color: var(--rmd-muted); white-space: nowrap; }
+
+    /* ── Detail slide-out (modal) ── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      z-index: 300;
+      align-items: flex-end;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal-sheet {
+      background: white;
+      border-radius: 16px 16px 0 0;
+      width: 100%;
+      max-height: 85vh;
+      overflow-y: auto;
+      padding: 20px 16px 40px;
+    }
+    .modal-handle {
+      width: 36px; height: 4px;
+      background: #ccd6dd;
+      border-radius: 2px;
+      margin: 0 auto 16px;
+    }
+    .modal-title { font-size: 19px; font-weight: 700; color: var(--rmd-navy); }
+    .modal-sub   { font-size: 13px; color: var(--rmd-muted); margin-bottom: 16px; }
+
+    .section-heading {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--rmd-muted);
+      margin: 14px 0 8px;
+    }
+
+    .skill-detail { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-bottom: 1px solid #f0f3f6; }
+    .skill-detail:last-child { border-bottom: none; }
+    .sd-dot  { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+    .sd-name { flex: 1; font-size: 13px; color: var(--rmd-navy); }
+    .sd-val  { font-size: 12px; font-weight: 700; }
+    .sd-pass  { color: #1a6e31; } .sd-amber { color: #856404; }
+    .sd-fail  { color: #b7410e; } .sd-none  { color: #aab8c2; }
+
+    .dev-history-item {
+      padding: 10px 0;
+      border-bottom: 1px solid #f0f3f6;
+    }
+    .dev-history-item:last-child { border-bottom: none; }
+    .dh-cp   { font-size: 11px; font-weight: 700; color: var(--rmd-blue); margin-bottom: 4px; text-transform: uppercase; }
+    .dh-dims { display: flex; gap: 4px; flex-wrap: wrap; }
+    .dh-pill { font-size: 11px; padding: 2px 7px; border-radius: 10px; font-weight: 700; }
+    .dh-note { margin-top: 5px; font-size: 12px; color: #456b8c; }
+
+    .btn-close-modal {
+      width: 100%;
+      margin-top: 16px;
+      padding: 12px;
+      background: var(--rmd-navy);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 700;
+      font-family: var(--font);
+      cursor: pointer;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 24px;
+      color: var(--rmd-muted);
+      font-size: 13px;
+    }
+
+    /* quick-links bar */
+    .quick-links {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+    .quick-link {
+      padding: 8px 14px;
+      background: var(--rmd-blue);
+      color: white;
+      border-radius: 6px;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .quick-link:hover { background: var(--rmd-navy); }
+  </style>
+</head>
+<body>
+
+<!-- Top bar -->
+<div class="top-bar">
+  <img src="assets/rmd-logo.png" alt="RMD">
+  <div class="top-bar-title">Assessment Dashboard</div>
+  <div class="top-bar-time" id="topBarTime">--:--</div>
+</div>
+
+<!-- Nav tabs -->
+<div class="dash-tabs">
+  <button class="dash-tab active" onclick="switchTab('overview')"    id="tab-overview">📊 Overview</button>
+  <button class="dash-tab"        onclick="switchTab('gateway')"     id="tab-gateway">🚦 Gateway</button>
+  <button class="dash-tab"        onclick="switchTab('development')" id="tab-development">📈 Development</button>
+</div>
+
+<!-- OVERVIEW TAB -->
+<div class="view active" id="view-overview">
+
+  <!-- Quick links -->
+  <div class="quick-links" style="margin-top:14px;">
+    <a class="quick-link" href="assessment-gateway.html">📋 Gateway tool</a>
+    <a class="quick-link" href="assessment-development.html">📝 Dev tracking</a>
+    <a class="quick-link" href="timetable.html?role=director">📅 Timetable</a>
+  </div>
+
+  <!-- Deadline notice -->
+  <div class="deadline-notice" id="deadlineNotice">
+    <span>⏱</span>
+    <span id="deadlineText">Gateway deadline: 11:45</span>
+  </div>
+
+  <!-- Gateway summary -->
+  <div style="font-size:12px;font-weight:700;color:var(--rmd-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">
+    Gateway — BLS Skills
+  </div>
+  <div class="summary-strip" id="gatewaySummary">
+    <div class="sum-pill pass">      <div class="val" id="gw-pass">0</div><div class="lbl">Pass</div></div>
+    <div class="sum-pill borderline"><div class="val" id="gw-bl">0</div>  <div class="lbl">Review</div></div>
+    <div class="sum-pill fail">      <div class="val" id="gw-fail">0</div><div class="lbl">Fail</div></div>
+    <div class="sum-pill pending">   <div class="val" id="gw-pend">0</div><div class="lbl">Pending</div></div>
+  </div>
+
+  <!-- Concerns + standouts -->
+  <div class="panel-row">
+    <div class="alert-panel">
+      <div class="alert-panel-header concern">⚠️ Concerns</div>
+      <div class="alert-panel-body" id="concernsList">
+        <div class="empty-state">None flagged</div>
+      </div>
+    </div>
+    <div class="alert-panel">
+      <div class="alert-panel-header standout">⭐ Standouts</div>
+      <div class="alert-panel-body" id="standoutsList">
+        <div class="empty-state">None flagged</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Gateway fails / borderlines who need attention -->
+  <div style="font-size:12px;font-weight:700;color:var(--rmd-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">
+    Needs Attention
+  </div>
+  <div id="attentionList">
+    <div class="empty-state" style="background:white;border-radius:8px;padding:20px;">All clear.</div>
+  </div>
+
+</div>
+
+<!-- GATEWAY TAB -->
+<div class="view" id="view-gateway">
+  <div style="margin-top:14px;">
+    <div class="filter-row">
+      <select id="gwFilter" onchange="renderGatewayTab()">
+        <option value="all">All candidates</option>
+        <option value="pass">Pass</option>
+        <option value="borderline">Review</option>
+        <option value="fail">Fail</option>
+        <option value="pending">Not assessed</option>
+      </select>
+      <input type="text" id="gwSearch" placeholder="Search name…" oninput="renderGatewayTab()">
+    </div>
+
+    <div style="overflow-x:auto;">
+      <table class="cand-table" id="gwTable">
+        <thead>
+          <tr>
+            <th>Candidate</th>
+            <th>Skills</th>
+            <th>Outcome</th>
+            <th>Flags</th>
+          </tr>
+        </thead>
+        <tbody id="gwTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- DEVELOPMENT TAB -->
+<div class="view" id="view-development">
+  <div style="margin-top:14px;">
+    <div class="filter-row">
+      <select id="devFilter" onchange="renderDevTab()">
+        <option value="all">All candidates</option>
+        <option value="concern">Flagged — concern</option>
+        <option value="standout">Flagged — standout</option>
+        <option value="no-record">No records yet</option>
+      </select>
+      <input type="text" id="devSearch" placeholder="Search name…" oninput="renderDevTab()">
+    </div>
+
+    <div style="overflow-x:auto;">
+      <table class="cand-table" id="devTable">
+        <thead>
+          <tr>
+            <th>Candidate</th>
+            <th>Latest ratings</th>
+            <th>Records</th>
+            <th>Flags</th>
+          </tr>
+        </thead>
+        <tbody id="devTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Detail modal -->
+<div class="modal-overlay" id="detailModal" onclick="closeModal(event)">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="modalName"></div>
+    <div class="modal-sub"   id="modalSub"></div>
+
+    <!-- Gateway section -->
+    <div id="modalGwSection">
+      <div class="section-heading">BLS Gateway Skills</div>
+      <div id="modalGwContent"></div>
+    </div>
+
+    <!-- Dev section -->
+    <div id="modalDevSection">
+      <div class="section-heading">Development Impressions</div>
+      <div id="modalDevContent"></div>
+    </div>
+
+    <button class="btn-close-modal" onclick="document.getElementById('detailModal').classList.remove('open')">Close</button>
+  </div>
+</div>
+
+<script src="js/firebase-config.js"></script>
+<script src="js/programme-data.js"></script>
+<script>
+
+// ── Reference data ─────────────────────────────────────────────────────────
+const GW_SKILLS = [
+  { id: "scene-safety",    name: "Scene Safety"       },
+  { id: "responsiveness",  name: "Responsiveness"     },
+  { id: "cpr-quality",     name: "CPR Quality"        },
+  { id: "aed-use",         name: "AED Use"            },
+  { id: "airway",          name: "Airway"             },
+  { id: "team-leadership", name: "Team Leadership"    },
+  { id: "teaching-clarity",name: "Teaching Clarity"   }
+];
+
+const DEV_DIMS = [
+  { id: "teaching",       name: "Teaching"       },
+  { id: "facilitation",   name: "Facilitation"   },
+  { id: "feedback",       name: "Feedback"       },
+  { id: "knowledge",      name: "Knowledge"      },
+  { id: "professionalism",name: "Professional"   }
+];
+
+const DEV_CHECKPOINTS = [
+  { id: "sat-teach",   label: "Sat Teaching"   },
+  { id: "sat-debrief", label: "Sat Debrief"    },
+  { id: "sun-teach",   label: "Sun Teaching"   },
+  { id: "sun-itc",     label: "Sun ITC"        },
+  { id: "sun-close",   label: "Sun Close"      }
+];
+
+const CANDIDATES = [
+  { id: "c01", name: "Dr A. Ahmed",     room: "WF15" },
+  { id: "c02", name: "Dr B. Brennan",   room: "WF15" },
+  { id: "c03", name: "Dr C. Carter",    room: "WF19" },
+  { id: "c04", name: "Dr D. Davies",    room: "WF19" },
+  { id: "c05", name: "Dr E. Evans",     room: "ATH"  },
+  { id: "c06", name: "Dr F. Fletcher",  room: "ATH"  },
+  { id: "c07", name: "Dr G. Green",     room: "WF15" },
+  { id: "c08", name: "Dr H. Harris",    room: "WF19" },
+  { id: "c09", name: "Dr I. Ingram",    room: "ATH"  },
+  { id: "c10", name: "Dr J. Jones",     room: "WF15" },
+  { id: "c11", name: "Dr K. Khan",      room: "WF19" },
+  { id: "c12", name: "Dr L. Lewis",     room: "ATH"  }
+];
+
+// ── Storage ────────────────────────────────────────────────────────────────
+function loadGwStore()  { try { return JSON.parse(localStorage.getItem("rmd_gateway_assessments") || "{}"); } catch { return {}; } }
+function loadDevStore() { try { return JSON.parse(localStorage.getItem("rmd_dev_assessments")     || "[]"); } catch { return []; } }
+
+// ── Tab switching ──────────────────────────────────────────────────────────
+function switchTab(tab) {
+  document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
+  document.querySelectorAll(".dash-tab").forEach(t => t.classList.remove("active"));
+  document.getElementById("view-" + tab).classList.add("active");
+  document.getElementById("tab-" + tab).classList.add("active");
+  if (tab === "overview")    renderOverview();
+  if (tab === "gateway")     renderGatewayTab();
+  if (tab === "development") renderDevTab();
+}
+
+// ── Init ───────────────────────────────────────────────────────────────────
+document.addEventListener("DOMContentLoaded", () => {
+  renderOverview();
+  updateClock();
+  setInterval(updateClock, 10000);
+  setInterval(renderOverview, 60000);
+});
+
+// ── Overview ───────────────────────────────────────────────────────────────
+function renderOverview() {
+  const gwStore  = loadGwStore();
+  const devStore = loadDevStore();
+
+  // Gateway counts
+  let pass = 0, bl = 0, fail = 0, pend = 0;
+  CANDIDATES.forEach(c => {
+    const rec = gwStore[c.id];
+    if (!rec) { pend++; return; }
+    if (rec.outcome === "pass")             pass++;
+    else if (rec.outcome === "borderline")  bl++;
+    else if (rec.outcome === "fail")        fail++;
+    else pend++;
+  });
+  document.getElementById("gw-pass").textContent = pass;
+  document.getElementById("gw-bl").textContent   = bl;
+  document.getElementById("gw-fail").textContent  = fail;
+  document.getElementById("gw-pend").textContent  = pend;
+
+  // Deadline notice
+  const now = new Date();
+  const nowMins = now.getHours()*60 + now.getMinutes();
+  const dead    = 11*60+45;
+  const rem     = dead - nowMins;
+  const notice  = document.getElementById("deadlineNotice");
+  const dtText  = document.getElementById("deadlineText");
+
+  const isSaturday = now.getDay() === 6; // only show Saturday
+  if (isSaturday && rem > 0 && rem <= 60) {
+    notice.className = "deadline-notice visible" + (rem <= 15 ? "" : rem <= 30 ? " close" : " safe");
+    dtText.textContent = `Gateway deadline 11:45 — ${rem} min remaining · ${pass} passed, ${pend} pending`;
+  } else {
+    notice.className = "deadline-notice";
+  }
+
+  // Concerns + standouts from dev tracking
+  const concerns  = [];
+  const standouts = [];
+  devStore.forEach(r => {
+    if (r.flags && r.flags.concern)  concerns.push(r);
+    if (r.flags && r.flags.standout) standouts.push(r);
+  });
+
+  renderAlertList("concernsList",  concerns);
+  renderAlertList("standoutsList", standouts);
+
+  // Needs attention (gateway fail/review + dev concerns)
+  const attentionIds = new Set();
+  CANDIDATES.forEach(c => {
+    const rec = gwStore[c.id];
+    if (rec && (rec.outcome === "fail" || rec.outcome === "borderline")) attentionIds.add(c.id);
+  });
+  devStore.forEach(r => { if (r.flags && r.flags.concern) attentionIds.add(r.candidateId); });
+
+  const attList = document.getElementById("attentionList");
+  if (attentionIds.size === 0) {
+    attList.innerHTML = `<div class="empty-state" style="background:white;border-radius:8px;padding:20px;">All clear.</div>`;
+  } else {
+    attList.innerHTML = [...attentionIds].map(id => {
+      const c   = CANDIDATES.find(x => x.id === id);
+      if (!c) return "";
+      const rec = gwStore[id];
+      const outcome = rec ? rec.outcome : "pending";
+      const devRecs = devStore.filter(r => r.candidateId === id && r.flags && r.flags.concern);
+      const latestDev = devRecs.length ? devRecs[devRecs.length-1] : null;
+
+      return `
+        <div style="background:white;border-radius:8px;padding:12px 14px;margin-bottom:8px;
+                    border-left:4px solid ${outcome==='fail'?'#b7410e':'#c17a00'};
+                    box-shadow:0 1px 3px rgba(0,0,0,0.1);cursor:pointer;"
+             onclick="openModal('${id}')">
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div>
+              <div style="font-weight:700;color:var(--rmd-navy);">${c.name}</div>
+              <div style="font-size:11px;color:var(--rmd-muted);">Room ${c.room}</div>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
+              <span class="badge badge-${outcome}">${outcome === "borderline" ? "Review" : outcome}</span>
+              ${latestDev ? `<span style="font-size:11px;color:#b7410e;">⚠️ Dev concern</span>` : ""}
+            </div>
+          </div>
+        </div>`;
+    }).join("");
+  }
+}
+
+function renderAlertList(elId, records) {
+  const el = document.getElementById(elId);
+  if (records.length === 0) {
+    el.innerHTML = `<div class="empty-state">None flagged</div>`;
+    return;
+  }
+  // Deduplicate by candidateId
+  const seen = new Set();
+  const unique = records.filter(r => { if (seen.has(r.candidateId)) return false; seen.add(r.candidateId); return true; });
+
+  el.innerHTML = unique.slice(0,5).map(r => {
+    const cp = DEV_CHECKPOINTS.find(c => c.id === r.checkpoint);
+    const ts = r.timestamp ? new Date(r.timestamp).toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"}) : "";
+    return `
+      <div class="alert-item" onclick="openModal('${r.candidateId}')" style="cursor:pointer;">
+        <div>
+          <div class="alert-name">${r.candidateName}</div>
+          <div class="alert-detail">${cp ? cp.label : r.checkpoint}</div>
+        </div>
+        <div class="alert-ts">${ts}</div>
+      </div>`;
+  }).join("");
+}
+
+// ── Gateway tab ────────────────────────────────────────────────────────────
+function renderGatewayTab() {
+  const gwStore = loadGwStore();
+  const filter  = document.getElementById("gwFilter").value;
+  const search  = document.getElementById("gwSearch").value.toLowerCase();
+
+  const rows = CANDIDATES
+    .filter(c => {
+      const rec     = gwStore[c.id];
+      const outcome = rec ? rec.outcome : "pending";
+      if (filter !== "all" && outcome !== filter) return false;
+      if (search && !c.name.toLowerCase().includes(search)) return false;
+      return true;
+    })
+    .map(c => {
+      const rec     = gwStore[c.id];
+      const outcome = rec ? rec.outcome : "pending";
+      const dotHtml = rec ? GW_SKILLS.map(sk => {
+        const r = rec.skills ? (rec.skills[sk.id] || "none") : "none";
+        return `<div class="dot dot-${r}" title="${sk.name}: ${r}"></div>`;
+      }).join("") : `<span style="color:#aab8c2;font-size:11px;">—</span>`;
+
+      const flags = [];
+      if (rec && rec.outcome === "fail")        flags.push("❌");
+      if (rec && rec.outcome === "borderline")  flags.push("⚠️");
+
+      return `
+        <tr onclick="openModal('${c.id}')">
+          <td><div class="cand-name">${c.name}</div><div class="cand-room">Room ${c.room}</div></td>
+          <td><div class="dot-strip">${dotHtml}</div></td>
+          <td><span class="badge badge-${outcome}">${outcome === "borderline" ? "Review" : outcome}</span></td>
+          <td><div class="flag-icons">${flags.join("")}</div></td>
+        </tr>`;
+    });
+
+  document.getElementById("gwTableBody").innerHTML = rows.join("") ||
+    `<tr><td colspan="4" class="empty-state">No candidates match filter.</td></tr>`;
+}
+
+// ── Development tab ────────────────────────────────────────────────────────
+function renderDevTab() {
+  const devStore = loadDevStore();
+  const filter   = document.getElementById("devFilter").value;
+  const search   = document.getElementById("devSearch").value.toLowerCase();
+
+  const rows = CANDIDATES
+    .filter(c => {
+      const recs = devStore.filter(r => r.candidateId === c.id);
+      if (filter === "no-record" && recs.length > 0) return false;
+      if (filter === "concern"  && !recs.some(r => r.flags && r.flags.concern))  return false;
+      if (filter === "standout" && !recs.some(r => r.flags && r.flags.standout)) return false;
+      if (search && !c.name.toLowerCase().includes(search)) return false;
+      return true;
+    })
+    .map(c => {
+      const recs  = devStore.filter(r => r.candidateId === c.id);
+      const latest = recs.length ? recs[recs.length-1] : null;
+
+      // Dev cells: latest ratings per dim
+      const devHtml = DEV_DIMS.map(d => {
+        const val = latest && latest.ratings ? (latest.ratings[d.id] || 0) : 0;
+        return `<div class="dev-cell dev-${val}" title="${d.name}: ${val||'–'}">${val||'–'}</div>`;
+      }).join("");
+
+      // Flags
+      const hasConcern  = recs.some(r => r.flags && r.flags.concern);
+      const hasStandout = recs.some(r => r.flags && r.flags.standout);
+      const flags = [hasConcern ? "⚠️" : "", hasStandout ? "⭐" : ""].filter(Boolean).join(" ");
+
+      return `
+        <tr onclick="openModal('${c.id}')">
+          <td><div class="cand-name">${c.name}</div><div class="cand-room">Room ${c.room}</div></td>
+          <td><div class="dev-strip">${devHtml}</div></td>
+          <td style="text-align:center;font-size:13px;">${recs.length}</td>
+          <td style="font-size:15px;">${flags || "—"}</td>
+        </tr>`;
+    });
+
+  document.getElementById("devTableBody").innerHTML = rows.join("") ||
+    `<tr><td colspan="4" class="empty-state">No candidates match filter.</td></tr>`;
+}
+
+// ── Modal ──────────────────────────────────────────────────────────────────
+function openModal(candidateId) {
+  const c       = CANDIDATES.find(x => x.id === candidateId);
+  const gwStore = loadGwStore();
+  const devStore = loadDevStore();
+  const gwRec   = gwStore[candidateId];
+  const devRecs = devStore.filter(r => r.candidateId === candidateId);
+
+  document.getElementById("modalName").textContent = c ? c.name : candidateId;
+  document.getElementById("modalSub").textContent  = c ? `Room ${c.room}` : "";
+
+  // Gateway skills
+  const gwContent = document.getElementById("modalGwContent");
+  if (gwRec) {
+    const outcome = gwRec.outcome || "pending";
+    gwContent.innerHTML = `
+      <div style="margin-bottom:10px;">
+        <span class="badge badge-${outcome}">${outcome === "borderline" ? "Review" : outcome}</span>
+        ${gwRec.assessor ? `<span style="font-size:12px;color:var(--rmd-muted);margin-left:8px;">Assessed by ${gwRec.assessor}</span>` : ""}
+      </div>
+      ${GW_SKILLS.map(sk => {
+        const r = gwRec.skills ? (gwRec.skills[sk.id] || null) : null;
+        const col = r==="green"?"#1a6e31":r==="amber"?"#c17a00":r==="red"?"#b7410e":"#dce3ea";
+        const valClass = r==="green"?"sd-pass":r==="amber"?"sd-amber":r==="red"?"sd-fail":"sd-none";
+        const valText  = r==="green"?"Pass":r==="amber"?"Borderline":r==="red"?"Fail":"Not rated";
+        return `<div class="skill-detail">
+          <div class="sd-dot" style="background:${col}"></div>
+          <div class="sd-name">${sk.name}</div>
+          <div class="sd-val ${valClass}">${valText}</div>
+        </div>`;
+      }).join("")}
+      ${gwRec.notes ? `<div style="margin-top:10px;font-size:13px;color:#456b8c;background:#f5f7fa;border-radius:6px;padding:8px 10px;">${gwRec.notes}</div>` : ""}
+    `;
+  } else {
+    gwContent.innerHTML = `<div class="empty-state">Not yet assessed</div>`;
+  }
+
+  // Development records
+  const devContent = document.getElementById("modalDevContent");
+  if (devRecs.length === 0) {
+    devContent.innerHTML = `<div class="empty-state">No records yet</div>`;
+  } else {
+    devContent.innerHTML = devRecs.map(r => {
+      const cp   = DEV_CHECKPOINTS.find(c => c.id === r.checkpoint);
+      const dims = DEV_DIMS.map(d => {
+        const val = r.ratings ? (r.ratings[d.id] || 0) : 0;
+        if (!val) return "";
+        const bg  = val===1?"#fde8e4":val===2?"#fff3cd":val===3?"#e8edf2":val===4?"#e6f4ea":"#ddeeff";
+        const col = val===1?"#b7410e":val===2?"#856404":val===3?"#456b8c":val===4?"#1a6e31":"#0b5394";
+        return `<span class="dh-pill" style="background:${bg};color:${col}">${d.name} ${val}</span>`;
+      }).join("");
+      const flags = [
+        r.flags&&r.flags.concern  ? "⚠️ Concern"  : "",
+        r.flags&&r.flags.standout ? "⭐ Standout" : ""
+      ].filter(Boolean).join(" ");
+      const ts = r.timestamp ? new Date(r.timestamp).toLocaleString([], {month:"short",day:"numeric",hour:"2-digit",minute:"2-digit"}) : "";
+      return `
+        <div class="dev-history-item">
+          <div class="dh-cp">${cp ? cp.label : r.checkpoint} · ${ts}</div>
+          <div class="dh-dims">${dims || "<span style='color:#aab8c2;font-size:12px;'>No ratings</span>"}</div>
+          ${flags ? `<div style="margin-top:4px;font-size:12px;">${flags}</div>` : ""}
+          ${r.notes ? `<div class="dh-note">${r.notes}</div>` : ""}
+        </div>`;
+    }).join("");
+  }
+
+  document.getElementById("detailModal").classList.add("open");
+}
+
+function closeModal(e) {
+  if (e.target === document.getElementById("detailModal")) {
+    document.getElementById("detailModal").classList.remove("open");
+  }
+}
+
+// ── Clock ──────────────────────────────────────────────────────────────────
+function updateClock() {
+  const now = new Date();
+  const h = now.getHours().toString().padStart(2,"0");
+  const m = now.getMinutes().toString().padStart(2,"0");
+  document.getElementById("topBarTime").textContent = `${h}:${m}`;
+}
+
+</script>
+</body>
+</html>

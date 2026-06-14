@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Instructor Development Tracking</title>
+  <link rel="stylesheet" href="css/rmd.css">
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      background: #f0f3f6;
+      font-family: var(--font);
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+    }
+
+    /* ── Top bar ── */
+    .top-bar {
+      background: var(--rmd-navy);
+      color: white;
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .top-bar img { height: 28px; }
+    .top-bar-title { font-size: 15px; font-weight: 700; flex: 1; line-height: 1.2; }
+    .top-bar-sub   { font-size: 11px; font-weight: 400; opacity: 0.7; display: block; }
+    .top-bar-time  { font-size: 13px; opacity: 0.7; font-variant-numeric: tabular-nums; }
+
+    /* ── Phase tabs ── */
+    .phase-tabs {
+      display: flex;
+      background: white;
+      border-bottom: 2px solid #dce3ea;
+      overflow-x: auto;
+    }
+    .phase-tab {
+      flex-shrink: 0;
+      padding: 11px 14px;
+      text-align: center;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--rmd-muted);
+      cursor: pointer;
+      border: none;
+      background: none;
+      border-bottom: 3px solid transparent;
+      margin-bottom: -2px;
+      font-family: var(--font);
+      white-space: nowrap;
+    }
+    .phase-tab.active {
+      color: var(--rmd-blue);
+      border-bottom-color: var(--rmd-blue);
+    }
+
+    /* ── View panels ── */
+    .view { display: none; padding: 12px 14px 100px; }
+    .view.active { display: block; }
+
+    /* ── Cards ── */
+    .card {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+      margin-bottom: 12px;
+      overflow: hidden;
+    }
+    .card-header {
+      background: var(--rmd-blue);
+      color: white;
+      padding: 10px 14px;
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .card-body { padding: 12px 14px; }
+
+    /* ── Candidate selector ── */
+    select.candidate-select {
+      width: 100%;
+      padding: 12px 10px;
+      font-size: 16px;
+      border: 2px solid #ccd6dd;
+      border-radius: 6px;
+      font-family: var(--font);
+      color: var(--rmd-navy);
+      background: white;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%230b5394' stroke-width='2' fill='none'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+    }
+    select.candidate-select:focus { outline: none; border-color: var(--rmd-blue); }
+
+    /* ── Checkpoint selector ── */
+    .checkpoint-row {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+    .cp-btn {
+      padding: 8px 14px;
+      border-radius: 20px;
+      border: 2px solid #dce3ea;
+      background: white;
+      font-size: 13px;
+      font-weight: 600;
+      font-family: var(--font);
+      cursor: pointer;
+      color: var(--rmd-muted);
+      transition: all 0.15s;
+    }
+    .cp-btn:active { transform: scale(0.95); }
+    .cp-btn.active {
+      background: var(--rmd-navy);
+      color: white;
+      border-color: var(--rmd-navy);
+    }
+
+    /* ── Dimension rows ── */
+    .dim-row {
+      padding: 12px 0;
+      border-bottom: 1px solid #edf0f2;
+    }
+    .dim-row:last-child { border-bottom: none; }
+
+    .dim-name {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--rmd-navy);
+      margin-bottom: 3px;
+    }
+    .dim-sub {
+      font-size: 11px;
+      color: var(--rmd-muted);
+      margin-bottom: 10px;
+    }
+
+    /* ── Rating scale (1-5) ── */
+    .rating-scale {
+      display: flex;
+      gap: 6px;
+    }
+    .rating-btn {
+      flex: 1;
+      aspect-ratio: 1;
+      max-width: 52px;
+      border-radius: 8px;
+      border: 2px solid #dce3ea;
+      background: white;
+      font-size: 16px;
+      font-weight: 700;
+      font-family: var(--font);
+      cursor: pointer;
+      color: var(--rmd-muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.1s;
+    }
+    .rating-btn:active { transform: scale(0.9); }
+
+    /* Selected ratings — gradient green to red (1=concern, 5=excellent) */
+    .rating-btn.r1.selected { background: #b7410e; color: white; border-color: #8e3209; }
+    .rating-btn.r2.selected { background: #c17a00; color: white; border-color: #9a6200; }
+    .rating-btn.r3.selected { background: #456b8c; color: white; border-color: #345270; }
+    .rating-btn.r4.selected { background: #1a6e31; color: white; border-color: #145727; }
+    .rating-btn.r5.selected { background: #0b5394; color: white; border-color: #073763; }
+
+    .rating-labels {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 4px;
+      font-size: 10px;
+      color: var(--rmd-muted);
+    }
+
+    /* ── Flags ── */
+    .flag-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+    .flag-btn {
+      padding: 6px 12px;
+      border-radius: 20px;
+      border: 2px solid #dce3ea;
+      background: white;
+      font-size: 12px;
+      font-weight: 600;
+      font-family: var(--font);
+      cursor: pointer;
+      color: var(--rmd-muted);
+    }
+    .flag-btn.active-concern  { background: #fde8e4; color: #b7410e; border-color: #f4bfb6; }
+    .flag-btn.active-standout { background: #e6f4ea; color: #1a6e31; border-color: #b5d9bc; }
+
+    /* ── Notes ── */
+    .notes-textarea {
+      width: 100%;
+      min-height: 70px;
+      padding: 10px;
+      border: 2px solid #ccd6dd;
+      border-radius: 6px;
+      font-size: 14px;
+      font-family: var(--font);
+      resize: vertical;
+    }
+    .notes-textarea:focus { outline: none; border-color: var(--rmd-blue); }
+
+    /* ── Submit bar ── */
+    .submit-bar {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: white;
+      padding: 12px 14px;
+      box-shadow: 0 -2px 10px rgba(0,0,0,0.12);
+      z-index: 50;
+    }
+    .btn-submit {
+      width: 100%;
+      padding: 16px;
+      background: var(--rmd-blue);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 17px;
+      font-weight: 700;
+      font-family: var(--font);
+      cursor: pointer;
+    }
+    .btn-submit:active { opacity: 0.85; }
+
+    /* ── Toast ── */
+    .toast {
+      position: fixed;
+      top: 70px; left: 50%; transform: translateX(-50%);
+      background: #1a6e31;
+      color: white;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 700;
+      z-index: 999;
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+      white-space: nowrap;
+    }
+    .toast.show { opacity: 1; }
+
+    /* ── History view ── */
+    .history-item {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+      margin-bottom: 10px;
+      padding: 12px 14px;
+    }
+    .history-cp {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--rmd-blue);
+      margin-bottom: 6px;
+    }
+    .history-dims {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+    }
+    .dim-pill {
+      font-size: 12px;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-weight: 700;
+    }
+    .dim-pill-1 { background: #fde8e4; color: #b7410e; }
+    .dim-pill-2 { background: #fff3cd; color: #856404; }
+    .dim-pill-3 { background: #e8edf2; color: #456b8c; }
+    .dim-pill-4 { background: #e6f4ea; color: #1a6e31; }
+    .dim-pill-5 { background: #ddeeff; color: #0b5394; }
+
+    .history-flags { display: flex; gap: 6px; }
+    .flag-pill {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-weight: 700;
+    }
+    .flag-concern  { background: #fde8e4; color: #b7410e; }
+    .flag-standout { background: #e6f4ea; color: #1a6e31; }
+
+    .history-notes {
+      margin-top: 8px;
+      font-size: 13px;
+      color: #456b8c;
+      background: #f5f7fa;
+      border-radius: 6px;
+      padding: 8px 10px;
+    }
+    .history-meta {
+      margin-top: 6px;
+      font-size: 11px;
+      color: var(--rmd-muted);
+    }
+
+    /* ── Trajectory chart (simple) ── */
+    .trajectory-card {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+      margin-bottom: 12px;
+      padding: 14px;
+    }
+    .traj-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--rmd-navy);
+      margin-bottom: 10px;
+    }
+    .traj-grid {
+      display: grid;
+      grid-template-columns: auto 1fr 1fr 1fr 1fr;
+      gap: 3px;
+      align-items: center;
+    }
+    .traj-dim-name {
+      font-size: 11px;
+      color: var(--rmd-muted);
+      padding-right: 6px;
+      text-align: right;
+    }
+    .traj-cell {
+      height: 24px;
+      border-radius: 4px;
+      background: #f0f3f6;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .traj-header {
+      font-size: 10px;
+      text-align: center;
+      color: var(--rmd-muted);
+      font-weight: 600;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--rmd-muted);
+      font-size: 14px;
+    }
+
+    /* ── Candidate overview (history view) ── */
+    .cand-select-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+      align-items: center;
+    }
+    .cand-select-row select {
+      flex: 1;
+      padding: 10px;
+      font-size: 15px;
+      border: 2px solid #ccd6dd;
+      border-radius: 6px;
+      font-family: var(--font);
+    }
+  </style>
+</head>
+<body>
+
+<!-- Top bar -->
+<div class="top-bar">
+  <img src="assets/rmd-logo.png" alt="RMD">
+  <div class="top-bar-title">
+    Instructor Development
+    <span class="top-bar-sub">Impression tracking</span>
+  </div>
+  <div class="top-bar-time" id="topBarTime">--:--</div>
+</div>
+
+<!-- Phase tabs -->
+<div class="phase-tabs">
+  <button class="phase-tab active" onclick="switchView('record')"    id="tab-record">📝 Record</button>
+  <button class="phase-tab"        onclick="switchView('history')"   id="tab-history">📈 History</button>
+</div>
+
+<!-- RECORD VIEW -->
+<div class="view active" id="view-record">
+
+  <div class="card" style="margin-top:12px;">
+    <div class="card-header">Candidate &amp; Checkpoint</div>
+    <div class="card-body">
+      <select class="candidate-select" id="candidateSelect" onchange="onCandidateChange()">
+        <option value="">— Choose candidate —</option>
+      </select>
+
+      <div class="checkpoint-row" id="checkpointRow">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Dimensions -->
+  <div class="card" id="dimsCard">
+    <div class="card-header">
+      Development Dimensions
+      <span style="font-size:11px;font-weight:400;opacity:0.8;">1 = concern · 5 = excellent</span>
+    </div>
+    <div class="card-body" id="dimsBody">
+      <!-- Populated by JS -->
+    </div>
+  </div>
+
+  <!-- Flags -->
+  <div class="card">
+    <div class="card-body">
+      <div style="font-size:13px;font-weight:700;color:var(--rmd-muted);margin-bottom:8px;">Flags</div>
+      <div class="flag-row">
+        <button class="flag-btn" id="flag-concern"  onclick="toggleFlag('concern')">⚠️ Concern</button>
+        <button class="flag-btn" id="flag-standout" onclick="toggleFlag('standout')">⭐ Standout</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notes -->
+  <div class="card">
+    <div class="card-header">Notes</div>
+    <div class="card-body">
+      <textarea class="notes-textarea" id="devNotes" placeholder="Specific observations, teaching moments, areas for development…"></textarea>
+    </div>
+  </div>
+
+</div>
+
+<!-- HISTORY VIEW -->
+<div class="view" id="view-history">
+  <div style="margin-top:12px;">
+
+    <div class="cand-select-row">
+      <select id="histCandSelect" onchange="renderHistory()">
+        <option value="">— All candidates —</option>
+      </select>
+    </div>
+
+    <!-- Trajectory grid (shown when single candidate selected) -->
+    <div id="trajectoryCard" class="trajectory-card" style="display:none;">
+      <div class="traj-title" id="trajTitle">Trajectory</div>
+      <div class="traj-grid" id="trajGrid"></div>
+    </div>
+
+    <!-- Entry list -->
+    <div id="historyList"></div>
+
+  </div>
+</div>
+
+<!-- Submit bar -->
+<div class="submit-bar" id="submitBar">
+  <button class="btn-submit" onclick="submitRecord()">Save Impression</button>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script src="js/firebase-config.js"></script>
+<script src="js/programme-data.js"></script>
+<script>
+
+// ── Checkpoints ────────────────────────────────────────────────────────────
+const CHECKPOINTS = [
+  { id: "sat-teach",   label: "Sat: Teaching session",   day: "saturday" },
+  { id: "sat-debrief", label: "Sat: Afternoon debrief",  day: "saturday" },
+  { id: "sun-teach",   label: "Sun: Teaching session",   day: "sunday"   },
+  { id: "sun-itc",     label: "Sun: ITC observation",    day: "sunday"   },
+  { id: "sun-close",   label: "Sun: Final impression",   day: "sunday"   }
+];
+
+// ── Development dimensions ─────────────────────────────────────────────────
+const DIMENSIONS = [
+  {
+    id: "teaching",
+    name: "Teaching Technique",
+    sub: "Clear explanations, effective demonstration, positions group well"
+  },
+  {
+    id: "facilitation",
+    name: "Facilitation",
+    sub: "Manages group dynamics, draws out quieter candidates, pacing"
+  },
+  {
+    id: "feedback",
+    name: "Feedback Quality",
+    sub: "Structured (stop / continue / start), specific, timely, proportionate"
+  },
+  {
+    id: "knowledge",
+    name: "Clinical Knowledge",
+    sub: "Accuracy, corrects errors promptly, safety-critical points emphasised"
+  },
+  {
+    id: "professionalism",
+    name: "Professionalism",
+    sub: "Confidence, rapport, time management, role modelling"
+  }
+];
+
+// ── Candidates ────────────────────────────────────────────────────────────
+const CANDIDATES = [
+  { id: "c01", name: "Dr A. Ahmed",     room: "WF15" },
+  { id: "c02", name: "Dr B. Brennan",   room: "WF15" },
+  { id: "c03", name: "Dr C. Carter",    room: "WF19" },
+  { id: "c04", name: "Dr D. Davies",    room: "WF19" },
+  { id: "c05", name: "Dr E. Evans",     room: "ATH"  },
+  { id: "c06", name: "Dr F. Fletcher",  room: "ATH"  },
+  { id: "c07", name: "Dr G. Green",     room: "WF15" },
+  { id: "c08", name: "Dr H. Harris",    room: "WF19" },
+  { id: "c09", name: "Dr I. Ingram",    room: "ATH"  },
+  { id: "c10", name: "Dr J. Jones",     room: "WF15" },
+  { id: "c11", name: "Dr K. Khan",      room: "WF19" },
+  { id: "c12", name: "Dr L. Lewis",     room: "ATH"  }
+];
+
+// ── State ──────────────────────────────────────────────────────────────────
+let currentCandidate  = null;
+let currentCheckpoint = null;
+let ratings  = {};  // { dimId: 1-5 }
+let flags    = {};  // { concern: bool, standout: bool }
+
+// ── Storage ────────────────────────────────────────────────────────────────
+const STORE_KEY = "rmd_dev_assessments";
+function loadStore() {
+  try { return JSON.parse(localStorage.getItem(STORE_KEY) || "[]"); }
+  catch { return []; }
+}
+function saveStore(data) {
+  localStorage.setItem(STORE_KEY, JSON.stringify(data));
+}
+
+// ── Init ───────────────────────────────────────────────────────────────────
+document.addEventListener("DOMContentLoaded", () => {
+  populateDropdowns();
+  renderCheckpoints();
+  renderDimsForm();
+  updateClock();
+  setInterval(updateClock, 10000);
+});
+
+function populateDropdowns() {
+  const sel1 = document.getElementById("candidateSelect");
+  const sel2 = document.getElementById("histCandSelect");
+  CANDIDATES.forEach(c => {
+    [sel1, sel2].forEach(sel => {
+      const opt = document.createElement("option");
+      opt.value = c.id;
+      opt.textContent = `${c.name} — ${c.room}`;
+      sel.appendChild(opt);
+    });
+  });
+}
+
+function onCandidateChange() {
+  const id = document.getElementById("candidateSelect").value;
+  currentCandidate = id ? CANDIDATES.find(c => c.id === id) : null;
+  resetForm();
+}
+
+function resetForm() {
+  ratings  = {};
+  flags    = {};
+  currentCheckpoint = null;
+  document.getElementById("devNotes").value = "";
+  renderCheckpoints();
+  renderDimsForm();
+  renderFlags();
+}
+
+// ── Checkpoints ────────────────────────────────────────────────────────────
+function renderCheckpoints() {
+  const row = document.getElementById("checkpointRow");
+  row.innerHTML = CHECKPOINTS.map(cp => `
+    <button class="cp-btn ${currentCheckpoint === cp.id ? 'active' : ''}"
+            onclick="selectCheckpoint('${cp.id}')">
+      ${cp.label}
+    </button>
+  `).join("");
+}
+
+function selectCheckpoint(id) {
+  currentCheckpoint = id;
+  renderCheckpoints();
+}
+
+// ── Dimensions form ────────────────────────────────────────────────────────
+function renderDimsForm() {
+  const body = document.getElementById("dimsBody");
+  body.innerHTML = DIMENSIONS.map(dim => {
+    const current = ratings[dim.id] || 0;
+    const ratingBtns = [1,2,3,4,5].map(n => `
+      <button class="rating-btn r${n} ${current === n ? 'selected' : ''}"
+              onclick="setRating('${dim.id}', ${n})">${n}</button>
+    `).join("");
+    return `
+      <div class="dim-row">
+        <div class="dim-name">${dim.name}</div>
+        <div class="dim-sub">${dim.sub}</div>
+        <div class="rating-scale">${ratingBtns}</div>
+        <div class="rating-labels">
+          <span>Concern</span>
+          <span>Developing</span>
+          <span>Proficient</span>
+          <span>Strong</span>
+          <span>Excellent</span>
+        </div>
+      </div>`;
+  }).join("");
+}
+
+function setRating(dimId, value) {
+  // Toggle off
+  ratings[dimId] = ratings[dimId] === value ? 0 : value;
+  if (ratings[dimId] === 0) delete ratings[dimId];
+  renderDimsForm();
+}
+
+// ── Flags ──────────────────────────────────────────────────────────────────
+function toggleFlag(flag) {
+  flags[flag] = !flags[flag];
+  renderFlags();
+}
+
+function renderFlags() {
+  document.getElementById("flag-concern").className  = "flag-btn" + (flags.concern  ? " active-concern"  : "");
+  document.getElementById("flag-standout").className = "flag-btn" + (flags.standout ? " active-standout" : "");
+}
+
+// ── Submit ─────────────────────────────────────────────────────────────────
+function submitRecord() {
+  if (!currentCandidate) {
+    showToast("Select a candidate first"); return;
+  }
+  if (!currentCheckpoint) {
+    showToast("Select a checkpoint"); return;
+  }
+
+  const record = {
+    id: `${currentCandidate.id}_${currentCheckpoint}_${Date.now()}`,
+    candidateId:    currentCandidate.id,
+    candidateName:  currentCandidate.name,
+    checkpoint:     currentCheckpoint,
+    ratings:        { ...ratings },
+    flags:          { ...flags },
+    notes:          document.getElementById("devNotes").value.trim(),
+    assessor:       "faculty",  // TODO: get from auth
+    timestamp:      new Date().toISOString()
+  };
+
+  const store = loadStore();
+  store.push(record);
+  saveStore(store);
+
+  // TODO: Firebase
+  // db.collection(COLLECTIONS.assessments).add({ phase: "development", ...record,
+  //   timestamp: firebase.firestore.FieldValue.serverTimestamp() });
+
+  showToast(`✓ Saved — ${currentCandidate.name}`);
+  resetForm();
+  document.getElementById("candidateSelect").value = "";
+  currentCandidate = null;
+}
+
+// ── History view ────────────────────────────────────────────────────────────
+function switchView(view) {
+  document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
+  document.querySelectorAll(".phase-tab").forEach(t => t.classList.remove("active"));
+  document.getElementById("view-" + view).classList.add("active");
+  document.getElementById("tab-" + view).classList.add("active");
+  document.getElementById("submitBar").style.display = view === "record" ? "block" : "none";
+  if (view === "history") renderHistory();
+}
+
+function renderHistory() {
+  const store   = loadStore();
+  const filterId = document.getElementById("histCandSelect").value;
+
+  const entries = store
+    .filter(r => !filterId || r.candidateId === filterId)
+    .sort((a,b) => b.timestamp.localeCompare(a.timestamp));
+
+  // Trajectory (single candidate only)
+  const trajCard = document.getElementById("trajectoryCard");
+  if (filterId) {
+    renderTrajectory(filterId, store);
+    trajCard.style.display = "block";
+  } else {
+    trajCard.style.display = "none";
+  }
+
+  if (entries.length === 0) {
+    document.getElementById("historyList").innerHTML = `<div class="empty-state">No records yet.</div>`;
+    return;
+  }
+
+  document.getElementById("historyList").innerHTML = entries.map(r => {
+    const cp = CHECKPOINTS.find(c => c.id === r.checkpoint);
+    const dimPills = DIMENSIONS.map(d => {
+      const val = r.ratings[d.id];
+      if (!val) return "";
+      return `<span class="dim-pill dim-pill-${val}" title="${d.name}">${d.name.split(" ")[0]} ${val}</span>`;
+    }).join("");
+
+    const flagPills = [
+      r.flags.concern  ? `<span class="flag-pill flag-concern">⚠️ Concern</span>` : "",
+      r.flags.standout ? `<span class="flag-pill flag-standout">⭐ Standout</span>` : ""
+    ].join("");
+
+    const notesHtml = r.notes
+      ? `<div class="history-notes">${r.notes}</div>` : "";
+
+    const ts = r.timestamp ? new Date(r.timestamp).toLocaleString([], {month:"short",day:"numeric",hour:"2-digit",minute:"2-digit"}) : "";
+
+    return `
+      <div class="history-item">
+        <div class="history-cp">${cp ? cp.label : r.checkpoint} · ${r.candidateName}</div>
+        <div class="history-dims">${dimPills}</div>
+        ${flagPills ? `<div class="history-flags">${flagPills}</div>` : ""}
+        ${notesHtml}
+        <div class="history-meta">${ts}</div>
+      </div>`;
+  }).join("");
+}
+
+function renderTrajectory(candidateId, store) {
+  const c = CANDIDATES.find(x => x.id === candidateId);
+  document.getElementById("trajTitle").textContent = `${c ? c.name : ""} — Trajectory`;
+
+  // Build cp → dim → rating map
+  const cpData = {};
+  store
+    .filter(r => r.candidateId === candidateId)
+    .forEach(r => {
+      if (!cpData[r.checkpoint]) cpData[r.checkpoint] = {};
+      Object.entries(r.ratings).forEach(([dim, val]) => {
+        cpData[r.checkpoint][dim] = val; // last write wins
+      });
+    });
+
+  const completedCps = CHECKPOINTS.filter(cp => cpData[cp.id]);
+
+  if (completedCps.length === 0) {
+    document.getElementById("trajGrid").innerHTML = `<div style="grid-column:1/-1;color:var(--rmd-muted);font-size:13px;">No records yet.</div>`;
+    return;
+  }
+
+  const colCount = completedCps.length + 1; // dim name + one col per cp
+  let grid = `<div></div>`; // top-left corner
+
+  // Headers
+  completedCps.forEach(cp => {
+    const short = cp.label.replace("Sat: ","S:").replace("Sun: ","Su:");
+    grid += `<div class="traj-header">${short}</div>`;
+  });
+
+  // Dimension rows
+  DIMENSIONS.forEach(dim => {
+    grid += `<div class="traj-dim-name">${dim.name.split(" ")[0]}</div>`;
+    completedCps.forEach(cp => {
+      const val = cpData[cp.id] ? (cpData[cp.id][dim.id] || null) : null;
+      const bg  = val === 1 ? "#b7410e" : val === 2 ? "#c17a00" : val === 3 ? "#456b8c" : val === 4 ? "#1a6e31" : val === 5 ? "#0b5394" : "#e8edf2";
+      const col = val ? "white" : "#aab8c2";
+      grid += `<div class="traj-cell" style="background:${bg};color:${col}">${val || "–"}</div>`;
+    });
+  });
+
+  document.getElementById("trajGrid").innerHTML = grid;
+}
+
+// ── Clock ─────────────────────────────────────────────────────────────────
+function updateClock() {
+  const now = new Date();
+  const h = now.getHours().toString().padStart(2,"0");
+  const m = now.getMinutes().toString().padStart(2,"0");
+  document.getElementById("topBarTime").textContent = `${h}:${m}`;
+}
+
+// ── Toast ─────────────────────────────────────────────────────────────────
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove("show"), 2500);
+}
+
+</script>
+</body>
+</html>

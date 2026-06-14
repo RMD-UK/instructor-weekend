@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RMD Instructor Weekend 2026 — Timetable</title>
+  <link rel="stylesheet" href="css/rmd.css">
+</head>
+<body>
+
+<!-- ── Role selector (demo / dev mode — remove for production) ── -->
+<div class="role-selector" id="roleSelectorBar">
+  <label>👤 View as:</label>
+  <select id="roleSelect" onchange="setRole(this.value)">
+    <option value="director">Course Director (Jon)</option>
+    <option value="faculty">Faculty</option>
+    <option value="instructor">Instructor Candidate</option>
+    <option value="assessor">Assessor Candidate</option>
+  </select>
+  <span class="text-muted text-sm">(Demo mode — role selector will be removed in production)</span>
+</div>
+
+<!-- ── Header ── -->
+<header class="rmd-header">
+  <img src="assets/rmd-logo.png" alt="RMD logo" class="logo">
+  <div class="title">
+    RMD Instructor Weekend 2026
+    <span class="subtitle">Birmingham Medical School</span>
+  </div>
+  <span class="role-badge" id="roleBadge">Director</span>
+</header>
+
+<!-- ── Live bar ── -->
+<div class="live-bar">
+  <span class="live-dot"></span>
+  <span class="current-time" id="currentTime">--:--</span>
+  <span id="liveSessionLabel" class="text-sm" style="margin-left:8px;opacity:0.9;"></span>
+  <span class="next-session-info" id="nextSessionInfo"></span>
+</div>
+
+<!-- ── Day tabs ── -->
+<nav class="day-nav">
+  <button class="day-tab" id="tab-friday"   onclick="switchDay('friday')">Friday 9 Oct</button>
+  <button class="day-tab active" id="tab-saturday" onclick="switchDay('saturday')">Saturday 10 Oct</button>
+  <button class="day-tab" id="tab-sunday"   onclick="switchDay('sunday')">Sunday 11 Oct</button>
+</nav>
+
+<!-- ── Noticeboard (candidates + faculty) ── -->
+<div class="noticeboard" id="noticeboard" style="margin-top:12px;">
+  <div class="noticeboard-header">📢 Noticeboard</div>
+  <div class="noticeboard-body" id="noticeboardBody">
+    <p class="no-messages">No messages at this time.</p>
+  </div>
+</div>
+
+<!-- ── Director messaging panel ── -->
+<div class="director-panel hidden" id="directorMessagePanel" style="margin-top:12px;">
+  <div class="panel-header">
+    📣 Broadcast Message
+    <button class="btn btn-sm" onclick="togglePanel('directorMessagePanel')">Close</button>
+  </div>
+  <div class="panel-body">
+    <div style="display:flex;gap:8px;margin-bottom:10px;">
+      <select id="msgTarget" style="flex:1;padding:6px;border:1px solid #ccd6dd;border-radius:4px;font-family:var(--font);">
+        <option value="all">→ All rooms + candidates</option>
+        <option value="faculty">→ Faculty only</option>
+        <option value="room-wf15">→ WF15 screen only</option>
+        <option value="room-wf19">→ WF19 screen only</option>
+        <option value="room-ath">→ ATH screen only</option>
+        <option value="room-teaching">→ Teaching rooms</option>
+      </select>
+    </div>
+    <div class="msg-compose">
+      <input class="msg-input" id="msgText" type="text" placeholder="Type message…" maxlength="160"
+             onkeydown="if(event.key==='Enter') sendMessage()">
+      <button class="btn" onclick="sendMessage()">Send</button>
+    </div>
+    <p class="text-sm text-muted mt-8">Messages appear on room screens and candidate noticeboards immediately.</p>
+  </div>
+</div>
+
+<!-- ── Gateway alert (director/faculty only) ── -->
+<div id="gatewayAlert" class="gateway-alert hidden" style="margin:8px 12px 0;max-width:800px;display:none;">
+  ⚠️ Gateway assessment deadline: <strong>11:45</strong> — check dashboard for outstanding assessments
+</div>
+
+<!-- ── Timetable ── -->
+<main class="timetable">
+  <div class="day-section" id="day-friday"></div>
+  <div class="day-section active" id="day-saturday"></div>
+  <div class="day-section" id="day-sunday"></div>
+</main>
+
+<!-- ── Director floating toolbar ── -->
+<div id="directorToolbar" class="hidden" style="
+  position:fixed; bottom:0; left:0; right:0;
+  background:var(--rmd-navy); padding:10px 16px;
+  display:flex; gap:10px; align-items:center; z-index:200;
+  box-shadow: 0 -2px 10px rgba(0,0,0,0.3);
+">
+  <span style="color:white;font-size:13px;font-weight:700;">Director</span>
+  <button class="btn btn-sm" onclick="togglePanel('directorMessagePanel')">📣 Message</button>
+  <button class="btn btn-sm" onclick="window.location.href='room-screen.html?room=director'">🖥 Room screens</button>
+  <button class="btn btn-sm" onclick="window.location.href='assessment-gateway.html'">🚦 Gateway</button>
+  <button class="btn btn-sm" onclick="window.location.href='assessment-development.html'">📝 Dev</button>
+  <button class="btn btn-sm" onclick="window.location.href='assessment-dashboard.html'">📊 Dashboard</button>
+</div>
+
+<script src="js/firebase-config.js"></script>
+<script src="js/programme-data.js"></script>
+<script>
+  // ── State ──────────────────────────────────────────────────────────────────
+  let currentRole = "director";
+  let currentDay  = "saturday";
+
+  const ROLE_LABELS = {
+    director:   "Director",
+    faculty:    "Faculty",
+    instructor: "Instructor Candidate",
+    assessor:   "Assessor Candidate"
+  };
+
+  // ── Role management ────────────────────────────────────────────────────────
+  function setRole(role) {
+    currentRole = role;
+    document.getElementById("roleBadge").textContent = ROLE_LABELS[role] || role;
+
+    // Director toolbar
+    const tb = document.getElementById("directorToolbar");
+    tb.classList.toggle("hidden", role !== "director");
+
+    // Noticeboard visibility
+    document.getElementById("noticeboard").classList.toggle("hidden", role === "director");
+
+    // Regenerate timetable for new role
+    renderAll();
+  }
+
+  // ── Day switching ──────────────────────────────────────────────────────────
+  function switchDay(day) {
+    currentDay = day;
+    document.querySelectorAll(".day-section").forEach(s => s.classList.remove("active"));
+    document.querySelectorAll(".day-tab").forEach(t => t.classList.remove("active"));
+    document.getElementById("day-" + day).classList.add("active");
+    document.getElementById("tab-" + day).classList.add("active");
+    updateLiveBar();
+  }
+
+  // ── Render timetable ───────────────────────────────────────────────────────
+  function renderAll() {
+    ["friday", "saturday", "sunday"].forEach(day => renderDay(day));
+    updateLiveBar();
+    updateGatewayAlert();
+  }
+
+  function renderDay(day) {
+    const container = document.getElementById("day-" + day);
+    const sessions = sessionsForRole(day, currentRole);
+
+    // Sort by start time
+    sessions.sort((a, b) => timeToMinutes(a.start) - timeToMinutes(b.start));
+
+    if (sessions.length === 0) {
+      container.innerHTML = `<p class="text-muted text-sm" style="padding:24px;text-align:center;">No sessions for your role on this day.</p>`;
+      return;
+    }
+
+    container.innerHTML = sessions.map(s => renderSession(s)).join("");
+  }
+
+  function renderSession(s) {
+    const end     = sessionEndTime(s);
+    const current = isSessionCurrent(s);
+    const past    = isSessionPast(s);
+    const isBreak = s.tags.includes("break");
+    const isFacultyOnly = s.tags.includes("faculty-only");
+    const isGateway = s.tags.includes("gateway-deadline");
+    const isITC    = s.tags.includes("itc-observation");
+    const isPlaceholder = s.tags.includes("placeholder");
+    const isAssessor = s.tags.includes("assessor-stream");
+
+    let rowClass = "session-row";
+    if (current) rowClass += " current";
+    else if (past) rowClass += " past";
+    if (isBreak)  rowClass += " break-row";
+    if (isFacultyOnly) rowClass += " faculty-only";
+
+    // Tags
+    let tags = "";
+    if (s.location) tags += `<span class="meta-tag tag-location">📍 ${s.location}</span>`;
+    if (s.lead)     tags += `<span class="meta-tag tag-lead">👤 ${s.lead}</span>`;
+    if (isGateway && !isBreak) tags += `<span class="meta-tag tag-gateway">⏱ Gateway deadline: 11:45</span>`;
+    if (isITC)      tags += `<span class="meta-tag tag-itc">🔍 ITC observation</span>`;
+    if (isPlaceholder) tags += `<span class="meta-tag" style="background:#fff3cd;color:#856404;">⚠ To be confirmed</span>`;
+
+    // Resources
+    let resources = "";
+    if (s.resources && s.resources.length) {
+      resources = s.resources.map(r => {
+        const href = r.url || r.path || "#";
+        const target = r.url ? 'target="_blank"' : '';
+        return `<a class="resource-btn" href="${href}" ${target}><span class="icon">${r.icon || "📄"}</span>${r.title}</a>`;
+      }).join("");
+    }
+
+    // Notes
+    const notes = s.notes ? `<p class="session-notes">${s.notes}</p>` : "";
+
+    // Detail section (notes + resources) — only if there's something to show
+    const hasDetail = notes || resources;
+    const detailSection = hasDetail ? `
+      <div class="session-detail" id="detail-${s.id}">
+        ${notes}
+        ${resources ? `<div class="resource-links">${resources}</div>` : ""}
+      </div>` : "";
+
+    // Timer button (director only)
+    const timerBtn = currentRole === "director" && !isBreak
+      ? `<button class="session-timer-btn" onclick="event.stopPropagation();launchTimer('${s.id}','${s.title.replace(/'/g,"\\'")}',${s.duration})">⏱ Timer</button>`
+      : "";
+
+    return `
+    <div class="${rowClass}" id="row-${s.id}" onclick="toggleDetail('${s.id}')">
+      <div class="session-main">
+        <div class="session-time">
+          <div class="start">${s.start}</div>
+          <div class="duration">${s.duration}m</div>
+        </div>
+        <div class="session-content">
+          ${current ? `<div class="current-badge">● NOW</div>` : ""}
+          <div class="session-title">${s.title}${s.subtitle ? `<br><span style="font-size:12px;font-weight:400;color:var(--rmd-muted)">${s.subtitle}</span>` : ""}</div>
+          <div class="session-meta">${tags}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0;">
+          ${timerBtn}
+          ${hasDetail ? `<span style="font-size:18px;color:var(--rmd-muted);" id="chevron-${s.id}">›</span>` : ""}
+        </div>
+      </div>
+      ${detailSection}
+    </div>`;
+  }
+
+  // ── Toggle session detail ──────────────────────────────────────────────────
+  function toggleDetail(id) {
+    const detail  = document.getElementById("detail-" + id);
+    const chevron = document.getElementById("chevron-" + id);
+    if (!detail) return;
+    const open = detail.classList.toggle("open");
+    if (chevron) chevron.style.transform = open ? "rotate(90deg)" : "";
+  }
+
+  // ── Live bar update ────────────────────────────────────────────────────────
+  function updateLiveBar() {
+    const now = new Date();
+    const h = now.getHours().toString().padStart(2,"0");
+    const m = now.getMinutes().toString().padStart(2,"0");
+    document.getElementById("currentTime").textContent = `${h}:${m}`;
+
+    const sessions = sessionsForRole(currentDay, currentRole)
+      .sort((a,b) => timeToMinutes(a.start) - timeToMinutes(b.start));
+
+    const live = sessions.find(s => isSessionCurrent(s));
+    const liveLabel = document.getElementById("liveSessionLabel");
+    const nextInfo  = document.getElementById("nextSessionInfo");
+
+    if (live) {
+      liveLabel.textContent = `▶ ${live.title}`;
+      const end = timeToMinutes(live.start) + live.duration;
+      const remaining = end - (now.getHours()*60 + now.getMinutes());
+      nextInfo.textContent = `${remaining} min remaining`;
+    } else {
+      liveLabel.textContent = "";
+      const next = sessions.find(s => timeToMinutes(s.start) > (now.getHours()*60+now.getMinutes()));
+      nextInfo.textContent = next ? `Next: ${next.start} — ${next.title}` : "";
+    }
+  }
+
+  // ── Gateway alert (director + faculty) ────────────────────────────────────
+  function updateGatewayAlert() {
+    const alert = document.getElementById("gatewayAlert");
+    if (!alert) return;
+    const now = new Date();
+    const nowMins = now.getHours()*60 + now.getMinutes();
+    const showRoles = ["director","faculty"];
+    const gatewayMins = 10*60+45; // 10:45 start of group practice
+    const deadlineMins = 11*60+45; // 11:45
+    const isSatOnView = currentDay === "saturday";
+    const isRelevantRole = showRoles.includes(currentRole);
+    const isWindow = nowMins >= gatewayMins && nowMins < deadlineMins;
+    alert.style.display = (isSatOnView && isRelevantRole && isWindow) ? "flex" : "none";
+  }
+
+  // ── Timer launcher (director) ──────────────────────────────────────────────
+  function launchTimer(sessionId, title, durationMins) {
+    const url = `room-screen.html?timer=${durationMins}&label=${encodeURIComponent(title)}&sessionId=${sessionId}`;
+    window.open(url, "rmd-room-timer", "width=800,height=600");
+  }
+
+  // ── Message panel ──────────────────────────────────────────────────────────
+  function togglePanel(id) {
+    document.getElementById(id).classList.toggle("hidden");
+  }
+
+  function sendMessage() {
+    const text   = document.getElementById("msgText").value.trim();
+    const target = document.getElementById("msgTarget").value;
+    if (!text) return;
+
+    // TODO: write to Firebase messages collection
+    // db.collection(COLLECTIONS.messages).add({ text, target, ts: firebase.firestore.FieldValue.serverTimestamp(), author: "director" });
+
+    // Demo: show in noticeboard immediately
+    const body = document.getElementById("noticeboardBody");
+    const now  = new Date();
+    const time = `${now.getHours().toString().padStart(2,"0")}:${now.getMinutes().toString().padStart(2,"0")}`;
+    const item = document.createElement("div");
+    item.className = "message-item";
+    item.innerHTML = `<div>${text}</div><div class="message-time">${time} · to: ${target}</div>`;
+    body.querySelector(".no-messages") && body.querySelector(".no-messages").remove();
+    body.prepend(item);
+
+    document.getElementById("msgText").value = "";
+    document.getElementById("noticeboard").classList.remove("hidden");
+  }
+
+  // ── Auto-refresh ───────────────────────────────────────────────────────────
+  // Refresh live bar every 30s; full re-render every 5 minutes
+  setInterval(updateLiveBar, 30 * 1000);
+  setInterval(() => { renderAll(); }, 5 * 60 * 1000);
+
+  // ── Init ───────────────────────────────────────────────────────────────────
+  document.addEventListener("DOMContentLoaded", () => {
+    setRole("director");
+    switchDay("saturday");
+    updateLiveBar();
+    // Scroll to current session
+    setTimeout(() => {
+      const current = document.querySelector(".session-row.current");
+      if (current) current.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 300);
+  });
+</script>
+</body>
+</html>
