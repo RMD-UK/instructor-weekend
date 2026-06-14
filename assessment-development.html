@@ -3,530 +3,288 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>Instructor Development Tracking</title>
+  <title>Instructor Development</title>
   <link rel="stylesheet" href="css/rmd.css">
   <style>
     * { box-sizing: border-box; }
-
-    body {
-      background: #f0f3f6;
-      font-family: var(--font);
-      margin: 0;
-      padding: 0;
-      min-height: 100vh;
-    }
+    body { background: #f0f3f6; font-family: var(--font); margin: 0; padding: 0 0 60px; }
 
     /* ── Top bar ── */
     .top-bar {
-      background: var(--rmd-navy);
-      color: white;
-      padding: 10px 14px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      position: sticky;
-      top: 0;
-      z-index: 100;
+      background: var(--rmd-navy); color: white;
+      padding: 10px 14px; display: flex; align-items: center; gap: 10px;
+      position: sticky; top: 0; z-index: 100;
     }
     .top-bar img { height: 28px; }
-    .top-bar-title { font-size: 15px; font-weight: 700; flex: 1; line-height: 1.2; }
-    .top-bar-sub   { font-size: 11px; font-weight: 400; opacity: 0.7; display: block; }
+    .top-bar-title { font-size: 15px; font-weight: 700; flex: 1; }
     .top-bar-time  { font-size: 13px; opacity: 0.7; font-variant-numeric: tabular-nums; }
 
-    /* ── Phase tabs ── */
-    .phase-tabs {
-      display: flex;
-      background: white;
-      border-bottom: 2px solid #dce3ea;
-      overflow-x: auto;
+    /* ── View tabs ── */
+    .view-tabs {
+      display: flex; background: white; border-bottom: 2px solid #dce3ea;
     }
-    .phase-tab {
-      flex-shrink: 0;
-      padding: 11px 14px;
-      text-align: center;
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--rmd-muted);
-      cursor: pointer;
-      border: none;
-      background: none;
-      border-bottom: 3px solid transparent;
-      margin-bottom: -2px;
-      font-family: var(--font);
-      white-space: nowrap;
+    .view-tab {
+      flex: 1; padding: 11px 8px; text-align: center; font-size: 13px; font-weight: 600;
+      color: var(--rmd-muted); cursor: pointer; border: none; background: none;
+      border-bottom: 3px solid transparent; margin-bottom: -2px; font-family: var(--font);
     }
-    .phase-tab.active {
-      color: var(--rmd-blue);
-      border-bottom-color: var(--rmd-blue);
-    }
+    .view-tab.active { color: var(--rmd-blue); border-bottom-color: var(--rmd-blue); }
 
-    /* ── View panels ── */
-    .view { display: none; padding: 12px 14px 100px; }
+    /* ── Room tabs ── */
+    .room-strip {
+      display: flex; gap: 8px; padding: 10px 14px; background: white;
+      border-bottom: 1px solid #dce3ea; overflow-x: auto;
+    }
+    .room-btn {
+      padding: 6px 16px; border-radius: 20px; border: 2px solid #dce3ea;
+      background: white; font-size: 13px; font-weight: 700; font-family: var(--font);
+      color: var(--rmd-muted); cursor: pointer; white-space: nowrap; flex-shrink: 0;
+    }
+    .room-btn.active { background: var(--rmd-navy); color: white; border-color: var(--rmd-navy); }
+
+    /* ── Views ── */
+    .view { display: none; }
     .view.active { display: block; }
 
-    /* ── Cards ── */
-    .card {
-      background: white;
-      border-radius: 8px;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
-      margin-bottom: 12px;
-      overflow: hidden;
-    }
-    .card-header {
-      background: var(--rmd-blue);
-      color: white;
-      padding: 10px 14px;
-      font-size: 13px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .card-body { padding: 12px 14px; }
+    /* ── Assessment table ── */
+    .table-wrap { overflow-x: auto; padding: 10px 0; }
 
-    /* ── Candidate selector ── */
-    select.candidate-select {
+    table.atbl {
+      border-collapse: collapse;
       width: 100%;
-      padding: 12px 10px;
-      font-size: 16px;
-      border: 2px solid #ccd6dd;
-      border-radius: 6px;
-      font-family: var(--font);
-      color: var(--rmd-navy);
+      min-width: 640px;
       background: white;
-      appearance: none;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%230b5394' stroke-width='2' fill='none'/%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 14px center;
-    }
-    select.candidate-select:focus { outline: none; border-color: var(--rmd-blue); }
-
-    /* ── Checkpoint selector ── */
-    .checkpoint-row {
-      display: flex;
-      gap: 6px;
-      flex-wrap: wrap;
-      margin-top: 10px;
-    }
-    .cp-btn {
-      padding: 8px 14px;
-      border-radius: 20px;
-      border: 2px solid #dce3ea;
-      background: white;
-      font-size: 13px;
-      font-weight: 600;
-      font-family: var(--font);
-      cursor: pointer;
-      color: var(--rmd-muted);
-      transition: all 0.15s;
-    }
-    .cp-btn:active { transform: scale(0.95); }
-    .cp-btn.active {
-      background: var(--rmd-navy);
-      color: white;
-      border-color: var(--rmd-navy);
     }
 
-    /* ── Dimension rows ── */
-    .dim-row {
-      padding: 12px 0;
-      border-bottom: 1px solid #edf0f2;
+    /* Sticky name column */
+    table.atbl th:first-child,
+    table.atbl td:first-child {
+      position: sticky; left: 0; z-index: 2; background: white;
+      border-right: 2px solid #dce3ea;
+      min-width: 130px; max-width: 130px; width: 130px;
     }
-    .dim-row:last-child { border-bottom: none; }
+    table.atbl th:first-child { background: var(--rmd-navy); }
 
-    .dim-name {
-      font-size: 14px;
-      font-weight: 700;
-      color: var(--rmd-navy);
-      margin-bottom: 3px;
-    }
-    .dim-sub {
-      font-size: 11px;
-      color: var(--rmd-muted);
-      margin-bottom: 10px;
-    }
-
-    /* ── Rating scale (1-5) ── */
-    .rating-scale {
-      display: flex;
-      gap: 6px;
-    }
-    .rating-btn {
-      flex: 1;
-      aspect-ratio: 1;
-      max-width: 52px;
-      border-radius: 8px;
-      border: 2px solid #dce3ea;
-      background: white;
-      font-size: 16px;
-      font-weight: 700;
-      font-family: var(--font);
-      cursor: pointer;
-      color: var(--rmd-muted);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.1s;
-    }
-    .rating-btn:active { transform: scale(0.9); }
-
-    /* Selected ratings — gradient green to red (1=concern, 5=excellent) */
-    .rating-btn.r1.selected { background: #b7410e; color: white; border-color: #8e3209; }
-    .rating-btn.r2.selected { background: #c17a00; color: white; border-color: #9a6200; }
-    .rating-btn.r3.selected { background: #456b8c; color: white; border-color: #345270; }
-    .rating-btn.r4.selected { background: #1a6e31; color: white; border-color: #145727; }
-    .rating-btn.r5.selected { background: #0b5394; color: white; border-color: #073763; }
-
-    .rating-labels {
-      display: flex;
-      justify-content: space-between;
-      margin-top: 4px;
-      font-size: 10px;
-      color: var(--rmd-muted);
-    }
-
-    /* ── Flags ── */
-    .flag-row {
-      display: flex;
-      gap: 8px;
-      margin-top: 10px;
-      flex-wrap: wrap;
-    }
-    .flag-btn {
-      padding: 6px 12px;
-      border-radius: 20px;
-      border: 2px solid #dce3ea;
-      background: white;
-      font-size: 12px;
-      font-weight: 600;
-      font-family: var(--font);
-      cursor: pointer;
-      color: var(--rmd-muted);
-    }
-    .flag-btn.active-concern  { background: #fde8e4; color: #b7410e; border-color: #f4bfb6; }
-    .flag-btn.active-standout { background: #e6f4ea; color: #1a6e31; border-color: #b5d9bc; }
-
-    /* ── Notes ── */
-    .notes-textarea {
-      width: 100%;
-      min-height: 70px;
-      padding: 10px;
-      border: 2px solid #ccd6dd;
-      border-radius: 6px;
-      font-size: 14px;
-      font-family: var(--font);
-      resize: vertical;
-    }
-    .notes-textarea:focus { outline: none; border-color: var(--rmd-blue); }
-
-    /* ── Submit bar ── */
-    .submit-bar {
-      position: fixed;
-      bottom: 0; left: 0; right: 0;
-      background: white;
-      padding: 12px 14px;
-      box-shadow: 0 -2px 10px rgba(0,0,0,0.12);
-      z-index: 50;
-    }
-    .btn-submit {
-      width: 100%;
-      padding: 16px;
-      background: var(--rmd-blue);
-      color: white;
-      border: none;
-      border-radius: 8px;
-      font-size: 17px;
-      font-weight: 700;
-      font-family: var(--font);
-      cursor: pointer;
-    }
-    .btn-submit:active { opacity: 0.85; }
-
-    /* ── Toast ── */
-    .toast {
-      position: fixed;
-      top: 70px; left: 50%; transform: translateX(-50%);
-      background: #1a6e31;
-      color: white;
-      padding: 12px 24px;
-      border-radius: 8px;
-      font-size: 15px;
-      font-weight: 700;
-      z-index: 999;
-      opacity: 0;
-      transition: opacity 0.3s;
-      pointer-events: none;
+    table.atbl th {
+      background: var(--rmd-navy); color: white;
+      padding: 9px 8px; font-size: 11px; text-transform: uppercase;
+      letter-spacing: 0.4px; font-weight: 700; text-align: center;
       white-space: nowrap;
     }
-    .toast.show { opacity: 1; }
+    table.atbl th:first-child { text-align: left; padding-left: 12px; }
 
-    /* ── History view ── */
-    .history-item {
-      background: white;
-      border-radius: 8px;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
-      margin-bottom: 10px;
-      padding: 12px 14px;
+    table.atbl td {
+      padding: 8px 6px; border-bottom: 1px solid #f0f3f6;
+      text-align: center; vertical-align: middle;
     }
-    .history-cp {
-      font-size: 11px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      color: var(--rmd-blue);
-      margin-bottom: 6px;
+    table.atbl td:first-child {
+      text-align: left; padding-left: 12px;
+      font-size: 13px; font-weight: 700; color: var(--rmd-navy);
     }
-    .history-dims {
-      display: flex;
-      gap: 6px;
-      flex-wrap: wrap;
-      margin-bottom: 8px;
-    }
-    .dim-pill {
-      font-size: 12px;
-      padding: 3px 8px;
-      border-radius: 12px;
-      font-weight: 700;
-    }
-    .dim-pill-1 { background: #fde8e4; color: #b7410e; }
-    .dim-pill-2 { background: #fff3cd; color: #856404; }
-    .dim-pill-3 { background: #e8edf2; color: #456b8c; }
-    .dim-pill-4 { background: #e6f4ea; color: #1a6e31; }
-    .dim-pill-5 { background: #ddeeff; color: #0b5394; }
+    table.atbl tr:hover td { background: #f8f9fb; }
+    table.atbl tr:hover td:first-child { background: #f8f9fb; }
 
-    .history-flags { display: flex; gap: 6px; }
-    .flag-pill {
-      font-size: 11px;
-      padding: 2px 8px;
-      border-radius: 12px;
-      font-weight: 700;
+    /* Notes rows */
+    table.atbl tr.notes-row td {
+      padding: 0; border-bottom: 2px solid #dce3ea;
+      background: #f8f9fb;
     }
-    .flag-concern  { background: #fde8e4; color: #b7410e; }
-    .flag-standout { background: #e6f4ea; color: #1a6e31; }
-
-    .history-notes {
-      margin-top: 8px;
-      font-size: 13px;
-      color: #456b8c;
-      background: #f5f7fa;
-      border-radius: 6px;
-      padding: 8px 10px;
-    }
-    .history-meta {
-      margin-top: 6px;
-      font-size: 11px;
-      color: var(--rmd-muted);
+    table.atbl tr.notes-row td:first-child {
+      background: #f8f9fb; border-right: none;
     }
 
-    /* ── Trajectory chart (simple) ── */
-    .trajectory-card {
-      background: white;
-      border-radius: 8px;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
-      margin-bottom: 12px;
-      padding: 14px;
+    /* ── Traffic lights ── */
+    .tl-cell { display: flex; gap: 4px; justify-content: center; align-items: center; }
+    .tl {
+      width: 26px; height: 26px; border-radius: 50%;
+      border: 2px solid #dce3ea; background: white;
+      font-size: 10px; font-weight: 700; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.1s; color: #aab8c2; flex-shrink: 0;
     }
-    .traj-title {
-      font-size: 13px;
-      font-weight: 700;
+    .tl:active { transform: scale(0.88); }
+    .tl.g { color: #1a6e31; border-color: #b5d9bc; }
+    .tl.a { color: #c17a00; border-color: #f5d48a; }
+    .tl.r { color: #b7410e; border-color: #f4bfb6; }
+    .tl.g.on { background: #1a6e31; border-color: #1a6e31; color: white; }
+    .tl.a.on { background: #c17a00; border-color: #c17a00; color: white; }
+    .tl.r.on { background: #b7410e; border-color: #b7410e; color: white; }
+
+    /* ── Overall badge ── */
+    .overall-badge {
+      display: inline-block; padding: 4px 10px; border-radius: 12px;
+      font-size: 12px; font-weight: 700; cursor: pointer; white-space: nowrap;
+      transition: all 0.1s;
+    }
+    .overall-badge:active { transform: scale(0.93); }
+    .overall-none    { background: #f0f3f6; color: #aab8c2; }
+    .overall-green   { background: #e6f4ea; color: #1a6e31; }
+    .overall-amber   { background: #fff3cd; color: #856404; }
+    .overall-red     { background: #fde8e4; color: #b7410e; }
+
+    /* ── Flags ── */
+    .flag-cell { display: flex; gap: 4px; justify-content: center; }
+    .fl {
+      width: 28px; height: 28px; border-radius: 50%;
+      border: 2px solid #dce3ea; background: white;
+      font-size: 13px; cursor: pointer; display: flex;
+      align-items: center; justify-content: center; transition: all 0.1s;
+      opacity: 0.35;
+    }
+    .fl:active { transform: scale(0.88); }
+    .fl.on { opacity: 1; border-color: transparent; }
+    .fl.concern.on  { background: #fde8e4; }
+    .fl.standout.on { background: #e6f4ea; }
+
+    /* ── Notes button ── */
+    .notes-btn {
+      width: 28px; height: 28px; border-radius: 50%;
+      border: 2px solid #dce3ea; background: white;
+      font-size: 13px; cursor: pointer; display: flex;
+      align-items: center; justify-content: center; transition: all 0.1s;
+      opacity: 0.4;
+    }
+    .notes-btn:active { transform: scale(0.88); }
+    .notes-btn.has-notes { opacity: 1; background: #e8f0fe; border-color: var(--rmd-blue); }
+    .notes-btn.open { opacity: 1; background: var(--rmd-blue); border-color: var(--rmd-blue); }
+
+    /* ── Notes panel ── */
+    .notes-panel {
+      padding: 10px 12px;
+    }
+    .notes-req { font-size: 11px; color: #b7410e; font-weight: 700; margin-bottom: 6px; display: none; }
+    .notes-req.show { display: block; }
+    textarea.notes-ta {
+      width: 100%; min-height: 72px; padding: 9px 10px;
+      border: 2px solid #ccd6dd; border-radius: 6px;
+      font-size: 14px; font-family: var(--font); resize: vertical;
       color: var(--rmd-navy);
-      margin-bottom: 10px;
     }
+    textarea.notes-ta:focus { outline: none; border-color: var(--rmd-blue); }
+    textarea.notes-ta.required { border-color: #b7410e; }
+
+    /* ── Legend ── */
+    .legend {
+      display: flex; gap: 12px; flex-wrap: wrap; padding: 8px 14px;
+      font-size: 11px; color: var(--rmd-muted); background: white;
+      border-bottom: 1px solid #dce3ea; align-items: center;
+    }
+    .legend span { display: flex; align-items: center; gap: 4px; }
+
+    /* ── History / overview ── */
+    .hist-wrap { padding: 12px 14px; }
+    .cand-card {
+      background: white; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+      margin-bottom: 10px; overflow: hidden;
+    }
+    .cand-card-header {
+      padding: 10px 14px; display: flex; align-items: center; gap: 8px;
+      cursor: pointer; border-bottom: 1px solid #f0f3f6;
+    }
+    .cand-card-name { font-size: 14px; font-weight: 700; color: var(--rmd-navy); flex: 1; }
+    .cand-card-body { padding: 10px 14px; display: none; }
+    .cand-card-body.open { display: block; }
+
     .traj-grid {
       display: grid;
-      grid-template-columns: auto 1fr 1fr 1fr 1fr;
-      gap: 3px;
-      align-items: center;
+      grid-template-columns: 90px repeat(5, 1fr);
+      gap: 3px; font-size: 11px; margin-bottom: 10px;
     }
-    .traj-dim-name {
-      font-size: 11px;
-      color: var(--rmd-muted);
-      padding-right: 6px;
-      text-align: right;
-    }
+    .traj-hdr { text-align: center; font-weight: 700; color: var(--rmd-muted); font-size: 10px; padding: 2px; }
+    .traj-dim { font-size: 10px; color: var(--rmd-muted); text-align: right; padding-right: 4px; align-self: center; }
     .traj-cell {
-      height: 24px;
-      border-radius: 4px;
-      background: #f0f3f6;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 12px;
-      font-weight: 700;
+      height: 22px; border-radius: 4px; display: flex; align-items: center;
+      justify-content: center; font-size: 11px; font-weight: 700;
     }
+    .tc-none  { background: #f0f3f6; color: #aab8c2; }
+    .tc-green { background: #1a6e31; color: white; }
+    .tc-amber { background: #c17a00; color: white; }
+    .tc-red   { background: #b7410e; color: white; }
 
-    .traj-header {
-      font-size: 10px;
-      text-align: center;
-      color: var(--rmd-muted);
-      font-weight: 600;
-    }
-
-    .empty-state {
-      text-align: center;
-      padding: 40px 20px;
-      color: var(--rmd-muted);
-      font-size: 14px;
-    }
-
-    /* ── Candidate overview (history view) ── */
-    .cand-select-row {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 12px;
-      align-items: center;
-    }
-    .cand-select-row select {
-      flex: 1;
-      padding: 10px;
-      font-size: 15px;
-      border: 2px solid #ccd6dd;
-      border-radius: 6px;
-      font-family: var(--font);
-    }
+    .empty-state { text-align: center; padding: 40px; color: var(--rmd-muted); font-size: 14px; }
   </style>
 </head>
 <body>
 
 <!-- Top bar -->
 <div class="top-bar">
-  <a href="timetable.html" title="Back to programme" style="display:flex;align-items:center;"><img src="assets/rmd-logo.png" alt="RMD" style="cursor:pointer;opacity:1;transition:opacity 0.15s;" onmouseover="this.style.opacity=0.75" onmouseout="this.style.opacity=1"></a>
-  <div class="top-bar-title">
-    Instructor Development
-    <span class="top-bar-sub">Impression tracking</span>
-  </div>
+  <a href="timetable.html" title="Back to programme" style="display:flex;align-items:center;">
+    <img src="assets/rmd-logo.png" alt="RMD" style="cursor:pointer;opacity:1;transition:opacity 0.15s;" onmouseover="this.style.opacity=0.75" onmouseout="this.style.opacity=1">
+  </a>
+  <div class="top-bar-title">Instructor Development</div>
   <div class="top-bar-time" id="topBarTime">--:--</div>
 </div>
 
-<!-- Phase tabs -->
-<div class="phase-tabs">
-  <button class="phase-tab active" onclick="switchView('record')"    id="tab-record">📝 Record</button>
-  <button class="phase-tab"        onclick="switchView('history')"   id="tab-history">📈 History</button>
+<!-- View tabs -->
+<div class="view-tabs">
+  <button class="view-tab active" onclick="switchView('assess')"  id="vtab-assess">📋 Assessment</button>
+  <button class="view-tab"        onclick="switchView('overview')" id="vtab-overview">📈 Overview</button>
 </div>
 
-<!-- RECORD VIEW -->
-<div class="view active" id="view-record">
+<!-- ── ASSESSMENT VIEW ── -->
+<div class="view active" id="view-assess">
 
-  <div class="card" style="margin-top:12px;">
-    <div class="card-header">Candidate &amp; Checkpoint</div>
-    <div class="card-body">
-      <select class="candidate-select" id="candidateSelect" onchange="onCandidateChange()">
-        <option value="">— Choose candidate —</option>
-      </select>
-
-      <div class="checkpoint-row" id="checkpointRow">
-        <!-- Populated by JS -->
-      </div>
-    </div>
+  <!-- Room filter -->
+  <div class="room-strip">
+    <button class="room-btn active" onclick="setRoom('all')"  id="room-all">All rooms</button>
+    <button class="room-btn"        onclick="setRoom('WF15')" id="room-WF15">WF15</button>
+    <button class="room-btn"        onclick="setRoom('WF19')" id="room-WF19">WF19</button>
+    <button class="room-btn"        onclick="setRoom('ATH')"  id="room-ATH">ATH</button>
   </div>
 
-  <!-- Dimensions -->
-  <div class="card" id="dimsCard">
-    <div class="card-header">
-      Development Dimensions
-      <span style="font-size:11px;font-weight:400;opacity:0.8;">1 = concern · 5 = excellent</span>
-    </div>
-    <div class="card-body" id="dimsBody">
-      <!-- Populated by JS -->
-    </div>
+  <!-- Legend -->
+  <div class="legend">
+    <span><span style="width:12px;height:12px;border-radius:50%;background:#1a6e31;display:inline-block;"></span> On track</span>
+    <span><span style="width:12px;height:12px;border-radius:50%;background:#c17a00;display:inline-block;"></span> Developing</span>
+    <span><span style="width:12px;height:12px;border-radius:50%;background:#b7410e;display:inline-block;"></span> Concern</span>
+    <span>· Tap 📝 to add notes · Notes required for ⚠️</span>
   </div>
 
-  <!-- Flags -->
-  <div class="card">
-    <div class="card-body">
-      <div style="font-size:13px;font-weight:700;color:var(--rmd-muted);margin-bottom:8px;">Flags</div>
-      <div class="flag-row">
-        <button class="flag-btn" id="flag-concern"  onclick="toggleFlag('concern')">⚠️ Concern</button>
-        <button class="flag-btn" id="flag-standout" onclick="toggleFlag('standout')">⭐ Standout</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Notes -->
-  <div class="card">
-    <div class="card-header">Notes</div>
-    <div class="card-body">
-      <textarea class="notes-textarea" id="devNotes" placeholder="Specific observations, teaching moments, areas for development…"></textarea>
-    </div>
+  <!-- Grid -->
+  <div class="table-wrap">
+    <table class="atbl" id="assessTable">
+      <thead>
+        <tr>
+          <th>Candidate</th>
+          <th>Sat<br>Teach</th>
+          <th>Sat<br>Debrief</th>
+          <th>Sun<br>Teach</th>
+          <th>Sun<br>ITC obs</th>
+          <th>Sun<br>Final</th>
+          <th>Overall</th>
+          <th>Flag</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody id="assessBody"></tbody>
+    </table>
   </div>
 
 </div>
 
-<!-- HISTORY VIEW -->
-<div class="view" id="view-history">
-  <div style="margin-top:12px;">
-
-    <div class="cand-select-row">
-      <select id="histCandSelect" onchange="renderHistory()">
-        <option value="">— All candidates —</option>
-      </select>
-    </div>
-
-    <!-- Trajectory grid (shown when single candidate selected) -->
-    <div id="trajectoryCard" class="trajectory-card" style="display:none;">
-      <div class="traj-title" id="trajTitle">Trajectory</div>
-      <div class="traj-grid" id="trajGrid"></div>
-    </div>
-
-    <!-- Entry list -->
-    <div id="historyList"></div>
-
+<!-- ── OVERVIEW VIEW ── -->
+<div class="view" id="view-overview">
+  <div class="room-strip">
+    <button class="room-btn active" onclick="setOvRoom('all')"  id="ovroom-all">All rooms</button>
+    <button class="room-btn"        onclick="setOvRoom('WF15')" id="ovroom-WF15">WF15</button>
+    <button class="room-btn"        onclick="setOvRoom('WF19')" id="ovroom-WF19">WF19</button>
+    <button class="room-btn"        onclick="setOvRoom('ATH')"  id="ovroom-ATH">ATH</button>
   </div>
+  <div class="hist-wrap" id="overviewBody"></div>
 </div>
-
-<!-- Submit bar -->
-<div class="submit-bar" id="submitBar">
-  <button class="btn-submit" onclick="submitRecord()">Save Impression</button>
-</div>
-
-<!-- Toast -->
-<div class="toast" id="toast"></div>
 
 <script src="js/firebase-config.js"></script>
-<script src="js/programme-data.js"></script>
 <script>
 
-// ── Checkpoints ────────────────────────────────────────────────────────────
+// ── Config ────────────────────────────────────────────────────────────────
 const CHECKPOINTS = [
-  { id: "sat-teach",   label: "Sat: Teaching session",   day: "saturday" },
-  { id: "sat-debrief", label: "Sat: Afternoon debrief",  day: "saturday" },
-  { id: "sun-teach",   label: "Sun: Teaching session",   day: "sunday"   },
-  { id: "sun-itc",     label: "Sun: ITC observation",    day: "sunday"   },
-  { id: "sun-close",   label: "Sun: Final impression",   day: "sunday"   }
+  { id: "sat-teach",   short: "Sat\nTeach"  },
+  { id: "sat-debrief", short: "Sat\nDebrief"},
+  { id: "sun-teach",   short: "Sun\nTeach"  },
+  { id: "sun-itc",     short: "Sun\nITC"    },
+  { id: "sun-final",   short: "Sun\nFinal"  }
 ];
 
-// ── Development dimensions ─────────────────────────────────────────────────
-const DIMENSIONS = [
-  {
-    id: "teaching",
-    name: "Teaching Technique",
-    sub: "Clear explanations, effective demonstration, positions group well"
-  },
-  {
-    id: "facilitation",
-    name: "Facilitation",
-    sub: "Manages group dynamics, draws out quieter candidates, pacing"
-  },
-  {
-    id: "feedback",
-    name: "Feedback Quality",
-    sub: "Structured (stop / continue / start), specific, timely, proportionate"
-  },
-  {
-    id: "knowledge",
-    name: "Clinical Knowledge",
-    sub: "Accuracy, corrects errors promptly, safety-critical points emphasised"
-  },
-  {
-    id: "professionalism",
-    name: "Professionalism",
-    sub: "Confidence, rapport, time management, role modelling"
-  }
-];
-
-// ── Candidates ────────────────────────────────────────────────────────────
 const CANDIDATES = [
   { id: "c01", name: "Dr A. Ahmed",     room: "WF15" },
   { id: "c02", name: "Dr B. Brennan",   room: "WF15" },
@@ -542,276 +300,358 @@ const CANDIDATES = [
   { id: "c12", name: "Dr L. Lewis",     room: "ATH"  }
 ];
 
-// ── State ──────────────────────────────────────────────────────────────────
-let currentCandidate  = null;
-let currentCheckpoint = null;
-let ratings  = {};  // { dimId: 1-5 }
-let flags    = {};  // { concern: bool, standout: bool }
+// ── State ─────────────────────────────────────────────────────────────────
+// state[candidateId] = { ratings: {cpId: "green"|"amber"|"red"}, flags: {concern, standout}, notes, overallOverride }
+const STORE_KEY = "rmd_dev2";
+var state = {};
+var currentRoom   = "all";
+var currentOvRoom = "all";
 
-// ── Storage ────────────────────────────────────────────────────────────────
-const STORE_KEY = "rmd_dev_assessments";
-function loadStore() {
-  try { return JSON.parse(localStorage.getItem(STORE_KEY) || "[]"); }
-  catch { return []; }
+function loadState() {
+  try { state = JSON.parse(localStorage.getItem(STORE_KEY) || "{}"); }
+  catch { state = {}; }
 }
-function saveStore(data) {
-  localStorage.setItem(STORE_KEY, JSON.stringify(data));
+function saveState() {
+  localStorage.setItem(STORE_KEY, JSON.stringify(state));
+}
+function getC(id) {
+  if (!state[id]) state[id] = { ratings: {}, flags: {}, notes: "", overallOverride: null };
+  return state[id];
 }
 
-// ── Init ───────────────────────────────────────────────────────────────────
+// ── Init ──────────────────────────────────────────────────────────────────
 document.addEventListener("DOMContentLoaded", () => {
-  populateDropdowns();
-  renderCheckpoints();
-  renderDimsForm();
+  loadState();
+  renderAssessTable();
   updateClock();
   setInterval(updateClock, 10000);
 });
 
-function populateDropdowns() {
-  const sel1 = document.getElementById("candidateSelect");
-  const sel2 = document.getElementById("histCandSelect");
-  CANDIDATES.forEach(c => {
-    [sel1, sel2].forEach(sel => {
-      const opt = document.createElement("option");
-      opt.value = c.id;
-      opt.textContent = `${c.name} — ${c.room}`;
-      sel.appendChild(opt);
+// ── Room filter ────────────────────────────────────────────────────────────
+function setRoom(r) {
+  currentRoom = r;
+  document.querySelectorAll(".room-btn[id^='room-']").forEach(b => b.classList.remove("active"));
+  document.getElementById("room-" + r).classList.add("active");
+  renderAssessTable();
+}
+function setOvRoom(r) {
+  currentOvRoom = r;
+  document.querySelectorAll(".room-btn[id^='ovroom-']").forEach(b => b.classList.remove("active"));
+  document.getElementById("ovroom-" + r).classList.add("active");
+  renderOverview();
+}
+
+function visibleCandidates(room) {
+  return room === "all" ? CANDIDATES : CANDIDATES.filter(c => c.room === room);
+}
+
+// ── Assessment table ───────────────────────────────────────────────────────
+function renderAssessTable() {
+  const tbody = document.getElementById("assessBody");
+  const cands = visibleCandidates(currentRoom);
+  if (cands.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:30px;color:var(--rmd-muted);">No candidates in this room.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = cands.map(c => {
+    const s = getC(c.id);
+
+    // Traffic light cells
+    const cpCells = CHECKPOINTS.map(cp => {
+      const v = s.ratings[cp.id] || null;
+      return `<td>
+        <div class="tl-cell">
+          <button class="tl g ${v==='green'?'on':''}" onclick="setRating('${c.id}','${cp.id}','green',this)" title="On track">G</button>
+          <button class="tl a ${v==='amber'?'on':''}" onclick="setRating('${c.id}','${cp.id}','amber',this)" title="Developing">A</button>
+          <button class="tl r ${v==='red'?'on':''}"   onclick="setRating('${c.id}','${cp.id}','red',this)"   title="Concern">R</button>
+        </div>
+      </td>`;
+    }).join("");
+
+    // Overall
+    const ov = computeOverall(c.id);
+    const ovClass = {green:"overall-green", amber:"overall-amber", red:"overall-red", null:"overall-none"}[ov] || "overall-none";
+    const ovLabel = {green:"🟢 On track", amber:"🟡 Developing", red:"🔴 Concern"}[ov] || "–";
+
+    // Flags
+    const hasConcern  = s.flags.concern;
+    const hasStandout = s.flags.standout;
+
+    // Notes btn
+    const hasNotes = s.notes && s.notes.trim().length > 0;
+
+    return `
+      <tr id="row-${c.id}">
+        <td>${c.name}<br><span style="font-size:10px;color:var(--rmd-muted);font-weight:400;">${c.room}</span></td>
+        ${cpCells}
+        <td>
+          <span class="overall-badge ${ovClass}" onclick="cycleOverall('${c.id}')">${ovLabel}</span>
+        </td>
+        <td>
+          <div class="flag-cell">
+            <button class="fl concern ${hasConcern?'on':''}" onclick="toggleFlag('${c.id}','concern')" title="Concern">⚠️</button>
+            <button class="fl standout ${hasStandout?'on':''}" onclick="toggleFlag('${c.id}','standout')" title="Standout">⭐</button>
+          </div>
+        </td>
+        <td>
+          <button class="notes-btn ${hasNotes?'has-notes':''}" id="nbtn-${c.id}" onclick="toggleNotes('${c.id}')" title="Add notes">📝</button>
+        </td>
+      </tr>
+      <tr class="notes-row" id="notes-row-${c.id}" style="display:none;">
+        <td colspan="9">
+          <div class="notes-panel">
+            <div class="notes-req" id="notes-req-${c.id}">⚠️ Notes required when concern is flagged</div>
+            <textarea class="notes-ta" id="notes-ta-${c.id}"
+              placeholder="Observations, teaching moments, development areas…"
+              onblur="saveNotes('${c.id}')">${s.notes||""}</textarea>
+          </div>
+        </td>
+      </tr>`;
+  }).join("");
+}
+
+// ── Traffic lights ─────────────────────────────────────────────────────────
+function setRating(cid, cpId, val, btn) {
+  const s = getC(cid);
+  // Toggle off if already selected
+  if (s.ratings[cpId] === val) {
+    delete s.ratings[cpId];
+  } else {
+    s.ratings[cpId] = val;
+  }
+  saveState();
+  // Update just this row's cells and overall (avoid full re-render to preserve notes open state)
+  refreshRow(cid);
+}
+
+function computeOverall(cid) {
+  const s = getC(cid);
+  if (s.overallOverride) return s.overallOverride;
+  const vals = Object.values(s.ratings);
+  if (vals.length === 0) return null;
+  if (vals.includes("red"))   return "red";
+  if (vals.includes("amber")) return "amber";
+  return "green";
+}
+
+function cycleOverall(cid) {
+  const s = getC(cid);
+  const cur = s.overallOverride;
+  const seq = [null, "green", "amber", "red"];
+  const idx = seq.indexOf(cur);
+  s.overallOverride = seq[(idx + 1) % seq.length];
+  saveState();
+  refreshRow(cid);
+}
+
+// ── Flags ──────────────────────────────────────────────────────────────────
+function toggleFlag(cid, flag) {
+  const s = getC(cid);
+  s.flags[flag] = !s.flags[flag];
+  saveState();
+  refreshRow(cid);
+  // If concern flagged, auto-open notes
+  if (flag === "concern" && s.flags.concern) openNotes(cid);
+}
+
+// ── Notes ──────────────────────────────────────────────────────────────────
+function toggleNotes(cid) {
+  const row = document.getElementById("notes-row-" + cid);
+  const isOpen = row.style.display !== "none";
+  if (isOpen) {
+    saveNotes(cid);
+    row.style.display = "none";
+    document.getElementById("nbtn-" + cid).classList.remove("open");
+  } else {
+    openNotes(cid);
+  }
+}
+
+function openNotes(cid) {
+  const row = document.getElementById("notes-row-" + cid);
+  if (!row) return;
+  row.style.display = "";
+  document.getElementById("nbtn-" + cid).classList.add("open");
+  const s = getC(cid);
+  const reqEl = document.getElementById("notes-req-" + cid);
+  if (reqEl) reqEl.classList.toggle("show", !!s.flags.concern);
+  const ta = document.getElementById("notes-ta-" + cid);
+  if (ta) setTimeout(() => ta.focus(), 50);
+}
+
+function saveNotes(cid) {
+  const ta = document.getElementById("notes-ta-" + cid);
+  if (!ta) return;
+  const s = getC(cid);
+  s.notes = ta.value;
+  saveState();
+  // Update notes button style
+  const btn = document.getElementById("nbtn-" + cid);
+  if (btn) {
+    btn.classList.toggle("has-notes", s.notes.trim().length > 0);
+  }
+  // Validate if concern
+  if (s.flags.concern) {
+    ta.classList.toggle("required", s.notes.trim().length === 0);
+  }
+}
+
+// ── Row refresh (without full re-render) ───────────────────────────────────
+function refreshRow(cid) {
+  // Re-render just this candidate's row (keep notes open state)
+  const c = CANDIDATES.find(x => x.id === cid);
+  if (!c) return;
+  const s = getC(cid);
+  const notesOpen = document.getElementById("notes-row-" + cid) &&
+                    document.getElementById("notes-row-" + cid).style.display !== "none";
+
+  // Update TL buttons
+  CHECKPOINTS.forEach(cp => {
+    const v = s.ratings[cp.id] || null;
+    const row = document.getElementById("row-" + cid);
+    if (!row) return;
+    row.querySelectorAll(`.tl`).forEach(btn => {
+      // Match by title
+      const bval = btn.classList.contains("g") ? "green" : btn.classList.contains("a") ? "amber" : "red";
+      // Only update if this button belongs to this checkpoint
     });
   });
+
+  // Easiest: just re-render the two rows
+  const tbody = document.getElementById("assessBody");
+  const existRow  = document.getElementById("row-" + cid);
+  const existNRow = document.getElementById("notes-row-" + cid);
+  if (!existRow) return;
+
+  const tempDiv = document.createElement("tbody");
+  tempDiv.innerHTML = buildCandidateRows(c, notesOpen);
+  const [newRow, newNRow] = tempDiv.children;
+
+  existRow.replaceWith(newRow);
+  existNRow.replaceWith(newNRow);
 }
 
-function onCandidateChange() {
-  const id = document.getElementById("candidateSelect").value;
-  currentCandidate = id ? CANDIDATES.find(c => c.id === id) : null;
-  resetForm();
+function buildCandidateRows(c, notesOpen) {
+  const s = getC(c.id);
+
+  const cpCells = CHECKPOINTS.map(cp => {
+    const v = s.ratings[cp.id] || null;
+    return `<td>
+      <div class="tl-cell">
+        <button class="tl g ${v==='green'?'on':''}" onclick="setRating('${c.id}','${cp.id}','green',this)">G</button>
+        <button class="tl a ${v==='amber'?'on':''}" onclick="setRating('${c.id}','${cp.id}','amber',this)">A</button>
+        <button class="tl r ${v==='red'?'on':''}"   onclick="setRating('${c.id}','${cp.id}','red',this)">R</button>
+      </div>
+    </td>`;
+  }).join("");
+
+  const ov = computeOverall(c.id);
+  const ovClass = {green:"overall-green", amber:"overall-amber", red:"overall-red"}[ov] || "overall-none";
+  const ovLabel = {green:"🟢 On track", amber:"🟡 Developing", red:"🔴 Concern"}[ov] || "–";
+
+  const hasNotes = s.notes && s.notes.trim().length > 0;
+  const nbtnClass = "notes-btn" + (notesOpen ? " open" : hasNotes ? " has-notes" : "");
+
+  return `
+    <tr id="row-${c.id}">
+      <td>${c.name}<br><span style="font-size:10px;color:var(--rmd-muted);font-weight:400;">${c.room}</span></td>
+      ${cpCells}
+      <td><span class="overall-badge ${ovClass}" onclick="cycleOverall('${c.id}')">${ovLabel}</span></td>
+      <td>
+        <div class="flag-cell">
+          <button class="fl concern ${s.flags.concern?'on':''}"  onclick="toggleFlag('${c.id}','concern')">⚠️</button>
+          <button class="fl standout ${s.flags.standout?'on':''}" onclick="toggleFlag('${c.id}','standout')">⭐</button>
+        </div>
+      </td>
+      <td><button class="${nbtnClass}" id="nbtn-${c.id}" onclick="toggleNotes('${c.id}')">📝</button></td>
+    </tr>
+    <tr class="notes-row" id="notes-row-${c.id}" style="${notesOpen?'':'display:none;'}">
+      <td colspan="9">
+        <div class="notes-panel">
+          <div class="notes-req ${s.flags.concern?'show':''}" id="notes-req-${c.id}">⚠️ Notes required when concern is flagged</div>
+          <textarea class="notes-ta ${s.flags.concern&&!s.notes.trim()?'required':''}" id="notes-ta-${c.id}"
+            placeholder="Observations, teaching moments, development areas…"
+            onblur="saveNotes('${c.id}')">${s.notes||""}</textarea>
+        </div>
+      </td>
+    </tr>`;
 }
 
-function resetForm() {
-  ratings  = {};
-  flags    = {};
-  currentCheckpoint = null;
-  document.getElementById("devNotes").value = "";
-  renderCheckpoints();
-  renderDimsForm();
-  renderFlags();
-}
+// ── Overview ───────────────────────────────────────────────────────────────
+function renderOverview() {
+  const cands = visibleCandidates(currentOvRoom);
+  const body  = document.getElementById("overviewBody");
 
-// ── Checkpoints ────────────────────────────────────────────────────────────
-function renderCheckpoints() {
-  const row = document.getElementById("checkpointRow");
-  row.innerHTML = CHECKPOINTS.map(cp => `
-    <button class="cp-btn ${currentCheckpoint === cp.id ? 'active' : ''}"
-            onclick="selectCheckpoint('${cp.id}')">
-      ${cp.label}
-    </button>
-  `).join("");
-}
+  if (cands.length === 0) {
+    body.innerHTML = `<div class="empty-state">No candidates in this room.</div>`;
+    return;
+  }
 
-function selectCheckpoint(id) {
-  currentCheckpoint = id;
-  renderCheckpoints();
-}
+  const cpShorts = ["S:T","S:D","Su:T","Su:I","Su:F"];
 
-// ── Dimensions form ────────────────────────────────────────────────────────
-function renderDimsForm() {
-  const body = document.getElementById("dimsBody");
-  body.innerHTML = DIMENSIONS.map(dim => {
-    const current = ratings[dim.id] || 0;
-    const ratingBtns = [1,2,3,4,5].map(n => `
-      <button class="rating-btn r${n} ${current === n ? 'selected' : ''}"
-              onclick="setRating('${dim.id}', ${n})">${n}</button>
-    `).join("");
+  body.innerHTML = cands.map((c, ci) => {
+    const s = getC(c.id);
+    const ov = computeOverall(c.id);
+    const ovClass = {green:"overall-green",amber:"overall-amber",red:"overall-red"}[ov]||"overall-none";
+    const ovLabel = {green:"🟢 On track",amber:"🟡 Developing",red:"🔴 Concern"}[ov]||"No data";
+
+    const flagHtml = [
+      s.flags.concern  ? `<span style="font-size:12px;padding:2px 8px;border-radius:10px;background:#fde8e4;color:#b7410e;font-weight:700;">⚠️ Concern</span>` : "",
+      s.flags.standout ? `<span style="font-size:12px;padding:2px 8px;border-radius:10px;background:#e6f4ea;color:#1a6e31;font-weight:700;">⭐ Standout</span>` : ""
+    ].filter(Boolean).join(" ");
+
+    // Mini trajectory
+    const trajCells = cpShorts.map((sh, i) => {
+      const cp = CHECKPOINTS[i];
+      const v  = s.ratings[cp.id];
+      const cls = {green:"tc-green",amber:"tc-amber",red:"tc-red"}[v]||"tc-none";
+      const lbl = {green:"G",amber:"A",red:"R"}[v]||"–";
+      return `<div class="traj-cell ${cls}">${lbl}</div>`;
+    }).join("");
+
+    const notesHtml = s.notes
+      ? `<div style="margin-top:8px;font-size:13px;color:#456b8c;background:#f5f7fa;border-radius:6px;padding:8px 10px;">${s.notes}</div>`
+      : "";
+
     return `
-      <div class="dim-row">
-        <div class="dim-name">${dim.name}</div>
-        <div class="dim-sub">${dim.sub}</div>
-        <div class="rating-scale">${ratingBtns}</div>
-        <div class="rating-labels">
-          <span>Concern</span>
-          <span>Developing</span>
-          <span>Proficient</span>
-          <span>Strong</span>
-          <span>Excellent</span>
+      <div class="cand-card">
+        <div class="cand-card-header" onclick="toggleOverviewCard('ovc-${ci}')">
+          <div class="cand-card-name">${c.name} <span style="font-size:11px;font-weight:400;color:var(--rmd-muted);">${c.room}</span></div>
+          <span class="overall-badge ${ovClass}" style="cursor:default;">${ovLabel}</span>
+        </div>
+        <div class="cand-card-body" id="ovc-${ci}">
+          <div class="traj-grid">
+            <div></div>
+            ${cpShorts.map(s=>`<div class="traj-hdr">${s}</div>`).join("")}
+            <div class="traj-dim">RAG</div>
+            ${trajCells}
+          </div>
+          ${flagHtml ? `<div style="margin-bottom:8px;display:flex;gap:6px;">${flagHtml}</div>` : ""}
+          ${notesHtml}
         </div>
       </div>`;
   }).join("");
 }
 
-function setRating(dimId, value) {
-  // Toggle off
-  ratings[dimId] = ratings[dimId] === value ? 0 : value;
-  if (ratings[dimId] === 0) delete ratings[dimId];
-  renderDimsForm();
+function toggleOverviewCard(id) {
+  document.getElementById(id).classList.toggle("open");
 }
 
-// ── Flags ──────────────────────────────────────────────────────────────────
-function toggleFlag(flag) {
-  flags[flag] = !flags[flag];
-  renderFlags();
-}
-
-function renderFlags() {
-  document.getElementById("flag-concern").className  = "flag-btn" + (flags.concern  ? " active-concern"  : "");
-  document.getElementById("flag-standout").className = "flag-btn" + (flags.standout ? " active-standout" : "");
-}
-
-// ── Submit ─────────────────────────────────────────────────────────────────
-function submitRecord() {
-  if (!currentCandidate) {
-    showToast("Select a candidate first"); return;
-  }
-  if (!currentCheckpoint) {
-    showToast("Select a checkpoint"); return;
-  }
-
-  const record = {
-    id: `${currentCandidate.id}_${currentCheckpoint}_${Date.now()}`,
-    candidateId:    currentCandidate.id,
-    candidateName:  currentCandidate.name,
-    checkpoint:     currentCheckpoint,
-    ratings:        { ...ratings },
-    flags:          { ...flags },
-    notes:          document.getElementById("devNotes").value.trim(),
-    assessor:       "faculty",  // TODO: get from auth
-    timestamp:      new Date().toISOString()
-  };
-
-  const store = loadStore();
-  store.push(record);
-  saveStore(store);
-
-  // TODO: Firebase
-  // db.collection(COLLECTIONS.assessments).add({ phase: "development", ...record,
-  //   timestamp: firebase.firestore.FieldValue.serverTimestamp() });
-
-  showToast(`✓ Saved — ${currentCandidate.name}`);
-  resetForm();
-  document.getElementById("candidateSelect").value = "";
-  currentCandidate = null;
-}
-
-// ── History view ────────────────────────────────────────────────────────────
-function switchView(view) {
-  document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
-  document.querySelectorAll(".phase-tab").forEach(t => t.classList.remove("active"));
-  document.getElementById("view-" + view).classList.add("active");
-  document.getElementById("tab-" + view).classList.add("active");
-  document.getElementById("submitBar").style.display = view === "record" ? "block" : "none";
-  if (view === "history") renderHistory();
-}
-
-function renderHistory() {
-  const store   = loadStore();
-  const filterId = document.getElementById("histCandSelect").value;
-
-  const entries = store
-    .filter(r => !filterId || r.candidateId === filterId)
-    .sort((a,b) => b.timestamp.localeCompare(a.timestamp));
-
-  // Trajectory (single candidate only)
-  const trajCard = document.getElementById("trajectoryCard");
-  if (filterId) {
-    renderTrajectory(filterId, store);
-    trajCard.style.display = "block";
-  } else {
-    trajCard.style.display = "none";
-  }
-
-  if (entries.length === 0) {
-    document.getElementById("historyList").innerHTML = `<div class="empty-state">No records yet.</div>`;
-    return;
-  }
-
-  document.getElementById("historyList").innerHTML = entries.map(r => {
-    const cp = CHECKPOINTS.find(c => c.id === r.checkpoint);
-    const dimPills = DIMENSIONS.map(d => {
-      const val = r.ratings[d.id];
-      if (!val) return "";
-      return `<span class="dim-pill dim-pill-${val}" title="${d.name}">${d.name.split(" ")[0]} ${val}</span>`;
-    }).join("");
-
-    const flagPills = [
-      r.flags.concern  ? `<span class="flag-pill flag-concern">⚠️ Concern</span>` : "",
-      r.flags.standout ? `<span class="flag-pill flag-standout">⭐ Standout</span>` : ""
-    ].join("");
-
-    const notesHtml = r.notes
-      ? `<div class="history-notes">${r.notes}</div>` : "";
-
-    const ts = r.timestamp ? new Date(r.timestamp).toLocaleString([], {month:"short",day:"numeric",hour:"2-digit",minute:"2-digit"}) : "";
-
-    return `
-      <div class="history-item">
-        <div class="history-cp">${cp ? cp.label : r.checkpoint} · ${r.candidateName}</div>
-        <div class="history-dims">${dimPills}</div>
-        ${flagPills ? `<div class="history-flags">${flagPills}</div>` : ""}
-        ${notesHtml}
-        <div class="history-meta">${ts}</div>
-      </div>`;
-  }).join("");
-}
-
-function renderTrajectory(candidateId, store) {
-  const c = CANDIDATES.find(x => x.id === candidateId);
-  document.getElementById("trajTitle").textContent = `${c ? c.name : ""} — Trajectory`;
-
-  // Build cp → dim → rating map
-  const cpData = {};
-  store
-    .filter(r => r.candidateId === candidateId)
-    .forEach(r => {
-      if (!cpData[r.checkpoint]) cpData[r.checkpoint] = {};
-      Object.entries(r.ratings).forEach(([dim, val]) => {
-        cpData[r.checkpoint][dim] = val; // last write wins
-      });
-    });
-
-  const completedCps = CHECKPOINTS.filter(cp => cpData[cp.id]);
-
-  if (completedCps.length === 0) {
-    document.getElementById("trajGrid").innerHTML = `<div style="grid-column:1/-1;color:var(--rmd-muted);font-size:13px;">No records yet.</div>`;
-    return;
-  }
-
-  const colCount = completedCps.length + 1; // dim name + one col per cp
-  let grid = `<div></div>`; // top-left corner
-
-  // Headers
-  completedCps.forEach(cp => {
-    const short = cp.label.replace("Sat: ","S:").replace("Sun: ","Su:");
-    grid += `<div class="traj-header">${short}</div>`;
-  });
-
-  // Dimension rows
-  DIMENSIONS.forEach(dim => {
-    grid += `<div class="traj-dim-name">${dim.name.split(" ")[0]}</div>`;
-    completedCps.forEach(cp => {
-      const val = cpData[cp.id] ? (cpData[cp.id][dim.id] || null) : null;
-      const bg  = val === 1 ? "#b7410e" : val === 2 ? "#c17a00" : val === 3 ? "#456b8c" : val === 4 ? "#1a6e31" : val === 5 ? "#0b5394" : "#e8edf2";
-      const col = val ? "white" : "#aab8c2";
-      grid += `<div class="traj-cell" style="background:${bg};color:${col}">${val || "–"}</div>`;
-    });
-  });
-
-  document.getElementById("trajGrid").innerHTML = grid;
+// ── View switching ─────────────────────────────────────────────────────────
+function switchView(v) {
+  document.querySelectorAll(".view").forEach(el => el.classList.remove("active"));
+  document.querySelectorAll(".view-tab").forEach(el => el.classList.remove("active"));
+  document.getElementById("view-" + v).classList.add("active");
+  document.getElementById("vtab-" + v).classList.add("active");
+  if (v === "overview") renderOverview();
 }
 
 // ── Clock ─────────────────────────────────────────────────────────────────
 function updateClock() {
   const now = new Date();
-  const h = now.getHours().toString().padStart(2,"0");
-  const m = now.getMinutes().toString().padStart(2,"0");
-  document.getElementById("topBarTime").textContent = `${h}:${m}`;
-}
-
-// ── Toast ─────────────────────────────────────────────────────────────────
-let toastTimer;
-function showToast(msg) {
-  const t = document.getElementById("toast");
-  t.textContent = msg;
-  t.classList.add("show");
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => t.classList.remove("show"), 2500);
+  document.getElementById("topBarTime").textContent =
+    now.getHours().toString().padStart(2,"0") + ":" + now.getMinutes().toString().padStart(2,"0");
 }
 
 </script>
