@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Import Google Form Responses — RMD 2026</title>
+  <link rel="stylesheet" href="css/rmd.css">
+  <style>
+    * { box-sizing: border-box; }
+    body { background: #f0f3f6; font-family: var(--font); margin: 0; padding: 20px 16px 60px; }
+    .page { max-width: 680px; margin: 0 auto; }
+    .top-bar { background: var(--rmd-navy); color: white; padding: 14px 18px; border-radius: 8px; margin-bottom: 20px; display: flex; align-items: center; gap: 12px; }
+    .top-bar img { height: 28px; }
+    .card { background: white; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.1); margin-bottom: 16px; overflow: hidden; }
+    .card-header { background: var(--rmd-blue); color: white; padding: 11px 16px; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+    .card-body { padding: 16px; }
+    .info-box { background: #e8f0fe; border-left: 4px solid var(--rmd-blue); border-radius: 0 6px 6px 0; padding: 10px 14px; font-size: 13px; color: var(--rmd-navy); margin-bottom: 14px; line-height: 1.5; }
+    .warn-box  { background: #fff3cd; border-left: 4px solid #c17a00; border-radius: 0 6px 6px 0; padding: 10px 14px; font-size: 13px; color: #856404; margin-bottom: 14px; line-height: 1.5; }
+    .record-list { list-style: none; padding: 0; margin: 0 0 14px; }
+    .record-list li { padding: 7px 0; border-bottom: 1px solid #f0f3f6; font-size: 13px; display: flex; align-items: center; gap: 10px; }
+    .record-list li:last-child { border-bottom: none; }
+    .rec-name  { font-weight: 700; color: var(--rmd-navy); min-width: 160px; }
+    .rec-email { color: var(--rmd-muted); font-family: monospace; font-size: 12px; flex: 1; }
+    .rec-badge { font-size: 11px; padding: 2px 7px; border-radius: 10px; font-weight: 700; }
+    .badge-yes { background: #e6f4ea; color: #1a6e31; }
+    .badge-no  { background: #fde8e4; color: #b7410e; }
+    .badge-erc { background: #fff3cd; color: #856404; }
+    .btn-import { width: 100%; padding: 14px; background: var(--rmd-blue); color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: 700; font-family: var(--font); cursor: pointer; }
+    .btn-import:hover:not(:disabled) { background: var(--rmd-navy); }
+    .btn-import:disabled { background: #aab8c2; cursor: default; }
+    .log-entry { display: flex; align-items: center; gap: 10px; padding: 6px 0; border-bottom: 1px solid #f0f3f6; font-size: 13px; }
+    .log-entry:last-child { border-bottom: none; }
+    .log-icon  { font-size: 15px; width: 20px; text-align: center; flex-shrink: 0; }
+    .log-name  { flex: 1; font-weight: 600; color: var(--rmd-navy); }
+    .log-status { font-size: 12px; }
+    .log-status.ok   { color: #1a6e31; font-weight: 700; }
+    .log-status.skip { color: #c17a00; }
+    .log-status.err  { color: #b7410e; font-weight: 700; }
+    .progress-bar-wrap { background: #e8edf2; border-radius: 4px; height: 6px; margin: 12px 0; overflow: hidden; }
+    .progress-bar { height: 100%; background: var(--rmd-blue); border-radius: 4px; transition: width 0.3s; width: 0%; }
+    #resultsCard { display: none; }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <div class="top-bar">
+    <img src="assets/rmd-logo.png" alt="RMD">
+    <div>
+      <div style="font-size:15px;font-weight:700;">Import Google Form Responses</div>
+      <div style="font-size:12px;opacity:0.7;">2026 responses only · one-time import</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">19 responses to import</div>
+    <div class="card-body">
+      <div class="info-box">
+        These are the 2026-dated responses from the Google Form. They will be added to Firestore
+        as <code>faculty_responses</code> documents, alongside any new form submissions.
+        Records already imported (matched by email) will be skipped.
+      </div>
+      <div class="warn-box">
+        ⚠️ Only run this once. Refresh the page first if you need to re-run.
+      </div>
+
+      <ul class="record-list">
+        <li><span class="rec-name">Tanwen Bird</span><span class="rec-email">txb225@student.bham.ac.uk</span><span class="rec-badge badge-yes">IT</span></li>
+        <li><span class="rec-name">Thomas Burton</span><span class="rec-email">thomas_burton@btinternet.com</span><span class="rec-badge badge-yes">IT</span></li>
+        <li><span class="rec-name">Ellie Scholes</span><span class="rec-email">sxs2239@student.bham.ac.uk</span><span class="rec-badge badge-yes">ITC 1st</span></li>
+        <li><span class="rec-name">Megan Harrison</span><span class="rec-email">mxh1273@student.bham.ac.uk</span><span class="rec-badge badge-yes">ITC 1st</span></li>
+        <li><span class="rec-name">Jaimini Lakhani</span><span class="rec-email">jul434@student.bham.ac.uk</span><span class="rec-badge badge-yes">BLS I</span></li>
+        <li><span class="rec-name">Naveed Kordmahalleh</span><span class="rec-email">naveed.kordmahalleh@nhs.net</span><span class="rec-badge badge-yes">IT</span></li>
+        <li><span class="rec-name">Laura Kocierz</span><span class="rec-email">l_ks15@hotmail.com</span><span class="rec-badge badge-no">Not attending</span></li>
+        <li><span class="rec-name">Isabel Winfield</span><span class="rec-email">ixw237@student.bham.ac.uk</span><span class="rec-badge badge-yes">ITC 2+</span></li>
+        <li><span class="rec-name">Christopher Smith</span><span class="rec-email">c.smith.12@warwick.ac.uk</span><span class="rec-badge badge-yes">IT</span></li>
+        <li><span class="rec-name">Stella Szeckler</span><span class="rec-email">sxs2048@student.bham.ac.uk</span><span class="rec-badge badge-yes">ITC 2+</span></li>
+        <li><span class="rec-name">Sophie McKillop</span><span class="rec-email">sxm2091@student.bham.ac.uk</span><span class="rec-badge badge-yes">BLS I</span></li>
+        <li><span class="rec-name">Georgia Crutchfield</span><span class="rec-email">grc405@student.bham.ac.uk</span><span class="rec-badge badge-yes">BLS I</span></li>
+        <li><span class="rec-name">Neal Pankhania</span><span class="rec-email">nealpank@gmail.com</span><span class="rec-badge badge-yes">IT</span></li>
+        <li><span class="rec-name">Krishan Patel</span><span class="rec-email">kxp214@student.bham.ac.uk</span><span class="rec-badge badge-erc">ERC to fix</span></li>
+        <li><span class="rec-name">Tegan Bailey</span><span class="rec-email">tlb433@student.bham.ac.uk</span><span class="rec-badge badge-yes">BLS I</span></li>
+        <li><span class="rec-name">Holly Smyth</span><span class="rec-email">hxs351@student.bham.ac.uk</span><span class="rec-badge badge-erc">ERC to fix</span></li>
+        <li><span class="rec-name">Zanita Volschenk</span><span class="rec-email">zanitav2002@gmail.com</span><span class="rec-badge badge-yes">IT</span></li>
+        <li><span class="rec-name">Joseph Alderman</span><span class="rec-email">j.e.alderman@bham.ac.uk</span><span class="rec-badge badge-yes">IT</span></li>
+        <li><span class="rec-name">Alessandro Pace</span><span class="rec-email">axp1098@student.bham.ac.uk</span><span class="rec-badge badge-yes">IT</span></li>
+      </ul>
+
+      <div class="progress-bar-wrap" id="progressWrap" style="display:none;">
+        <div class="progress-bar" id="progressBar"></div>
+      </div>
+
+      <button class="btn-import" id="importBtn" onclick="runImport()">Import 19 responses →</button>
+    </div>
+  </div>
+
+  <div class="card" id="resultsCard">
+    <div class="card-header">Import results</div>
+    <div class="card-body" id="logList"></div>
+  </div>
+
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+<script>
+
+initFirebase();
+
+// ── 2026 Google Form records, mapped to faculty_responses schema ──────────
+const RECORDS = [
+  {
+    firstName: "Tanwen", lastName: "Bird",
+    email: "txb225@student.bham.ac.uk",
+    canAttend: "yes",
+    ercQualification: "Instructor Trainer", ercCorrectlyListed: "yes", ercLiaisonConfirmed: true,
+    days: { friday: true, saturday: true, sunday: true },
+    meals: { friday: "", saturday: "no" },
+    accommodation: { friday: "no", saturday: "no" },
+    submittedAtRaw: "6/1/2026 17:08:10"
+  },
+  {
+    firstName: "Thomas", lastName: "Burton",
+    email: "thomas_burton@btinternet.com",
+    canAttend: "yes",
+    ercQualification: "Instructor Trainer", ercCorrectlyListed: "yes", ercLiaisonConfirmed: true,
+    days: { friday: true, saturday: true, sunday: true },
+    meals: { friday: "", saturday: "yes" },
+    accommodation: { friday: "no", saturday: "no" },
+    submittedAtRaw: "6/1/2026 17:13:44"
+  },
+  {
+    firstName: "Ellie", lastName: "Scholes",
+    email: "sxs2239@student.bham.ac.uk",
+    canAttend: "yes",
+    ercQualification: "Instructor Trainer Candidate (first ITC course)", ercCorrectlyListed: "yes", ercLiaisonConfirmed: true,
+    days: { friday: true, saturday: true, sunday: true },
+    meals: { friday: "", saturday: "no" },
+    accommodation: { friday: "no", saturday: "no" },
+    submittedAtRaw: "6/1/2026 17:15:10"
+  },
+  {
+    firstName: "Megan", lastName: "Harrison",
+    email: "mxh1273@student.bham.ac.uk",
+    canAttend: "yes",
+    ercQualification: "Instructor Trainer Candidate (first ITC course)", ercCorrectlyListed: "yes", ercLiaisonConfirmed: true,
+    days: { friday: true, saturday: true, sunday: true },
+    meals: { friday: "", saturday: "no" },
+    accommodation: { friday: "no", saturday: "no" },
+    submittedAtRaw: "6/1/2026 17:27:19"
+  },
+  {
+    firstName: "Jaimini", lastName: "Lakhani",
+    email: "jul434@student.bham.ac.uk",
+    canAttend: "yes",
+    ercQualification: "BLS Instructor", ercCorrectlyListed: "yes", ercLiaisonConfirmed: true,
+    days: { friday: true, saturday: true, sunday: true },
+    meals: { friday: "", saturday: "no" },
+    accommodation: { friday: "no", saturday: "no" },
+    submittedAtRaw: "6/1/2026 17:29:52"
+  },
+  {
+    firstName: "Naveed", lastName: "Kordmahalleh",
+    email: "naveed.kordmahalleh@nhs.net",
+    canAttend: "yes",
+    ercQualification: "Instructor Trainer", ercCorrectlyListed: "yes", ercLiaisonConfirmed: true,
+    days: { friday: true, saturday: true, sunday: true },
+    meals: { friday: "", saturday: "yes" },
+    accommodation: { friday: "no", saturday: "no" },
+    submittedAtRaw: "6/1/2026 18:54:52"
+  },
+  {
+    firstName: "Laura", lastName: "Kocierz",
+    email: "l_ks15@hotmail.com",
+    canAttend: "no",
+    ercQualification: "", ercCorrectlyListed: "", ercLiaisonConfirmed: false,
+    days: { friday: false, saturday: false, sunday: false },
+    meals: { friday: "", saturday: "" },
+    accommodation: { friday: "no", saturday: "no" },
+    submittedAtRaw: "6/1/2026 21:02:45"
+  },
+  {
+    firstName: "Isabel", lastName: "Winfield",
+    email: "ixw237@student.bham.ac.uk",
+    canAttend: "yes",
+    ercQualification: "Instructor Trainer Candidate (2+ ITC courses)", ercCorrectlyListed: "yes", ercLiaisonConfirmed: true,
+    days: { friday: true, saturday: true, sunday: true },
+    meals: { friday: "", saturday: "no" },
+    accommodation: { friday: "no", saturday: "no" },
+    submittedAtRaw: "6/1/2026 21:27:11"
+  },
+  {
+    firstName: "Christopher", lastName: "Smith",
+    email: "c.smith.12@warwick.ac.uk",
+    canAttend: "yes",
+    ercQualification: "BIC Course Director Candidate (IT equivalent)", ercCorrectlyListed: "yes", ercLiaisonConfirmed: true,
+    days: { friday: true, saturday: true, sunday: true },
+    meals: { friday: "", saturday: "yes" },
+    accommodation: { friday: "yes", saturday: "yes" },
+    submittedAtRaw: "6/2/2026 11:06:36"
+  },
+  {
+    firstName: "Stella", lastName: "Szeckler",
+    email: "sxs2048@student.bham.ac.uk",
+    canAttend: "yes",
+    ercQualification: "Instructor Trainer Candidate (2+ ITC courses)", ercCorrectlyListed: "yes", ercLiaisonConfirmed: true,
+    days: { friday: true, saturday: true, sunday: true },
+    meals: { friday: "", saturday: "no" },
+    accommodation: { friday: "no", saturday: "no" },
+    submittedAtRaw: "6/4/2026 14:23:38"
+  },
+  {
+    firstName: "Sophie", lastName: "McKillop",
+    email: "sxm2091@student.bham.ac.uk",
+    canAttend: "yes",
+    ercQualification: "BLS Instructor", ercCorrectlyListed: "yes", ercLiaisonConfirmed: true,
+    days: { friday: true, saturday: true, sunday: true },
+    meals: { friday: "", saturday: "yes" },
+    accommodation: { friday: "no", saturday: "no" },
+    submittedAtRaw: "6/4/2026 23:00:54"
+  },
+  {
+    firstName: "Georgia", lastName: "Crutchfield",
+    email: "grc405@student.bham.ac.uk",
+    canAttend: "yes",
+    ercQualification: "BLS Instructor", ercCorrectlyListed: "yes", ercLiaisonConfirmed: true,
+    days: { friday: true, saturday: true, sunday: true },
+    meals: { friday: "", saturday: "no" },
+    accommodation: { friday: "no", saturday: "no" },
+    submittedAtRaw: "6/7/2026 22:32:16"
+  },
+  {
+    firstName: "Neal", lastName: "Pankhania",
+    email: "nealpank@gmail.com",
+    canAttend: "yes",
+    ercQualification: "Instructor Trainer", ercCorrectlyListed: "yes", ercLiaisonConfirmed: true,
+    days: { friday: true, saturday: true, sunday: true },
+    meals: { friday: "", saturday: "yes" },
+    accommodation: { friday: "no", saturday: "no" },
+    submittedAtRaw: "6/8/2026 16:19:30"
+  },
+  {
+    firstName: "Krishan", lastName: "Patel",
+    email: "kxp214@student.bham.ac.uk",
+    canAttend: "yes",
+    ercQualification: "Instructor Trainer", ercCorrectlyListed: "no", ercLiaisonConfirmed: true,
+    days: { friday: true, saturday: true, sunday: true },
+    meals: { friday: "", saturday: "no" },
+    accommodation: { friday: "no", saturday: "no" },
+    submittedAtRaw: "6/8/2026 17:40:01"
+  },
+  {
+    firstName: "Tegan", lastName: "Bailey",
+    email: "tlb433@student.bham.ac.uk",
+    canAttend: "yes",
+    ercQualification: "BLS Instructor", ercCorrectlyListed: "yes", ercLiaisonConfirmed: true,
+    days: { friday: true, saturday: true, sunday: true },
+    meals: { friday: "", saturday: "yes" },
+    accommodation: { friday: "no", saturday: "no" },
+    submittedAtRaw: "6/11/2026 14:06:31"  // later of two submissions
+  },
+  {
+    firstName: "Holly", lastName: "Smyth",
+    email: "hxs351@student.bham.ac.uk",
+    canAttend: "yes",
+    ercQualification: "Instructor Trainer Candidate", ercCorrectlyListed: "no", ercLiaisonConfirmed: true,
+    days: { friday: true, saturday: true, sunday: true },
+    meals: { friday: "", saturday: "no" },
+    accommodation: { friday: "no", saturday: "no" },
+    submittedAtRaw: "6/10/2026 14:10:04"
+  },
+  {
+    firstName: "Zanita", lastName: "Volschenk",
+    email: "zanitav2002@gmail.com",
+    canAttend: "yes",
+    ercQualification: "Instructor Trainer", ercCorrectlyListed: "yes", ercLiaisonConfirmed: true,
+    days: { friday: false, saturday: true, sunday: true },
+    meals: { friday: "", saturday: "yes" },
+    accommodation: { friday: "no", saturday: "no" },
+    submittedAtRaw: "6/10/2026 14:17:52"
+  },
+  {
+    firstName: "Joseph", lastName: "Alderman",
+    email: "j.e.alderman@bham.ac.uk",
+    canAttend: "yes",
+    ercQualification: "Instructor Trainer", ercCorrectlyListed: "yes", ercLiaisonConfirmed: true,
+    days: { friday: true, saturday: true, sunday: true },
+    meals: { friday: "", saturday: "yes" },
+    accommodation: { friday: "no", saturday: "no" },
+    submittedAtRaw: "6/11/2026 15:42:18"
+  },
+  {
+    firstName: "Alessandro", lastName: "Pace",
+    email: "axp1098@student.bham.ac.uk",
+    canAttend: "yes",
+    ercQualification: "Instructor Trainer", ercCorrectlyListed: "yes", ercLiaisonConfirmed: true,
+    days: { friday: true, saturday: true, sunday: true },
+    meals: { friday: "", saturday: "no" },
+    accommodation: { friday: "no", saturday: "no" },
+    submittedAtRaw: "6/11/2026 18:49:49"
+  }
+];
+
+async function runImport() {
+  const btn = document.getElementById("importBtn");
+  btn.disabled = true;
+  btn.textContent = "Importing…";
+  document.getElementById("progressWrap").style.display = "block";
+  document.getElementById("resultsCard").style.display  = "block";
+
+  let ok = 0, skip = 0, err = 0;
+
+  for (let i = 0; i < RECORDS.length; i++) {
+    const r = RECORDS[i];
+    const pct = Math.round(((i + 1) / RECORDS.length) * 100);
+    document.getElementById("progressBar").style.width = pct + "%";
+
+    let icon, cls, msg;
+
+    try {
+      // Check for existing record with same email
+      const existing = await db.collection("faculty_responses")
+        .where("email", "==", r.email)
+        .limit(1).get();
+
+      if (!existing.empty) {
+        icon = "⚠️"; cls = "skip"; msg = "Already exists — skipped";
+        skip++;
+      } else {
+        const record = {
+          ...r,
+          source: "google-form-import-2026",
+          submittedAt: firebase.firestore.Timestamp.fromDate(new Date(r.submittedAtRaw))
+        };
+        delete record.submittedAtRaw;
+        await db.collection("faculty_responses").add(record);
+        icon = "✅"; cls = "ok"; msg = "Imported";
+        ok++;
+      }
+    } catch (e) {
+      icon = "❌"; cls = "err"; msg = e.message;
+      err++;
+    }
+
+    const el = document.createElement("div");
+    el.className = "log-entry";
+    el.innerHTML = `
+      <div class="log-icon">${icon}</div>
+      <div class="log-name">${r.firstName} ${r.lastName}</div>
+      <div class="log-status ${cls}">${msg}</div>`;
+    document.getElementById("logList").appendChild(el);
+
+    await new Promise(res => setTimeout(res, 150));
+  }
+
+  const summary = document.createElement("div");
+  summary.style.cssText = "margin-top:12px;padding-top:12px;border-top:2px solid #f0f3f6;font-size:13px;font-weight:700;";
+  summary.textContent = `Done — ${ok} imported, ${skip} skipped (already existed), ${err} failed.`;
+  document.getElementById("logList").appendChild(summary);
+
+  btn.textContent = "Import complete";
+}
+
+</script>
+</body>
+</html>
