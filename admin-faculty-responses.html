@@ -145,12 +145,12 @@
 <script src="js/firebase-config.js"></script>
 <script>
 
+var allResponses = [];
+var currentTab   = "all";
+
 initFirebase();
 
-let allResponses = [];
-let currentTab   = "all";
-
-document.addEventListener("DOMContentLoaded", () => {
+window.addEventListener("load", () => {
   auth.onAuthStateChanged(user => {
     if (user) {
       loadResponses();
