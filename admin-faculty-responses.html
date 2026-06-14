@@ -24,37 +24,47 @@
     .sum-pill {
       background: white; border-radius: 8px; padding: 10px 16px;
       box-shadow: 0 1px 3px rgba(0,0,0,0.1); text-align: center; min-width: 90px;
+      cursor: pointer; border: 2px solid transparent; transition: all 0.12s;
     }
+    .sum-pill:hover { border-color: var(--rmd-blue); }
+    .sum-pill.active { border-color: var(--rmd-blue); background: #e8f0fe; }
     .sum-pill .val { font-size: 24px; font-weight: 700; color: var(--rmd-navy); }
     .sum-pill .lbl { font-size: 11px; color: var(--rmd-muted); font-weight: 600; text-transform: uppercase; }
 
     /* Tabs */
-    .tab-row { display: flex; background: white; border-bottom: 2px solid #dce3ea; margin-bottom: 14px; border-radius: 8px 8px 0 0; }
+    .tab-row {
+      display: flex; background: white; border-bottom: 2px solid #dce3ea;
+      margin-bottom: 14px; border-radius: 8px 8px 0 0;
+      overflow-x: auto;
+    }
     .tab-btn {
       padding: 11px 16px; font-size: 13px; font-weight: 600; color: var(--rmd-muted);
       border: none; background: none; cursor: pointer; font-family: var(--font);
       border-bottom: 3px solid transparent; margin-bottom: -2px;
+      white-space: nowrap; flex-shrink: 0;
     }
+    .tab-btn:hover { color: var(--rmd-blue); }
     .tab-btn.active { color: var(--rmd-blue); border-bottom-color: var(--rmd-blue); }
 
     /* Action bar */
-    .action-bar { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
-    .btn-export {
+    .action-bar { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; align-items: center; }
+    .btn-action {
       padding: 8px 16px; background: var(--rmd-blue); color: white;
       border: none; border-radius: 6px; font-size: 13px; font-weight: 700;
       font-family: var(--font); cursor: pointer;
     }
-    .btn-export:hover { background: var(--rmd-navy); }
-    .btn-export.secondary { background: white; color: var(--rmd-navy); border: 2px solid #ccd6dd; }
+    .btn-action:hover { background: var(--rmd-navy); }
+    .btn-action.secondary { background: white; color: var(--rmd-navy); border: 2px solid #ccd6dd; }
+    .filter-label { font-size: 13px; color: var(--rmd-muted); margin-left: 4px; }
 
     /* Response cards */
     .response-card {
       background: white; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.1);
-      margin-bottom: 10px; overflow: hidden; cursor: pointer;
+      margin-bottom: 10px; overflow: hidden;
     }
     .rc-header {
       padding: 12px 14px; display: flex; align-items: center; gap: 10px;
-      border-bottom: 1px solid #f0f3f6;
+      border-bottom: 1px solid #f0f3f6; cursor: pointer;
     }
     .rc-name  { font-size: 15px; font-weight: 700; color: var(--rmd-navy); flex: 1; }
     .rc-role  { font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 12px;
@@ -67,34 +77,35 @@
       display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
       gap: 8px; margin-bottom: 12px;
     }
-    .rc-field { }
     .rc-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; color: var(--rmd-muted); }
     .rc-value { font-size: 13px; color: var(--rmd-navy); margin-top: 2px; }
 
     .meal-badges { display: flex; gap: 6px; flex-wrap: wrap; }
-    .meal-badge {
-      font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 12px;
-    }
+    .meal-badge { font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 12px; }
     .badge-yes  { background: #e6f4ea; color: #1a6e31; }
     .badge-no   { background: #f5f7fa; color: #aab8c2; }
     .badge-own  { background: #fff3cd; color: #856404; }
 
     .day-badges { display: flex; gap: 4px; }
-    .day-badge {
-      font-size: 11px; padding: 3px 8px; border-radius: 10px; font-weight: 700;
-    }
-    .day-yes { background: var(--rmd-navy); color: white; }
-    .day-no  { background: #f0f3f6; color: #aab8c2; }
+    .day-badge  { font-size: 11px; padding: 3px 8px; border-radius: 10px; font-weight: 700; }
+    .day-yes    { background: var(--rmd-navy); color: white; }
+    .day-no     { background: #f0f3f6; color: #aab8c2; }
 
-    /* Meal summary view */
-    .meal-table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.1); font-size: 13px; }
-    .meal-table th { background: var(--rmd-navy); color: white; padding: 10px 12px; text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
-    .meal-table td { padding: 10px 12px; border-bottom: 1px solid #f0f3f6; }
-    .meal-table tr:last-child td { border-bottom: none; }
+    /* Tables */
+    .data-table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.1); font-size: 13px; }
+    .data-table th { background: var(--rmd-navy); color: white; padding: 10px 12px; text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .data-table td { padding: 10px 12px; border-bottom: 1px solid #f0f3f6; vertical-align: top; }
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table tr:hover td { background: #f8f9fa; }
+
+    .section-heading { color: var(--rmd-navy); margin: 0 0 10px; font-size: 15px; font-weight: 700; }
+    .section-block { margin-bottom: 24px; }
+
+    .badge-erc-ok  { background: #e6f4ea; color: #1a6e31; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 700; }
+    .badge-erc-fix { background: #fce8e6; color: #b7410e; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 700; }
 
     .empty-state { text-align: center; padding: 40px; color: var(--rmd-muted); font-size: 14px; }
-
-    .loading { text-align: center; padding: 40px; color: var(--rmd-muted); }
+    .loading     { text-align: center; padding: 40px; color: var(--rmd-muted); }
   </style>
 </head>
 <body>
@@ -107,28 +118,47 @@
 
 <div class="content">
 
-  <!-- Summary -->
+  <!-- Summary pills (clickable) -->
   <div class="summary-strip" id="summaryStrip" style="margin-top:14px;">
-    <div class="sum-pill"><div class="val" id="sum-total">–</div><div class="lbl">Responses</div></div>
-    <div class="sum-pill"><div class="val" id="sum-fri-dinner">–</div><div class="lbl">Fri dinner</div></div>
-    <div class="sum-pill"><div class="val" id="sum-sat-dinner">–</div><div class="lbl">Sat dinner</div></div>
-    <div class="sum-pill"><div class="val" id="sum-fri-accom">–</div><div class="lbl">Fri accom</div></div>
-    <div class="sum-pill"><div class="val" id="sum-sat-accom">–</div><div class="lbl">Sat accom</div></div>
-    <div class="sum-pill"><div class="val" id="sum-dietary">–</div><div class="lbl">Dietary req</div></div>
-    <div class="sum-pill"><div class="val" id="sum-erc-fix" style="color:#b7410e;">–</div><div class="lbl">ERC to fix</div></div>
+    <div class="sum-pill" id="pill-all"     onclick="switchTab('all')">
+      <div class="val" id="sum-total">–</div><div class="lbl">Responses</div>
+    </div>
+    <div class="sum-pill" id="pill-fri-dinner" onclick="switchTab('fri-dinner')">
+      <div class="val" id="sum-fri-dinner">–</div><div class="lbl">Fri dinner</div>
+    </div>
+    <div class="sum-pill" id="pill-sat-dinner" onclick="switchTab('sat-dinner')">
+      <div class="val" id="sum-sat-dinner">–</div><div class="lbl">Sat dinner</div>
+    </div>
+    <div class="sum-pill" id="pill-fri-accom" onclick="switchTab('fri-accom')">
+      <div class="val" id="sum-fri-accom">–</div><div class="lbl">Fri accom</div>
+    </div>
+    <div class="sum-pill" id="pill-sat-accom" onclick="switchTab('sat-accom')">
+      <div class="val" id="sum-sat-accom">–</div><div class="lbl">Sat accom</div>
+    </div>
+    <div class="sum-pill" id="pill-dietary" onclick="switchTab('dietary')">
+      <div class="val" id="sum-dietary">–</div><div class="lbl">Dietary req</div>
+    </div>
+    <div class="sum-pill" id="pill-erc-fix" onclick="switchTab('erc')">
+      <div class="val" id="sum-erc-fix" style="color:#b7410e;">–</div><div class="lbl">ERC to fix</div>
+    </div>
   </div>
 
   <!-- Tabs -->
   <div class="tab-row">
-    <button class="tab-btn active" onclick="switchTab('all')"   id="tab-all">All responses</button>
-    <button class="tab-btn"        onclick="switchTab('meals')" id="tab-meals">Meal numbers</button>
-    <button class="tab-btn"        onclick="switchTab('erc')"   id="tab-erc">ERC export</button>
+    <button class="tab-btn active" onclick="switchTab('all')"        id="tab-all">All responses</button>
+    <button class="tab-btn"        onclick="switchTab('fri-dinner')" id="tab-fri-dinner">Fri dinner</button>
+    <button class="tab-btn"        onclick="switchTab('sat-dinner')" id="tab-sat-dinner">Sat dinner</button>
+    <button class="tab-btn"        onclick="switchTab('fri-accom')"  id="tab-fri-accom">Fri accom</button>
+    <button class="tab-btn"        onclick="switchTab('sat-accom')"  id="tab-sat-accom">Sat accom</button>
+    <button class="tab-btn"        onclick="switchTab('dietary')"    id="tab-dietary">Dietary</button>
+    <button class="tab-btn"        onclick="switchTab('erc')"        id="tab-erc">ERC issues</button>
+    <button class="tab-btn"        onclick="switchTab('export')"     id="tab-export">Export</button>
   </div>
 
   <!-- Action bar -->
-  <div class="action-bar">
-    <button class="btn-export" onclick="exportCSV()">⬇ Export CSV</button>
-    <button class="btn-export secondary" onclick="copyBulkEmails()">📋 Copy all emails</button>
+  <div class="action-bar" id="actionBar">
+    <button class="btn-action secondary" onclick="copyFilteredEmails()">📋 Copy emails</button>
+    <span class="filter-label" id="filterLabel"></span>
   </div>
 
   <!-- Content area -->
@@ -174,7 +204,8 @@ async function loadResponses() {
     updateSummary();
     renderTab(currentTab);
   } catch (err) {
-    document.getElementById("tabContent").innerHTML = `<div class="empty-state">Could not load responses. Check you are signed in as director.<br><small>${err.message}</small></div>`;
+    document.getElementById("tabContent").innerHTML =
+      `<div class="empty-state">Could not load responses. Check you are signed in as director.<br><small>${err.message}</small></div>`;
   }
 }
 
@@ -186,63 +217,117 @@ function updateSummary() {
   document.getElementById("sum-fri-accom").textContent  = r.filter(x => x.accommodation && x.accommodation.friday   === "yes").length;
   document.getElementById("sum-sat-accom").textContent  = r.filter(x => x.accommodation && x.accommodation.saturday === "yes").length;
   document.getElementById("sum-dietary").textContent    = r.filter(x => x.diet && x.diet !== "None" && x.diet !== "").length;
-  document.getElementById("sum-erc-fix").textContent   = r.filter(x => x.ercCorrectlyListed === "no").length;
+  document.getElementById("sum-erc-fix").textContent    = r.filter(x => x.ercCorrectlyListed === "no").length;
 }
 
+// ── Tab switching ─────────────────────────────────────────────────────────
 function switchTab(tab) {
   currentTab = tab;
   document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
-  document.getElementById("tab-" + tab).classList.add("active");
+  document.querySelectorAll(".sum-pill").forEach(b => b.classList.remove("active"));
+
+  const tabEl = document.getElementById("tab-" + tab);
+  if (tabEl) tabEl.classList.add("active");
+  const pillEl = document.getElementById("pill-" + tab);
+  if (pillEl) pillEl.classList.add("active");
+
   renderTab(tab);
 }
 
 function renderTab(tab) {
-  if (tab === "all")   renderAll();
-  if (tab === "meals") renderMeals();
-  if (tab === "erc")   renderERC();
+  if (tab === "all")        renderAll();
+  else if (tab === "fri-dinner") renderNameEmailTable(
+    allResponses.filter(r => r.meals && r.meals.friday === "yes"),
+    "Friday 9 Oct — Evening meal", ["Name","Email","Role","Dietary"]);
+  else if (tab === "sat-dinner") renderNameEmailTable(
+    allResponses.filter(r => r.meals && r.meals.saturday === "yes"),
+    "Saturday 10 Oct — Postgraduate meal", ["Name","Email","Role","Dietary"]);
+  else if (tab === "fri-accom") renderNameEmailTable(
+    allResponses.filter(r => r.accommodation && r.accommodation.friday === "yes"),
+    "Friday night accommodation requests", ["Name","Email","Role"]);
+  else if (tab === "sat-accom") renderNameEmailTable(
+    allResponses.filter(r => r.accommodation && r.accommodation.saturday === "yes"),
+    "Saturday night accommodation requests", ["Name","Email","Role"]);
+  else if (tab === "dietary") renderDietary();
+  else if (tab === "erc")    renderERC();
+  else if (tab === "export") renderExport();
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────
+function fullName(r) { return [r.title, r.firstName, r.lastName].filter(Boolean).join(" "); }
+function fmtDate(r)  {
+  return r.submittedAt
+    ? new Date(r.submittedAt.seconds * 1000).toLocaleDateString("en-GB", {day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})
+    : "–";
+}
+function getFiltered() {
+  switch (currentTab) {
+    case "fri-dinner": return allResponses.filter(r => r.meals && r.meals.friday === "yes");
+    case "sat-dinner": return allResponses.filter(r => r.meals && r.meals.saturday === "yes");
+    case "fri-accom":  return allResponses.filter(r => r.accommodation && r.accommodation.friday === "yes");
+    case "sat-accom":  return allResponses.filter(r => r.accommodation && r.accommodation.saturday === "yes");
+    case "dietary":    return allResponses.filter(r => r.diet && r.diet !== "None" && r.diet !== "");
+    case "erc":        return allResponses.filter(r => r.ercCorrectlyListed === "no");
+    default:           return allResponses;
+  }
+}
+
+function copyFilteredEmails() {
+  const filtered = getFiltered();
+  if (!filtered.length) { alert("No responses in this view."); return; }
+  const emails = filtered.map(r => r.email).filter(Boolean).join(", ");
+  navigator.clipboard.writeText(emails).then(() =>
+    alert(`${filtered.length} email(s) copied to clipboard.`));
+}
+
+function setFilterLabel(text) {
+  document.getElementById("filterLabel").textContent = text;
 }
 
 // ── All responses ──────────────────────────────────────────────────────────
 function renderAll() {
+  setFilterLabel(`${allResponses.length} response(s)`);
   if (allResponses.length === 0) {
-    document.getElementById("tabContent").innerHTML = `<div class="empty-state">No responses yet. Send the form link to faculty.</div>`;
+    document.getElementById("tabContent").innerHTML =
+      `<div class="empty-state">No responses yet. Send the form link to faculty.</div>`;
     return;
   }
   document.getElementById("tabContent").innerHTML = allResponses.map((r, i) => {
-    const name = [r.title, r.firstName, r.lastName].filter(Boolean).join(" ");
-    const ts   = r.submittedAt ? new Date(r.submittedAt.seconds * 1000).toLocaleDateString("en-GB", {day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}) : "–";
     const days = ["friday","saturday","sunday"].map(d =>
-      `<span class="day-badge day-${r.days&&r.days[d]?'yes':'no'}">${d.slice(0,3)}</span>`).join("");
-
+      `<span class="day-badge day-${r.days&&r.days[d]?'yes':'no'}">${d.slice(0,3)}</span>`).join(" ");
     return `
-      <div class="response-card" onclick="toggleCard(${i})">
-        <div class="rc-header">
-          <div class="rc-name">${name || r.email}</div>
-          <span class="rc-role">${r.role || "–"}</span>
-          <span class="rc-time">${ts}</span>
+      <div class="response-card">
+        <div class="rc-header" onclick="toggleCard(${i})">
+          <div class="rc-name">${fullName(r) || r.email}</div>
+          <span class="rc-role">${r.role||"–"}</span>
+          <span class="rc-time">${fmtDate(r)}</span>
         </div>
         <div class="rc-body" id="card-${i}">
           <div class="rc-grid">
-            <div class="rc-field"><div class="rc-label">Email</div><div class="rc-value">${r.email||"–"}</div></div>
-            <div class="rc-field"><div class="rc-label">DOB</div><div class="rc-value">${r.dob||"–"}</div></div>
-            <div class="rc-field"><div class="rc-label">Profession</div><div class="rc-value">${r.profession||"–"}</div></div>
-            <div class="rc-field"><div class="rc-label">Days attending</div><div class="rc-value"><div class="day-badges">${days}</div></div></div>
-            <div class="rc-field"><div class="rc-label">Meals</div><div class="rc-value">
+            <div><div class="rc-label">Email</div><div class="rc-value">${r.email||"–"}</div></div>
+            <div><div class="rc-label">DOB</div><div class="rc-value">${r.dob||"–"}</div></div>
+            <div><div class="rc-label">Days</div><div class="rc-value"><div class="day-badges">${days}</div></div></div>
+            <div><div class="rc-label">Meals</div><div class="rc-value">
               <div class="meal-badges">
                 <span class="meal-badge badge-${r.meals&&r.meals.friday||'no'}">Fri: ${r.meals&&r.meals.friday||'–'}</span>
                 <span class="meal-badge badge-${r.meals&&r.meals.saturday||'no'}">Sat: ${r.meals&&r.meals.saturday||'–'}</span>
-              </div>
-            </div></div>
-            <div class="rc-field"><div class="rc-label">Accommodation</div><div class="rc-value">
+              </div></div></div>
+            <div><div class="rc-label">Accommodation</div><div class="rc-value">
               Fri: ${r.accommodation&&r.accommodation.friday||'–'} · Sat: ${r.accommodation&&r.accommodation.saturday||'–'}
             </div></div>
-            <div class="rc-field"><div class="rc-label">Diet</div><div class="rc-value">${r.diet||"–"} ${r.dietDetail?'('+r.dietDetail+')':''}</div></div>
-            <div class="rc-field"><div class="rc-label">ERC qualification</div><div class="rc-value">${r.ercQualification||"–"}</div></div>
-            <div class="rc-field"><div class="rc-label">ERC correctly listed</div><div class="rc-value" style="color:${r.ercCorrectlyListed==='yes'?'#1a6e31':r.ercCorrectlyListed==='no'?'#b7410e':'inherit'}">${r.ercCorrectlyListed==='yes'?'✓ Yes':r.ercCorrectlyListed==='no'?'✗ No — will liaise':'–'}</div></div>
+            <div><div class="rc-label">Diet</div><div class="rc-value">${r.diet||"–"}${r.dietDetail?" ("+r.dietDetail+")":""}</div></div>
+            <div><div class="rc-label">ERC qualification</div><div class="rc-value">${r.ercQualification||"–"}</div></div>
+            <div><div class="rc-label">ERC status</div><div class="rc-value">
+              ${r.ercCorrectlyListed==="yes"
+                ? '<span class="badge-erc-ok">✓ Correct</span>'
+                : r.ercCorrectlyListed==="no"
+                  ? '<span class="badge-erc-fix">✗ Needs fixing</span>'
+                  : "–"}
+            </div></div>
           </div>
-          ${r.accessibilityNeeds ? `<div style="font-size:13px;margin-top:8px;padding:10px;background:#f5f7fa;border-radius:6px;"><strong>Accessibility:</strong> ${r.accessibilityNeeds}</div>` : ""}
-          ${r.travelNotes ? `<div style="font-size:13px;margin-top:6px;padding:10px;background:#f5f7fa;border-radius:6px;"><strong>Travel:</strong> ${r.travelNotes}</div>` : ""}
-          ${r.otherNotes  ? `<div style="font-size:13px;margin-top:6px;padding:10px;background:#f5f7fa;border-radius:6px;"><strong>Other:</strong> ${r.otherNotes}</div>` : ""}
+          ${r.accessibilityNeeds?`<div style="font-size:13px;margin-top:6px;padding:10px;background:#f5f7fa;border-radius:6px;"><strong>Accessibility:</strong> ${r.accessibilityNeeds}</div>`:""}
+          ${r.travelNotes?`<div style="font-size:13px;margin-top:6px;padding:10px;background:#f5f7fa;border-radius:6px;"><strong>Travel:</strong> ${r.travelNotes}</div>`:""}
+          ${r.otherNotes?`<div style="font-size:13px;margin-top:6px;padding:10px;background:#f5f7fa;border-radius:6px;"><strong>Other:</strong> ${r.otherNotes}</div>`:""}
         </div>
       </div>`;
   }).join("");
@@ -252,70 +337,123 @@ function toggleCard(i) {
   document.getElementById("card-" + i).classList.toggle("open");
 }
 
-// ── Meal summary ─────────────────────────────────────────────────────────
-function renderMeals() {
-  const friYes  = allResponses.filter(r => r.meals && r.meals.friday   === "yes");
-  const satYes  = allResponses.filter(r => r.meals && r.meals.saturday === "yes");
-  const dietary = allResponses.filter(r => r.diet && r.diet !== "None" && r.diet !== "");
+// ── Generic name/email table ──────────────────────────────────────────────
+function renderNameEmailTable(filtered, title, cols) {
+  setFilterLabel(`${filtered.length} person(s)`);
+  const showDiet = cols.includes("Dietary");
+  const showRole = cols.includes("Role");
 
-  const tableRows = (arr) => arr.map(r =>
-    `<tr><td>${[r.title,r.firstName,r.lastName].filter(Boolean).join(" ")}</td>
-         <td>${r.role||"–"}</td>
-         <td>${r.diet||"None"}${r.dietDetail?" ("+r.dietDetail+")":""}</td></tr>`).join("");
-
-  document.getElementById("tabContent").innerHTML = `
-    <h3 style="color:var(--rmd-navy);margin:0 0 10px;">Friday 9 Oct — Faculty Dinner (${friYes.length} attending)</h3>
-    <table class="meal-table" style="margin-bottom:20px;">
-      <thead><tr><th>Name</th><th>Role</th><th>Dietary</th></tr></thead>
-      <tbody>${tableRows(friYes) || '<tr><td colspan="3" style="color:#aab8c2;text-align:center;">None yet</td></tr>'}</tbody>
-    </table>
-    <h3 style="color:var(--rmd-navy);margin:0 0 10px;">Saturday 10 Oct — Faculty Dinner (${satYes.length} attending)</h3>
-    <table class="meal-table" style="margin-bottom:20px;">
-      <thead><tr><th>Name</th><th>Role</th><th>Dietary</th></tr></thead>
-      <tbody>${tableRows(satYes) || '<tr><td colspan="3" style="color:#aab8c2;text-align:center;">None yet</td></tr>'}</tbody>
-    </table>
-    <h3 style="color:var(--rmd-navy);margin:0 0 10px;">Dietary requirements — all (${dietary.length})</h3>
-    <table class="meal-table">
-      <thead><tr><th>Name</th><th>Role</th><th>Requirement</th></tr></thead>
-      <tbody>${tableRows(dietary) || '<tr><td colspan="3" style="color:#aab8c2;text-align:center;">None reported</td></tr>'}</tbody>
-    </table>`;
-}
-
-// ── ERC export preview ────────────────────────────────────────────────────
-function renderERC() {
-  document.getElementById("tabContent").innerHTML = `
-    <div style="background:white;border-radius:8px;padding:16px;margin-bottom:14px;font-size:13px;color:var(--rmd-muted);">
-      ERC import format: FIRST NAME, MIDDLE NAME, LAST NAME, EMAIL, DATE OF BIRTH, TITLE, ADDRESS, ZIP, CITY, STATE, COUNTRY, PROFESSION
-    </div>
-    <table class="meal-table">
-      <thead><tr><th>Name</th><th>Email</th><th>DOB</th><th>Profession</th><th>City</th></tr></thead>
-      <tbody>${allResponses.map(r => `
+  const rows = filtered.length
+    ? filtered.map(r => `
         <tr>
-          <td>${[r.title,r.firstName,r.lastName].filter(Boolean).join(" ")}</td>
+          <td>${fullName(r)||"–"}</td>
           <td>${r.email||"–"}</td>
-          <td>${r.dob||"–"}</td>
-          <td>${r.profession||"–"}</td>
-          <td>${r.city||"–"}</td>
-        </tr>`).join("") || '<tr><td colspan="5" style="color:#aab8c2;text-align:center;">No responses yet</td></tr>'}
-      </tbody>
-    </table>`;
+          ${showRole ? `<td>${r.role||"–"}</td>` : ""}
+          ${showDiet ? `<td>${r.diet||"None"}${r.dietDetail?" ("+r.dietDetail+")":""}</td>` : ""}
+        </tr>`).join("")
+    : `<tr><td colspan="${cols.length}" style="color:#aab8c2;text-align:center;">No responses yet</td></tr>`;
+
+  document.getElementById("tabContent").innerHTML = `
+    <div class="section-block">
+      <div class="section-heading">${title} — ${filtered.length} attending</div>
+      <table class="data-table">
+        <thead><tr>${cols.map(c=>`<th>${c}</th>`).join("")}</tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
 }
 
-// ── Export CSV ────────────────────────────────────────────────────────────
+// ── Dietary ───────────────────────────────────────────────────────────────
+function renderDietary() {
+  const dietary = allResponses.filter(r => r.diet && r.diet !== "None" && r.diet !== "");
+  setFilterLabel(`${dietary.length} person(s) with requirements`);
+
+  const grouped = {};
+  dietary.forEach(r => {
+    const key = r.diet + (r.dietDetail ? " — " + r.dietDetail : "");
+    if (!grouped[key]) grouped[key] = [];
+    grouped[key].push(r);
+  });
+
+  const rows = dietary.length
+    ? dietary.map(r => `
+        <tr>
+          <td>${fullName(r)||"–"}</td>
+          <td>${r.email||"–"}</td>
+          <td>${r.role||"–"}</td>
+          <td>${r.diet||"–"}${r.dietDetail?" ("+r.dietDetail+")":""}</td>
+          <td>
+            <span class="meal-badge badge-${r.meals&&r.meals.friday||'no'}">Fri</span>
+            <span class="meal-badge badge-${r.meals&&r.meals.saturday||'no'}">Sat</span>
+          </td>
+        </tr>`).join("")
+    : `<tr><td colspan="5" style="color:#aab8c2;text-align:center;">No dietary requirements reported</td></tr>`;
+
+  document.getElementById("tabContent").innerHTML = `
+    <div class="section-block">
+      <div class="section-heading">Dietary requirements (${dietary.length})</div>
+      <table class="data-table">
+        <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Requirement</th><th>Meals attending</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
+}
+
+// ── ERC issues ────────────────────────────────────────────────────────────
+function renderERC() {
+  const toFix = allResponses.filter(r => r.ercCorrectlyListed === "no");
+  setFilterLabel(`${toFix.length} person(s) need to fix ERC`);
+
+  const rows = toFix.length
+    ? toFix.map(r => `
+        <tr>
+          <td>${fullName(r)||"–"}</td>
+          <td>${r.email||"–"}</td>
+          <td>${r.ercQualification||"–"}</td>
+          <td>${r.ercLiaisonConfirmed ? "✓ Will contact ERC" : "–"}</td>
+        </tr>`).join("")
+    : `<tr><td colspan="4" style="color:#aab8c2;text-align:center;">No ERC issues reported</td></tr>`;
+
+  document.getElementById("tabContent").innerHTML = `
+    <div class="section-block">
+      <div class="section-heading" style="color:#b7410e;">ERC issues — needs correcting before end of September (${toFix.length})</div>
+      <table class="data-table">
+        <thead><tr><th>Name</th><th>Email</th><th>Current ERC qualification</th><th>Liaison confirmed</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
+}
+
+// ── Export ────────────────────────────────────────────────────────────────
+function renderExport() {
+  setFilterLabel("All responses");
+  document.getElementById("tabContent").innerHTML = `
+    <div style="background:white;border-radius:8px;padding:20px;box-shadow:0 1px 4px rgba(0,0,0,0.1);">
+      <p style="font-size:14px;color:var(--rmd-navy);margin:0 0 16px;font-weight:700;">Export options</p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <button class="btn-action" onclick="exportCSV()">⬇ Download full CSV</button>
+        <button class="btn-action secondary" onclick="copyAllEmails()">📋 Copy all emails</button>
+      </div>
+      <p style="font-size:12px;color:var(--rmd-muted);margin:16px 0 0;">
+        CSV includes: name, email, DOB, role, days, meals, accommodation, dietary, ERC status, accessibility, travel notes.
+      </p>
+    </div>`;
+}
+
 function exportCSV() {
-  const headers = ["Title","First Name","Middle Name","Last Name","Email","DOB","Gender","Profession",
-    "Address1","Address2","City","Postcode","Country","Role",
-    "Days-Fri","Days-Sat","Days-Sun","Meal-Fri","Meal-Sat","Accom-Fri","Accom-Sat",
-    "Diet","Diet Detail","ERC Qualification","ERC Correctly Listed","ERC Liaison Confirmed",
+  const headers = ["Title","First Name","Middle Name","Last Name","Email","DOB","Role",
+    "Days-Fri","Days-Sat","Days-Sun","Meal-Fri","Meal-Sat",
+    "Accom-Fri","Accom-Sat","Diet","Diet Detail",
+    "ERC Qualification","ERC Correctly Listed","ERC Liaison Confirmed",
     "Accessibility","Travel Notes","Other Notes","Submitted"];
 
   const rows = allResponses.map(r => [
-    r.title, r.firstName, r.middleName, r.lastName, r.email, r.dob, r.gender, r.profession,
-    r.address1, r.address2, r.city, r.postcode, r.country, r.role,
+    r.title, r.firstName, r.middleName, r.lastName, r.email, r.dob, r.role,
     r.days&&r.days.friday?"Yes":"No", r.days&&r.days.saturday?"Yes":"No", r.days&&r.days.sunday?"Yes":"No",
     r.meals&&r.meals.friday||"", r.meals&&r.meals.saturday||"",
     r.accommodation&&r.accommodation.friday||"", r.accommodation&&r.accommodation.saturday||"",
-    r.diet, r.dietDetail, r.ercQualification, r.ercCorrectlyListed, r.ercLiaisonConfirmed?"Yes":"",
+    r.diet, r.dietDetail, r.ercQualification, r.ercCorrectlyListed,
+    r.ercLiaisonConfirmed ? "Yes" : "",
     r.accessibilityNeeds, r.travelNotes, r.otherNotes,
     r.submittedAt ? new Date(r.submittedAt.seconds*1000).toISOString() : ""
   ].map(v => `"${(v||"").toString().replace(/"/g,'""')}"`));
@@ -323,17 +461,14 @@ function exportCSV() {
   const csv  = [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
   const blob = new Blob([csv], { type: "text/csv" });
   const url  = URL.createObjectURL(blob);
-  const a    = document.createElement("a"); a.href = url;
-  a.download = "rmd-faculty-responses-2026.csv"; a.click();
+  const a    = document.createElement("a");
+  a.href = url; a.download = "rmd-faculty-responses-2026.csv"; a.click();
 }
 
-// ── Copy emails ───────────────────────────────────────────────────────────
-function copyBulkEmails() {
-  const emails = allResponses.map(r => {
-    const name = [r.firstName, r.lastName].filter(Boolean).join(" ");
-    return name ? `${r.email}, ${r.title||""} ${name}`.trim() : r.email;
-  }).join("\n");
-  navigator.clipboard.writeText(emails).then(() => alert("Emails copied to clipboard — ready to paste into the bulk user upload page."));
+function copyAllEmails() {
+  const emails = allResponses.map(r => r.email).filter(Boolean).join(", ");
+  navigator.clipboard.writeText(emails).then(() =>
+    alert(`${allResponses.length} email(s) copied.`));
 }
 
 </script>
