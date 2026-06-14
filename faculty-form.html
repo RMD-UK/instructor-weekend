@@ -227,31 +227,17 @@
   <p class="section-title">Personal details</p>
   <p class="section-sub">Used for ERC course registration. Please complete all fields exactly as they appear on your ID.</p>
 
-  <div class="field-row">
-    <div class="field">
-      <label>Title <span class="req">*</span></label>
-      <select id="title" required>
-        <option value="">Select…</option>
-        <option>Dr</option>
-        <option>Prof</option>
-        <option>Mr</option>
-        <option>Ms</option>
-        <option>Mx</option>
-        <option>Other</option>
-      </select>
-    </div>
-    <div class="field">
-      <label>Profession <span class="req">*</span></label>
-      <select id="profession" required>
-        <option value="">Select…</option>
-        <option>Medical Doctor</option>
-        <option>Registered Nurse</option>
-        <option>Resuscitation Training Officer</option>
-        <option>Paramedic</option>
-        <option>Emergency Medical Technician</option>
-        <option>Other</option>
-      </select>
-    </div>
+  <div class="field">
+    <label>Title <span class="req">*</span></label>
+    <select id="title" required>
+      <option value="">Select…</option>
+      <option>Dr</option>
+      <option>Prof</option>
+      <option>Mr</option>
+      <option>Ms</option>
+      <option>Mx</option>
+      <option>Other</option>
+    </select>
   </div>
 
   <div class="field-row">
@@ -282,14 +268,6 @@
     <div class="hint-text">Required for ERC course registration.</div>
   </div>
 
-  <div class="field">
-    <label>Gender (ERC registration)</label>
-    <div class="option-group" id="genderGroup">
-      <button class="option-btn" onclick="selectOption('gender','Male',this)">Male</button>
-      <button class="option-btn" onclick="selectOption('gender','Female',this)">Female</button>
-      <button class="option-btn" onclick="selectOption('gender','Neutral',this)">Prefer not to say</button>
-    </div>
-  </div>
 </div>
 
 <!-- ── SECTION 1: Address ── -->
@@ -595,7 +573,7 @@ function goToSection(n) {
 // ── Validation ───────────────────────────────────────────────────────────
 function validateSection(n) {
   if (n === 0) {
-    const required = ["title","profession","firstName","lastName","email","dob"];
+    const required = ["title","firstName","lastName","email","dob"];
     let ok = true;
     required.forEach(id => {
       const el = document.getElementById(id);
@@ -647,8 +625,6 @@ async function submitForm() {
     lastName:      document.getElementById("lastName").value.trim(),
     email:         document.getElementById("email").value.trim().toLowerCase(),
     dob:           document.getElementById("dob").value,
-    gender:        state.gender,
-    profession:    document.getElementById("profession").value,
     // Address
     address1:      document.getElementById("address1").value.trim(),
     address2:      document.getElementById("address2").value.trim(),
