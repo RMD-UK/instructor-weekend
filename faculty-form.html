@@ -213,13 +213,12 @@
 
 <!-- Progress strip -->
 <div class="progress-strip">
-  <div class="prog-step active"  id="prog-0">Personal</div>
-  <div class="prog-step"         id="prog-1">Address</div>
-  <div class="prog-step"         id="prog-2">Attendance</div>
-  <div class="prog-step"         id="prog-3">ERC</div>
-  <div class="prog-step"         id="prog-4">Meals</div>
-  <div class="prog-step"         id="prog-5">Accommodation</div>
-  <div class="prog-step"         id="prog-6">Other</div>
+  <div class="prog-step active" id="prog-0">Personal</div>
+  <div class="prog-step"        id="prog-1">Attendance</div>
+  <div class="prog-step"        id="prog-2">ERC</div>
+  <div class="prog-step"        id="prog-3">Meals</div>
+  <div class="prog-step"        id="prog-4">Accommodation</div>
+  <div class="prog-step"        id="prog-5">Other</div>
 </div>
 
 <!-- ── SECTION 0: Personal details ── -->
@@ -270,41 +269,8 @@
 
 </div>
 
-<!-- ── SECTION 1: Address ── -->
+<!-- ── SECTION 1: Attendance ── -->
 <div class="section" id="section-1">
-  <p class="section-title">Address</p>
-  <p class="section-sub">Required for ERC registration. Your work address is fine.</p>
-
-  <div class="field">
-    <label>Address line 1 <span class="req">*</span></label>
-    <input type="text" id="address1" placeholder="e.g. Queen Elizabeth Hospital" autocomplete="address-line1">
-  </div>
-  <div class="field">
-    <label>Address line 2</label>
-    <input type="text" id="address2" placeholder="e.g. Mindelsohn Way" autocomplete="address-line2">
-  </div>
-  <div class="field-row">
-    <div class="field">
-      <label>City <span class="req">*</span></label>
-      <input type="text" id="city" placeholder="e.g. Birmingham" autocomplete="address-level2">
-    </div>
-    <div class="field">
-      <label>Postcode <span class="req">*</span></label>
-      <input type="text" id="postcode" placeholder="e.g. B15 2GW" autocomplete="postal-code">
-    </div>
-  </div>
-  <div class="field">
-    <label>Country <span class="req">*</span></label>
-    <select id="country">
-      <option value="GB" selected>United Kingdom</option>
-      <option value="IE">Ireland</option>
-      <option value="Other">Other</option>
-    </select>
-  </div>
-</div>
-
-<!-- ── SECTION 2: Attendance ── -->
-<div class="section" id="section-2">
   <p class="section-title">Attendance</p>
   <p class="section-sub">Let us know which days you will be joining us and your role on the course.</p>
 
@@ -313,7 +279,6 @@
     <div class="option-group" id="roleGroup">
       <button class="option-btn" onclick="selectOption('role','Faculty',this)">Faculty</button>
       <button class="option-btn" onclick="selectOption('role','ITC',this)">ITC</button>
-      <button class="option-btn" onclick="selectOption('role','Assessor Lead',this)">Assessor Lead</button>
     </div>
   </div>
 
@@ -328,8 +293,8 @@
   </div>
 </div>
 
-<!-- ── SECTION 3: ERC Status ── -->
-<div class="section" id="section-3">
+<!-- ── SECTION 2: ERC Status ── -->
+<div class="section" id="section-2">
   <p class="section-title">ERC qualification &amp; status</p>
   <p class="section-sub">Please confirm your ERC qualification and that you are correctly registered on the ERC database before the end of September.</p>
 
@@ -368,14 +333,14 @@
   </div>
 </div>
 
-<!-- ── SECTION 4: Meals ── -->
-<div class="section" id="section-4">
+<!-- ── SECTION 3: Meals ── -->
+<div class="section" id="section-3">
   <p class="section-title">Meals</p>
   <p class="section-sub">Please confirm attendance for each evening meal so we can give accurate numbers to the venue.</p>
 
   <!-- Friday meal -->
   <div class="meal-card" id="meal-friday-card">
-    <div class="meal-title">🍽 Friday 9 Oct — Faculty Dinner</div>
+    <div class="meal-title">🍽 Friday 9 Oct — Evening meal</div>
     <div class="meal-detail">Evening meal for all faculty following the faculty meeting.</div>
     <div class="option-group">
       <button class="option-btn" onclick="selectMeal('friday','yes',this)">✓ Yes, attending</button>
@@ -385,8 +350,8 @@
 
   <!-- Saturday meal -->
   <div class="meal-card" id="meal-saturday-card">
-    <div class="meal-title">🍽 Saturday 10 Oct — Faculty Dinner</div>
-    <div class="meal-detail">Saturday evening dinner for faculty and ITCs.</div>
+    <div class="meal-title">🍽 Saturday 10 Oct — Postgraduate meal</div>
+    <div class="meal-detail">Saturday evening dinner for faculty and ITCs (separate to the undergraduate event).</div>
     <div class="option-group">
       <button class="option-btn" onclick="selectMeal('saturday','yes',this)">✓ Yes, attending</button>
       <button class="option-btn" onclick="selectMeal('saturday','no',this)">✗ Not attending</button>
@@ -408,8 +373,8 @@
   </div>
 </div>
 
-<!-- ── SECTION 5: Accommodation ── -->
-<div class="section" id="section-5">
+<!-- ── SECTION 4: Accommodation ── -->
+<div class="section" id="section-4">
   <p class="section-title">Accommodation</p>
   <p class="section-sub">Do you need accommodation arranged for any nights during the weekend?</p>
 
@@ -436,8 +401,8 @@
   </div>
 </div>
 
-<!-- ── SECTION 6: Other ── -->
-<div class="section" id="section-6">
+<!-- ── SECTION 5: Other ── -->
+<div class="section" id="section-5">
   <p class="section-title">Anything else?</p>
   <p class="section-sub">Any other information we should know before the weekend.</p>
 
@@ -480,14 +445,15 @@
 
 initFirebase();
 
-const TOTAL_SECTIONS = 7;
+const TOTAL_SECTIONS = 6;
 let currentSection = 0;
 
 // ── Option state ──────────────────────────────────────────────────────────
 const state = {
-  gender: "", role: "", diet: "", days: { friday: false, saturday: false, sunday: false },
-  meals:  { friday: "", saturday: "" },
-  accom:  { friday: "", saturday: "" },
+  role: "", diet: "",
+  days:  { friday: false, saturday: false, sunday: false },
+  meals: { friday: "", saturday: "" },
+  accom: { friday: "", saturday: "" },
   ercQualification: "", ercCorrect: ""
 };
 
@@ -498,11 +464,9 @@ function selectOption(key, value, btn) {
   group.querySelectorAll(".option-btn").forEach(b => b.classList.remove("selected","selected-yes","selected-no"));
   btn.classList.add("selected");
 
-  // Show detail input for "Other" diet
   if (key === "diet") {
     document.getElementById("dietDetail").style.display = value === "Other" ? "block" : "none";
   }
-  // Show text input for "Other" ERC qualification
   if (key === "ercQualification") {
     document.getElementById("ercOtherField").style.display = value === "Other" ? "block" : "none";
   }
@@ -586,22 +550,12 @@ function validateSection(n) {
     }
   }
   if (n === 1) {
-    const required = ["address1","city","postcode"];
-    let ok = true;
-    required.forEach(id => {
-      const el = document.getElementById(id);
-      if (!el.value.trim()) { el.classList.add("error"); ok = false; }
-      else el.classList.remove("error");
-    });
-    if (!ok) { alert("Please complete the required address fields."); return false; }
-  }
-  if (n === 2) {
     if (!state.role) { alert("Please select your role."); return false; }
     if (!state.days.friday && !state.days.saturday && !state.days.sunday) {
       alert("Please select at least one day."); return false;
     }
   }
-  if (n === 3) {
+  if (n === 2) {
     if (!state.ercQualification) { alert("Please select your ERC qualification."); return false; }
     if (!state.ercCorrect) { alert("Please confirm whether your ERC account is correctly listed."); return false; }
     if (state.ercCorrect === "no" && !document.getElementById("ercLiaisonConfirm").checked) {
@@ -625,29 +579,23 @@ async function submitForm() {
     lastName:      document.getElementById("lastName").value.trim(),
     email:         document.getElementById("email").value.trim().toLowerCase(),
     dob:           document.getElementById("dob").value,
-    // Address
-    address1:      document.getElementById("address1").value.trim(),
-    address2:      document.getElementById("address2").value.trim(),
-    city:          document.getElementById("city").value.trim(),
-    postcode:      document.getElementById("postcode").value.trim(),
-    country:       document.getElementById("country").value,
     // Attendance
     role:          state.role,
     days:          state.days,
+    // ERC
+    ercQualification:    state.ercQualification === "Other"
+                           ? document.getElementById("ercQualificationOther").value.trim()
+                           : state.ercQualification,
+    ercCorrectlyListed:  state.ercCorrect,
+    ercLiaisonConfirmed: state.ercCorrect === "no"
+                           ? document.getElementById("ercLiaisonConfirm").checked
+                           : true,
     // Meals
     meals:         state.meals,
     diet:          state.diet,
     dietDetail:    document.getElementById("dietDetail").value.trim(),
     // Accommodation
     accommodation: state.accom,
-    // ERC
-    ercQualification:      state.ercQualification === "Other"
-                             ? document.getElementById("ercQualificationOther").value.trim()
-                             : state.ercQualification,
-    ercCorrectlyListed:    state.ercCorrect,
-    ercLiaisonConfirmed:   state.ercCorrect === "no"
-                             ? document.getElementById("ercLiaisonConfirm").checked
-                             : true,
     // Other
     accessibilityNeeds: document.getElementById("accessibilityNeeds").value.trim(),
     travelNotes:        document.getElementById("travelNotes").value.trim(),
