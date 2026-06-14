@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RMD Instructor Weekend 2026 — Faculty Information</title>
+  <link rel="stylesheet" href="css/rmd.css">
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      background: #f0f3f6;
+      font-family: var(--font);
+      margin: 0;
+      padding: 0 0 60px;
+    }
+
+    /* ── Header ── */
+    .form-header {
+      background: var(--rmd-navy);
+      color: white;
+      padding: 20px 20px 24px;
+      text-align: center;
+    }
+    .form-header img { height: 52px; margin-bottom: 10px; }
+    .form-header h1 { font-size: 20px; margin: 0 0 4px; }
+    .form-header p  { font-size: 13px; opacity: 0.75; margin: 0; }
+
+    /* ── Progress bar ── */
+    .progress-strip {
+      display: flex;
+      background: white;
+      border-bottom: 2px solid #dce3ea;
+      overflow-x: auto;
+    }
+    .prog-step {
+      flex: 1;
+      min-width: 70px;
+      padding: 10px 4px;
+      text-align: center;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--rmd-muted);
+      border-bottom: 3px solid transparent;
+      white-space: nowrap;
+    }
+    .prog-step.active   { color: var(--rmd-blue); border-bottom-color: var(--rmd-blue); }
+    .prog-step.complete { color: #1a6e31; border-bottom-color: #1a6e31; }
+
+    /* ── Sections ── */
+    .section { display: none; padding: 16px 16px 8px; max-width: 640px; margin: 0 auto; }
+    .section.active { display: block; }
+
+    .section-title {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--rmd-navy);
+      margin: 0 0 4px;
+    }
+    .section-sub {
+      font-size: 13px;
+      color: var(--rmd-muted);
+      margin: 0 0 18px;
+    }
+
+    /* ── Form fields ── */
+    .field { margin-bottom: 16px; }
+    .field label {
+      display: block;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--rmd-navy);
+      margin-bottom: 5px;
+    }
+    .field label .req { color: #b7410e; }
+    .field input, .field select, .field textarea {
+      width: 100%;
+      padding: 11px 12px;
+      border: 2px solid #ccd6dd;
+      border-radius: 6px;
+      font-size: 15px;
+      font-family: var(--font);
+      color: var(--rmd-navy);
+      background: white;
+    }
+    .field input:focus, .field select:focus, .field textarea:focus {
+      outline: none;
+      border-color: var(--rmd-blue);
+    }
+    .field input.error, .field select.error { border-color: #b7410e; }
+    .field .err-msg { font-size: 12px; color: #b7410e; margin-top: 4px; display: none; }
+    .field textarea { min-height: 80px; resize: vertical; }
+
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    @media (max-width: 480px) { .field-row { grid-template-columns: 1fr; } }
+
+    .hint-text { font-size: 12px; color: var(--rmd-muted); margin-top: 4px; }
+
+    /* ── Option cards (yes/no, choices) ── */
+    .option-group { display: flex; gap: 8px; flex-wrap: wrap; }
+    .option-btn {
+      padding: 10px 18px;
+      border: 2px solid #ccd6dd;
+      border-radius: 8px;
+      background: white;
+      font-size: 14px;
+      font-weight: 600;
+      font-family: var(--font);
+      color: var(--rmd-muted);
+      cursor: pointer;
+      transition: all 0.12s;
+    }
+    .option-btn:active { transform: scale(0.97); }
+    .option-btn.selected {
+      background: var(--rmd-navy);
+      color: white;
+      border-color: var(--rmd-navy);
+    }
+    .option-btn.selected-yes  { background: #1a6e31; border-color: #145727; color: white; }
+    .option-btn.selected-no   { background: #637282; border-color: #4a5a68; color: white; }
+
+    /* ── Meal card ── */
+    .meal-card {
+      background: white;
+      border-radius: 8px;
+      border: 2px solid #dce3ea;
+      padding: 14px;
+      margin-bottom: 12px;
+    }
+    .meal-card.attending { border-color: #1a6e31; }
+    .meal-title { font-size: 15px; font-weight: 700; color: var(--rmd-navy); margin-bottom: 4px; }
+    .meal-detail { font-size: 12px; color: var(--rmd-muted); margin-bottom: 12px; }
+
+    /* ── Navigation buttons ── */
+    .nav-row {
+      display: flex;
+      gap: 10px;
+      max-width: 640px;
+      margin: 16px auto 0;
+      padding: 0 16px;
+    }
+    .btn-back {
+      padding: 14px 20px;
+      border: 2px solid #ccd6dd;
+      border-radius: 8px;
+      background: white;
+      font-size: 15px;
+      font-weight: 700;
+      font-family: var(--font);
+      color: var(--rmd-muted);
+      cursor: pointer;
+    }
+    .btn-next {
+      flex: 1;
+      padding: 14px;
+      background: var(--rmd-blue);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 700;
+      font-family: var(--font);
+      cursor: pointer;
+    }
+    .btn-next:hover { background: var(--rmd-navy); }
+    .btn-next:disabled { background: #aab8c2; cursor: default; }
+    .btn-submit {
+      flex: 1;
+      padding: 16px;
+      background: #1a6e31;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 700;
+      font-family: var(--font);
+      cursor: pointer;
+    }
+    .btn-submit:disabled { background: #aab8c2; cursor: default; }
+
+    /* ── Success page ── */
+    .success-page {
+      display: none;
+      text-align: center;
+      padding: 60px 20px;
+      max-width: 500px;
+      margin: 0 auto;
+    }
+    .success-page .tick { font-size: 64px; margin-bottom: 16px; }
+    .success-page h2 { color: var(--rmd-navy); margin-bottom: 8px; }
+    .success-page p { color: var(--rmd-muted); font-size: 14px; line-height: 1.6; }
+
+    /* ── Info box ── */
+    .info-box {
+      background: #e8f0fe;
+      border-left: 4px solid var(--rmd-blue);
+      border-radius: 0 6px 6px 0;
+      padding: 10px 14px;
+      font-size: 13px;
+      color: var(--rmd-navy);
+      margin-bottom: 16px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="form-header">
+  <img src="assets/rmd-logo.png" alt="RMD logo">
+  <h1>RMD Instructor Weekend 2026</h1>
+  <p>Pre-course information · Birmingham Medical School · 9–11 October 2026</p>
+</div>
+
+<!-- Progress strip -->
+<div class="progress-strip">
+  <div class="prog-step active"  id="prog-0">Personal</div>
+  <div class="prog-step"         id="prog-1">Address</div>
+  <div class="prog-step"         id="prog-2">Attendance</div>
+  <div class="prog-step"         id="prog-3">ERC</div>
+  <div class="prog-step"         id="prog-4">Meals</div>
+  <div class="prog-step"         id="prog-5">Accommodation</div>
+  <div class="prog-step"         id="prog-6">Other</div>
+</div>
+
+<!-- ── SECTION 0: Personal details ── -->
+<div class="section active" id="section-0">
+  <p class="section-title">Personal details</p>
+  <p class="section-sub">Used for ERC course registration. Please complete all fields exactly as they appear on your ID.</p>
+
+  <div class="field-row">
+    <div class="field">
+      <label>Title <span class="req">*</span></label>
+      <select id="title" required>
+        <option value="">Select…</option>
+        <option>Dr</option>
+        <option>Prof</option>
+        <option>Mr</option>
+        <option>Ms</option>
+        <option>Mx</option>
+        <option>Other</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Profession <span class="req">*</span></label>
+      <select id="profession" required>
+        <option value="">Select…</option>
+        <option>Medical Doctor</option>
+        <option>Registered Nurse</option>
+        <option>Resuscitation Training Officer</option>
+        <option>Paramedic</option>
+        <option>Emergency Medical Technician</option>
+        <option>Other</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="field-row">
+    <div class="field">
+      <label>First name <span class="req">*</span></label>
+      <input type="text" id="firstName" placeholder="e.g. Jane" autocomplete="given-name">
+    </div>
+    <div class="field">
+      <label>Middle name</label>
+      <input type="text" id="middleName" placeholder="(if applicable)" autocomplete="additional-name">
+    </div>
+  </div>
+
+  <div class="field">
+    <label>Last name <span class="req">*</span></label>
+    <input type="text" id="lastName" placeholder="e.g. Smith" autocomplete="family-name">
+  </div>
+
+  <div class="field">
+    <label>Email address <span class="req">*</span></label>
+    <input type="email" id="email" placeholder="your@email.com" autocomplete="email">
+    <div class="hint-text">Use the email address we have on file for you.</div>
+  </div>
+
+  <div class="field">
+    <label>Date of birth <span class="req">*</span></label>
+    <input type="date" id="dob">
+    <div class="hint-text">Required for ERC course registration.</div>
+  </div>
+
+  <div class="field">
+    <label>Gender (ERC registration)</label>
+    <div class="option-group" id="genderGroup">
+      <button class="option-btn" onclick="selectOption('gender','Male',this)">Male</button>
+      <button class="option-btn" onclick="selectOption('gender','Female',this)">Female</button>
+      <button class="option-btn" onclick="selectOption('gender','Neutral',this)">Prefer not to say</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── SECTION 1: Address ── -->
+<div class="section" id="section-1">
+  <p class="section-title">Address</p>
+  <p class="section-sub">Required for ERC registration. Your work address is fine.</p>
+
+  <div class="field">
+    <label>Address line 1 <span class="req">*</span></label>
+    <input type="text" id="address1" placeholder="e.g. Queen Elizabeth Hospital" autocomplete="address-line1">
+  </div>
+  <div class="field">
+    <label>Address line 2</label>
+    <input type="text" id="address2" placeholder="e.g. Mindelsohn Way" autocomplete="address-line2">
+  </div>
+  <div class="field-row">
+    <div class="field">
+      <label>City <span class="req">*</span></label>
+      <input type="text" id="city" placeholder="e.g. Birmingham" autocomplete="address-level2">
+    </div>
+    <div class="field">
+      <label>Postcode <span class="req">*</span></label>
+      <input type="text" id="postcode" placeholder="e.g. B15 2GW" autocomplete="postal-code">
+    </div>
+  </div>
+  <div class="field">
+    <label>Country <span class="req">*</span></label>
+    <select id="country">
+      <option value="GB" selected>United Kingdom</option>
+      <option value="IE">Ireland</option>
+      <option value="Other">Other</option>
+    </select>
+  </div>
+</div>
+
+<!-- ── SECTION 2: Attendance ── -->
+<div class="section" id="section-2">
+  <p class="section-title">Attendance</p>
+  <p class="section-sub">Let us know which days you will be joining us and your role on the course.</p>
+
+  <div class="field">
+    <label>Your role <span class="req">*</span></label>
+    <div class="option-group" id="roleGroup">
+      <button class="option-btn" onclick="selectOption('role','Faculty',this)">Faculty</button>
+      <button class="option-btn" onclick="selectOption('role','ITC',this)">ITC</button>
+      <button class="option-btn" onclick="selectOption('role','Assessor Lead',this)">Assessor Lead</button>
+    </div>
+  </div>
+
+  <div class="field">
+    <label>Which days will you attend? <span class="req">*</span></label>
+    <div class="option-group">
+      <button class="option-btn" id="day-fri" onclick="toggleDay('friday',this)">Friday 9 Oct</button>
+      <button class="option-btn" id="day-sat" onclick="toggleDay('saturday',this)">Saturday 10 Oct</button>
+      <button class="option-btn" id="day-sun" onclick="toggleDay('sunday',this)">Sunday 11 Oct</button>
+    </div>
+    <div class="hint-text">Select all that apply. Faculty meeting is Friday afternoon/evening.</div>
+  </div>
+</div>
+
+<!-- ── SECTION 3: ERC Status ── -->
+<div class="section" id="section-3">
+  <p class="section-title">ERC qualification &amp; status</p>
+  <p class="section-sub">Please confirm your ERC qualification and that you are correctly registered on the ERC database before the end of September.</p>
+
+  <div class="field">
+    <label>Your current ERC qualification <span class="req">*</span></label>
+    <div class="option-group" id="ercQualGroup" style="flex-direction:column;align-items:flex-start;gap:8px;">
+      <button class="option-btn" style="text-align:left;" onclick="selectOption('ercQualification','Instructor Trainer Candidate (first ITC course)',this)">Instructor Trainer Candidate — first ITC course</button>
+      <button class="option-btn" style="text-align:left;" onclick="selectOption('ercQualification','Instructor Trainer Candidate (2+ ITC courses)',this)">Instructor Trainer Candidate — 2 or more ITC courses</button>
+      <button class="option-btn" style="text-align:left;" onclick="selectOption('ercQualification','Instructor Trainer',this)">Instructor Trainer</button>
+      <button class="option-btn" style="text-align:left;" onclick="selectOption('ercQualification','Other',this)">Other</button>
+    </div>
+  </div>
+
+  <div class="field" id="ercOtherField" style="display:none;">
+    <label>Please specify your ERC status</label>
+    <input type="text" id="ercQualificationOther" placeholder="e.g. Faculty candidate, observer…">
+  </div>
+
+  <div class="field" style="margin-top:8px;">
+    <div class="info-box" style="margin-bottom:12px;">
+      <strong>Action required:</strong> You must confirm on your ERC account that you are listed with the correct qualification. This is particularly important for ITCs recommended for upgrade in the last year or two. <strong>Please do not leave this until the last minute — it must be sorted before end of September.</strong>
+    </div>
+    <label>Are you correctly listed with the appropriate qualification on your ERC account? <span class="req">*</span></label>
+    <div class="option-group" id="ercCorrectGroup">
+      <button class="option-btn" onclick="selectErcCorrect('yes',this)">Yes — correctly listed</button>
+      <button class="option-btn" onclick="selectErcCorrect('no',this)">No — needs correcting</button>
+    </div>
+  </div>
+
+  <div class="field" id="ercLiaisonField" style="display:none;">
+    <div class="info-box" style="background:#fff3cd;border-left-color:#c17a00;">
+      Please liaise with the ERC to correct your qualification before the end of September.
+    </div>
+    <label><input type="checkbox" id="ercLiaisonConfirm" style="width:auto;margin-right:8px;">
+    I confirm I will contact the ERC to correct my qualification before the end of September 2026.</label>
+  </div>
+</div>
+
+<!-- ── SECTION 4: Meals ── -->
+<div class="section" id="section-4">
+  <p class="section-title">Meals</p>
+  <p class="section-sub">Please confirm attendance for each evening meal so we can give accurate numbers to the venue.</p>
+
+  <!-- Friday meal -->
+  <div class="meal-card" id="meal-friday-card">
+    <div class="meal-title">🍽 Friday 9 Oct — Faculty Dinner</div>
+    <div class="meal-detail">Evening meal for all faculty following the faculty meeting.</div>
+    <div class="option-group">
+      <button class="option-btn" onclick="selectMeal('friday','yes',this)">✓ Yes, attending</button>
+      <button class="option-btn" onclick="selectMeal('friday','no',this)">✗ Not attending</button>
+    </div>
+  </div>
+
+  <!-- Saturday meal -->
+  <div class="meal-card" id="meal-saturday-card">
+    <div class="meal-title">🍽 Saturday 10 Oct — Faculty Dinner</div>
+    <div class="meal-detail">Saturday evening dinner for faculty and ITCs.</div>
+    <div class="option-group">
+      <button class="option-btn" onclick="selectMeal('saturday','yes',this)">✓ Yes, attending</button>
+      <button class="option-btn" onclick="selectMeal('saturday','no',this)">✗ Not attending</button>
+    </div>
+  </div>
+
+  <!-- Dietary -->
+  <div class="field" style="margin-top:16px;">
+    <label>Dietary requirements</label>
+    <div class="option-group" id="dietGroup" style="margin-bottom:10px;">
+      <button class="option-btn" onclick="selectOption('diet','None',this)">None</button>
+      <button class="option-btn" onclick="selectOption('diet','Vegetarian',this)">Vegetarian</button>
+      <button class="option-btn" onclick="selectOption('diet','Vegan',this)">Vegan</button>
+      <button class="option-btn" onclick="selectOption('diet','Halal',this)">Halal</button>
+      <button class="option-btn" onclick="selectOption('diet','Gluten-free',this)">Gluten-free</button>
+      <button class="option-btn" onclick="selectOption('diet','Other',this)">Other</button>
+    </div>
+    <input type="text" id="dietDetail" placeholder="Please specify allergy or requirement…" style="display:none;">
+  </div>
+</div>
+
+<!-- ── SECTION 5: Accommodation ── -->
+<div class="section" id="section-5">
+  <p class="section-title">Accommodation</p>
+  <p class="section-sub">Do you need accommodation arranged for any nights during the weekend?</p>
+
+  <div class="field">
+    <label>Friday night (9 Oct)</label>
+    <div class="option-group">
+      <button class="option-btn" onclick="selectAccom('friday','yes',this)">Yes please</button>
+      <button class="option-btn" onclick="selectAccom('friday','no',this)">No thanks</button>
+      <button class="option-btn" onclick="selectAccom('friday','own',this)">Own arrangements</button>
+    </div>
+  </div>
+
+  <div class="field">
+    <label>Saturday night (10 Oct)</label>
+    <div class="option-group">
+      <button class="option-btn" onclick="selectAccom('saturday','yes',this)">Yes please</button>
+      <button class="option-btn" onclick="selectAccom('saturday','no',this)">No thanks</button>
+      <button class="option-btn" onclick="selectAccom('saturday','own',this)">Own arrangements</button>
+    </div>
+  </div>
+
+  <div class="info-box">
+    Accommodation requests are not guaranteed — we will confirm availability separately. If you have specific requirements (e.g. accessibility needs) please note them below.
+  </div>
+</div>
+
+<!-- ── SECTION 6: Other ── -->
+<div class="section" id="section-6">
+  <p class="section-title">Anything else?</p>
+  <p class="section-sub">Any other information we should know before the weekend.</p>
+
+  <div class="field">
+    <label>Accessibility or other requirements</label>
+    <textarea id="accessibilityNeeds" placeholder="e.g. mobility requirements, hearing loop, prayer space, other…"></textarea>
+  </div>
+
+  <div class="field">
+    <label>Travel / arrival notes</label>
+    <textarea id="travelNotes" placeholder="e.g. arriving late Friday, leaving Sunday lunchtime…"></textarea>
+  </div>
+
+  <div class="field">
+    <label>Anything else for the organising team</label>
+    <textarea id="otherNotes" placeholder="Any other questions or information…"></textarea>
+  </div>
+</div>
+
+<!-- ── SUCCESS ── -->
+<div class="success-page" id="successPage">
+  <div class="tick">✅</div>
+  <h2>Thank you!</h2>
+  <p>Your information has been received. We'll be in touch with further details closer to the weekend.</p>
+  <p style="margin-top:16px;"><strong>RMD Instructor Weekend 2026</strong><br>Birmingham Medical School<br>9–11 October 2026</p>
+</div>
+
+<!-- Navigation -->
+<div class="nav-row" id="navRow">
+  <button class="btn-back" id="backBtn" onclick="prevSection()" style="display:none;">← Back</button>
+  <button class="btn-next" id="nextBtn" onclick="nextSection()">Continue →</button>
+</div>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+<script>
+
+initFirebase();
+
+const TOTAL_SECTIONS = 7;
+let currentSection = 0;
+
+// ── Option state ──────────────────────────────────────────────────────────
+const state = {
+  gender: "", role: "", diet: "", days: { friday: false, saturday: false, sunday: false },
+  meals:  { friday: "", saturday: "" },
+  accom:  { friday: "", saturday: "" },
+  ercQualification: "", ercCorrect: ""
+};
+
+// ── Generic single-select option ──────────────────────────────────────────
+function selectOption(key, value, btn) {
+  state[key] = value;
+  const group = btn.closest(".option-group") || btn.parentElement;
+  group.querySelectorAll(".option-btn").forEach(b => b.classList.remove("selected","selected-yes","selected-no"));
+  btn.classList.add("selected");
+
+  // Show detail input for "Other" diet
+  if (key === "diet") {
+    document.getElementById("dietDetail").style.display = value === "Other" ? "block" : "none";
+  }
+  // Show text input for "Other" ERC qualification
+  if (key === "ercQualification") {
+    document.getElementById("ercOtherField").style.display = value === "Other" ? "block" : "none";
+  }
+}
+
+// ── ERC correct / needs correcting ───────────────────────────────────────
+function selectErcCorrect(value, btn) {
+  state.ercCorrect = value;
+  document.querySelectorAll("#ercCorrectGroup .option-btn").forEach(b => b.classList.remove("selected","selected-yes","selected-no"));
+  btn.classList.add(value === "yes" ? "selected-yes" : "selected-no");
+  document.getElementById("ercLiaisonField").style.display = value === "no" ? "block" : "none";
+}
+
+// ── Day toggles ───────────────────────────────────────────────────────────
+function toggleDay(day, btn) {
+  state.days[day] = !state.days[day];
+  btn.classList.toggle("selected", state.days[day]);
+}
+
+// ── Meal selection ────────────────────────────────────────────────────────
+function selectMeal(meal, value, btn) {
+  state.meals[meal] = value;
+  const group = btn.closest(".option-group") || btn.parentElement;
+  group.querySelectorAll(".option-btn").forEach(b => b.classList.remove("selected","selected-yes","selected-no"));
+  btn.classList.add(value === "yes" ? "selected-yes" : "selected-no");
+  document.getElementById(`meal-${meal}-card`).classList.toggle("attending", value === "yes");
+}
+
+// ── Accommodation ────────────────────────────────────────────────────────
+function selectAccom(night, value, btn) {
+  state.accom[night] = value;
+  const group = btn.closest(".option-group") || btn.parentElement;
+  group.querySelectorAll(".option-btn").forEach(b => b.classList.remove("selected"));
+  btn.classList.add("selected");
+}
+
+// ── Navigation ────────────────────────────────────────────────────────────
+function nextSection() {
+  if (!validateSection(currentSection)) return;
+  if (currentSection === TOTAL_SECTIONS - 1) { submitForm(); return; }
+  goToSection(currentSection + 1);
+}
+
+function prevSection() {
+  if (currentSection > 0) goToSection(currentSection - 1);
+}
+
+function goToSection(n) {
+  document.getElementById("section-" + currentSection).classList.remove("active");
+  document.getElementById("prog-"    + currentSection).classList.remove("active");
+  document.getElementById("prog-"    + currentSection).classList.add("complete");
+
+  currentSection = n;
+  document.getElementById("section-" + currentSection).classList.add("active");
+  document.querySelectorAll(".prog-step").forEach((el, i) => {
+    el.classList.toggle("active",   i === currentSection);
+    el.classList.toggle("complete", i < currentSection);
+  });
+
+  document.getElementById("backBtn").style.display = currentSection > 0 ? "block" : "none";
+  const nextBtn = document.getElementById("nextBtn");
+  nextBtn.textContent = currentSection === TOTAL_SECTIONS - 1 ? "Submit →" : "Continue →";
+  nextBtn.className   = currentSection === TOTAL_SECTIONS - 1 ? "btn-submit" : "btn-next";
+
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+// ── Validation ───────────────────────────────────────────────────────────
+function validateSection(n) {
+  if (n === 0) {
+    const required = ["title","profession","firstName","lastName","email","dob"];
+    let ok = true;
+    required.forEach(id => {
+      const el = document.getElementById(id);
+      if (!el.value.trim()) { el.classList.add("error"); ok = false; }
+      else el.classList.remove("error");
+    });
+    if (!ok) { alert("Please complete all required fields."); return false; }
+    if (!document.getElementById("email").value.includes("@")) {
+      alert("Please enter a valid email address."); return false;
+    }
+  }
+  if (n === 1) {
+    const required = ["address1","city","postcode"];
+    let ok = true;
+    required.forEach(id => {
+      const el = document.getElementById(id);
+      if (!el.value.trim()) { el.classList.add("error"); ok = false; }
+      else el.classList.remove("error");
+    });
+    if (!ok) { alert("Please complete the required address fields."); return false; }
+  }
+  if (n === 2) {
+    if (!state.role) { alert("Please select your role."); return false; }
+    if (!state.days.friday && !state.days.saturday && !state.days.sunday) {
+      alert("Please select at least one day."); return false;
+    }
+  }
+  if (n === 3) {
+    if (!state.ercQualification) { alert("Please select your ERC qualification."); return false; }
+    if (!state.ercCorrect) { alert("Please confirm whether your ERC account is correctly listed."); return false; }
+    if (state.ercCorrect === "no" && !document.getElementById("ercLiaisonConfirm").checked) {
+      alert("Please confirm you will liaise with the ERC to correct your qualification."); return false;
+    }
+  }
+  return true;
+}
+
+// ── Submit ────────────────────────────────────────────────────────────────
+async function submitForm() {
+  const btn = document.getElementById("nextBtn");
+  btn.disabled    = true;
+  btn.textContent = "Submitting…";
+
+  const record = {
+    // Personal
+    title:         document.getElementById("title").value,
+    firstName:     document.getElementById("firstName").value.trim(),
+    middleName:    document.getElementById("middleName").value.trim(),
+    lastName:      document.getElementById("lastName").value.trim(),
+    email:         document.getElementById("email").value.trim().toLowerCase(),
+    dob:           document.getElementById("dob").value,
+    gender:        state.gender,
+    profession:    document.getElementById("profession").value,
+    // Address
+    address1:      document.getElementById("address1").value.trim(),
+    address2:      document.getElementById("address2").value.trim(),
+    city:          document.getElementById("city").value.trim(),
+    postcode:      document.getElementById("postcode").value.trim(),
+    country:       document.getElementById("country").value,
+    // Attendance
+    role:          state.role,
+    days:          state.days,
+    // Meals
+    meals:         state.meals,
+    diet:          state.diet,
+    dietDetail:    document.getElementById("dietDetail").value.trim(),
+    // Accommodation
+    accommodation: state.accom,
+    // ERC
+    ercQualification:      state.ercQualification === "Other"
+                             ? document.getElementById("ercQualificationOther").value.trim()
+                             : state.ercQualification,
+    ercCorrectlyListed:    state.ercCorrect,
+    ercLiaisonConfirmed:   state.ercCorrect === "no"
+                             ? document.getElementById("ercLiaisonConfirm").checked
+                             : true,
+    // Other
+    accessibilityNeeds: document.getElementById("accessibilityNeeds").value.trim(),
+    travelNotes:        document.getElementById("travelNotes").value.trim(),
+    otherNotes:         document.getElementById("otherNotes").value.trim(),
+    // Meta
+    submittedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    source: "faculty-form-2026"
+  };
+
+  try {
+    await db.collection("faculty_responses").add(record);
+    document.getElementById("section-" + currentSection).classList.remove("active");
+    document.getElementById("navRow").style.display = "none";
+    document.querySelector(".progress-strip").style.display = "none";
+    document.getElementById("successPage").style.display = "block";
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  } catch (err) {
+    btn.disabled    = false;
+    btn.textContent = "Submit →";
+    alert("Submission failed — please check your connection and try again.\n\n" + err.message);
+  }
+}
+
+</script>
+</body>
+</html>
