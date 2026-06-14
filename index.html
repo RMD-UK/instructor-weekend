@@ -44,62 +44,76 @@
   </p>
 </div>
 
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="js/firebase-config.js"></script>
 <script>
-  // ── Check for candidate QR code ─────────────────────────────────────────────
-  const params = new URLSearchParams(window.location.search);
+  // ── Director email list (add more as needed) ───────────────────────────────
+  const DIRECTOR_EMAILS = [
+    "console_brews.6f@icloud.com"
+  ];
+
+  // ── Init Firebase ──────────────────────────────────────────────────────────
+  initFirebase();
+
+  // ── Check for candidate QR code ───────────────────────────────────────────
+  const params      = new URLSearchParams(window.location.search);
   const candidateId = params.get("id");
 
   if (candidateId) {
-    // Show candidate welcome view, hide faculty login
     document.getElementById("facultyLoginView").classList.add("hidden");
     document.getElementById("candidateView").classList.remove("hidden");
     loadCandidateProfile(candidateId);
   }
 
   async function loadCandidateProfile(id) {
-    // TODO: fetch from Firebase
-    // const doc = await db.collection(COLLECTIONS.people).doc(id).get();
-    // const data = doc.data();
-
-    // Demo fallback
-    const demo = { name: "Dr A. Candidate", stream: "Instructor Candidate" };
-    document.getElementById("candidateName").textContent = demo.name;
-    document.getElementById("candidateStream").textContent = demo.stream;
-
-    // Record arrival timestamp
-    // db.collection(COLLECTIONS.attendance).doc(id).set({
-    //   saturdayArrival: firebase.firestore.FieldValue.serverTimestamp()
-    // }, { merge: true });
+    try {
+      const doc  = await db.collection(COLLECTIONS.people).doc(id).get();
+      const data = doc.exists ? doc.data() : null;
+      document.getElementById("candidateName").textContent    = data ? data.name  : "Candidate";
+      document.getElementById("candidateStream").textContent  = data ? data.stream : "";
+      // Record arrival
+      await db.collection(COLLECTIONS.attendance).doc(id).set({
+        arrived: firebase.firestore.FieldValue.serverTimestamp()
+      }, { merge: true });
+    } catch (err) {
+      document.getElementById("candidateName").textContent = "Welcome!";
+    }
   }
 
   function goToTimetable() {
     window.location.href = `timetable.html?role=instructor&id=${candidateId}`;
   }
 
-  // ── Faculty login ────────────────────────────────────────────────────────────
+  // ── Faculty login ──────────────────────────────────────────────────────────
   async function handleFacultyLogin(e) {
     e.preventDefault();
-    const email    = document.getElementById("loginEmail").value;
+    const email    = document.getElementById("loginEmail").value.trim().toLowerCase();
     const password = document.getElementById("loginPassword").value;
     const errEl    = document.getElementById("loginError");
+    const btn      = e.target.querySelector("button[type=submit]");
+
     errEl.style.display = "none";
+    btn.textContent = "Signing in…";
+    btn.disabled    = true;
 
-    // TODO: authenticate with Firebase
-    // try {
-    //   const result = await auth.signInWithEmailAndPassword(email, password);
-    //   const role = await getUserRole(result.user.uid);
-    //   window.location.href = `timetable.html?role=${role}`;
-    // } catch (err) {
-    //   errEl.textContent = "Sign in failed. Check your email and password.";
-    //   errEl.style.display = "block";
-    // }
-
-    // Demo: route by email prefix
-    if (email.includes("director") || email === "jon") {
-      window.location.href = "timetable.html?role=director";
-    } else {
-      window.location.href = "timetable.html?role=faculty";
+    try {
+      await auth.signInWithEmailAndPassword(email, password);
+      const role = DIRECTOR_EMAILS.includes(email) ? "director" : "faculty";
+      window.location.href = `timetable.html?role=${role}`;
+    } catch (err) {
+      btn.textContent = "Sign in";
+      btn.disabled    = false;
+      if (err.code === "auth/wrong-password" || err.code === "auth/user-not-found" || err.code === "auth/invalid-credential") {
+        errEl.textContent = "Incorrect email or password.";
+      } else if (err.code === "auth/too-many-requests") {
+        errEl.textContent = "Too many attempts — try again in a few minutes.";
+      } else {
+        errEl.textContent = "Sign in failed. Check your connection and try again.";
+      }
+      errEl.style.display = "block";
     }
   }
 </script>
