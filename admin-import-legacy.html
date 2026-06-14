@@ -109,6 +109,18 @@
 
 initFirebase();
 
+// Wait for auth before enabling the button
+document.getElementById("importBtn").disabled = true;
+document.getElementById("importBtn").textContent = "Checking sign-in…";
+auth.onAuthStateChanged(user => {
+  if (user) {
+    document.getElementById("importBtn").disabled = false;
+    document.getElementById("importBtn").textContent = "Import 19 responses →";
+  } else {
+    document.getElementById("importBtn").textContent = "Sign in required — go to index.html first";
+  }
+});
+
 // ── 2026 Google Form records, mapped to faculty_responses schema ──────────
 const RECORDS = [
   {
