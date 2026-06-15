@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Faculty Briefing — RMD Instructor Weekend 2026</title>
+  <link rel="stylesheet" href="css/rmd.css">
+  <style>
+    body { background: #f0f3f6; }
+
+    .page-header {
+      background: var(--rmd-navy);
+      color: white;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .page-header img { height: 48px; width: auto; }
+    .page-header .org { display: flex; flex-direction: column; gap: 1px; }
+    .page-header .org-name { font-size: 18px; font-weight: 900; letter-spacing: 0.5px; line-height: 1.1; }
+    .page-header .org-sub { font-size: 11px; opacity: 0.75; font-weight: 400; }
+
+    .letter-wrap {
+      max-width: 760px;
+      margin: 28px auto;
+      padding: 0 16px 48px;
+    }
+
+    .letter-card {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+      overflow: hidden;
+    }
+
+    .letter-banner {
+      background: var(--rmd-navy);
+      color: white;
+      padding: 20px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+    }
+    .letter-banner .banner-title { font-size: 20px; font-weight: 700; line-height: 1.2; }
+    .letter-banner .banner-sub { font-size: 13px; opacity: 0.8; margin-top: 4px; }
+    .letter-banner .banner-date { font-size: 13px; opacity: 0.8; white-space: nowrap; padding-top: 4px; }
+
+    .letter-body {
+      padding: 32px 32px 28px;
+      font-size: 15px;
+      line-height: 1.7;
+      color: #1a2c3d;
+    }
+    .letter-body p { margin: 0 0 16px; }
+
+    .dates-grid {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 8px 20px;
+      background: #e8f0f7;
+      border-left: 4px solid var(--rmd-navy);
+      border-radius: 0 6px 6px 0;
+      padding: 16px 20px;
+      margin: 20px 0;
+      font-size: 14px;
+    }
+    .dates-grid .dt-label { font-weight: 700; color: var(--rmd-navy); white-space: nowrap; }
+
+    .section-heading {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--rmd-navy);
+      margin: 28px 0 10px;
+      padding-bottom: 6px;
+      border-bottom: 2px solid #e0e8ef;
+    }
+
+    .section-divider {
+      border: none;
+      border-top: 1px solid #e0e8ef;
+      margin: 24px 0;
+    }
+
+    .timetable-links {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin: 14px 0;
+    }
+    .timetable-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--rmd-navy);
+      color: white;
+      text-decoration: none;
+      padding: 10px 18px;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 700;
+      transition: background 0.15s;
+    }
+    .timetable-btn:hover { background: #14305a; }
+
+    /* Teaching approach tables */
+    .approach-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      font-size: 14px;
+    }
+    .approach-table td {
+      padding: 10px 14px;
+      vertical-align: top;
+      border-bottom: 1px solid #e8edf2;
+    }
+    .approach-table tr:last-child td { border-bottom: none; }
+    .approach-table .step-label {
+      font-weight: 900;
+      color: var(--rmd-navy);
+      white-space: nowrap;
+      width: 120px;
+      background: #f0f4f8;
+    }
+
+    .not-using {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      border-radius: 6px;
+      padding: 12px 16px;
+      margin: 12px 0;
+      font-size: 14px;
+    }
+    .not-using ul {
+      margin: 6px 0 0;
+      padding-left: 20px;
+    }
+    .not-using li { margin: 3px 0; color: #7f1d1d; }
+
+    .highlight-box {
+      background: #f0f4f8;
+      border-left: 4px solid var(--rmd-navy);
+      border-radius: 0 6px 6px 0;
+      padding: 14px 18px;
+      margin: 16px 0;
+      font-size: 14px;
+    }
+
+    .confirm-flag {
+      background: #fff3cd;
+      border: 1px solid #ffc107;
+      border-radius: 4px;
+      padding: 2px 7px;
+      font-size: 11px;
+      font-weight: 700;
+      color: #856404;
+      margin-left: 6px;
+      vertical-align: middle;
+    }
+
+    .signature-block {
+      margin-top: 28px;
+      padding-top: 20px;
+      border-top: 1px solid #e0e8ef;
+      font-size: 14px;
+    }
+    .signature-name { font-weight: 700; font-size: 15px; margin-top: 8px; color: var(--rmd-navy); }
+    .signature-role { color: #637282; margin-top: 2px; line-height: 1.5; }
+
+    @media (max-width: 600px) {
+      .letter-body { padding: 20px 18px; }
+      .letter-banner { padding: 16px 18px; flex-direction: column; }
+      .approach-table .step-label { width: auto; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="page-header">
+  <img src="assets/rmd-logo.png" alt="RMD"
+       onerror="this.outerHTML='<span style=\'background:rgba(255,255,255,0.15);color:white;font-size:13px;font-weight:900;border:2px solid rgba(255,255,255,0.6);padding:3px 8px;border-radius:4px;letter-spacing:1px;\'>RMD</span>'">
+  <div class="org">
+    <div class="org-name">University of Birmingham</div>
+    <div class="org-sub">RMD: Resuscitation Mentorship Development · College of Medical and Dental Sciences</div>
+  </div>
+</div>
+
+<div class="letter-wrap">
+  <div class="letter-card">
+
+    <div class="letter-banner">
+      <div>
+        <div class="banner-title">Faculty Briefing — RMD Instructor Weekend 2026</div>
+        <div class="banner-sub">Please read in full and contact Jon with any questions</div>
+      </div>
+    </div>
+
+    <div class="letter-body">
+
+      <div class="dates-grid">
+        <span class="dt-label">Faculty meeting</span>
+        <span>Friday 9 October 2026 — evening (timings TBC) · Edgbaston Park Hotel</span>
+        <span class="dt-label">Course</span>
+        <span>Saturday 10 – Sunday 11 October 2026</span>
+        <span class="dt-label">Venue</span>
+        <span>Birmingham Medical School, University of Birmingham, B15 2TT</span>
+      </div>
+
+      <p>Thank you for participating in the RMD Birmingham instructor weekend this year. It is a major event in our annual calendar and I look forward to being part of it with you.</p>
+
+      <p>This document contains important details. Please take time to read them and let me know if you have any questions, corrections, or follow-up points.</p>
+
+      <hr class="section-divider">
+
+      <div class="section-heading">Course platform &amp; timetable</div>
+
+      <p>We are using an online course platform this year. The platform hosts the live timetable, candidate assessment tools, session guides, and messaging. This section explains how it works so you are familiar with it before the course.</p>
+
+      <div class="highlight-box">
+        <strong>Your timetable links — save these to your phone's home screen before the course:</strong>
+        <div style="margin-top:10px;">
+          <div class="timetable-links" style="margin:0;">
+            <a class="timetable-btn" href="timetable.html?role=faculty&day=saturday">
+              <span>📅</span> Saturday timetable
+            </a>
+            <a class="timetable-btn" href="timetable.html?role=faculty&day=sunday">
+              <span>📅</span> Sunday timetable
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <p><strong>Live timetable.</strong> The timetable is live throughout the course. A highlighted banner shows which session is happening at any given moment. If timings change, the timetable updates immediately — you will always have the most accurate version. Candidates see a simplified version of the same timetable showing only their sessions.</p>
+
+      <p><strong>Session guides.</strong> Each session in the timetable has an expandable detail section. Where applicable, this includes a link to the session guide — a step-by-step reference for running that session. These are accessible directly from the timetable row.</p>
+
+      <p><strong>Candidate assessment.</strong> Your faculty toolbar (visible at the bottom of the screen when signed in) gives you direct access to the BLS Gateway assessment, the Development assessment form, and the Assessment Dashboard. These replace the Google Forms used in previous years. All assessments are stored in real time and visible to the course director.</p>
+
+      <p><strong>Messaging.</strong> The course director can send broadcast messages to all rooms or specific rooms. These appear as a noticeboard notification on candidates' timetable screens.</p>
+
+      <p><strong>Your group.</strong> Your breakout room and candidate allocations will appear as a card on your timetable once group assignments have been set up. You do not need to do anything — it will appear automatically when you open the timetable.</p>
+
+      <p>If you have any difficulties with the platform before or during the course, contact Jon directly.</p>
+      <!-- Note: QCPR and additional embedded links to be added before course -->
+
+      <hr class="section-divider">
+
+      <div class="section-heading">Teaching approach</div>
+
+      <div class="highlight-box" style="border-left-color:#c0392b;background:#fef2f2;">
+        <strong style="color:#c0392b;">⚠ Important — 2025 RCUK Guidelines &amp; Teaching Approach</strong><br>
+        We are teaching to the <strong>2025 RCUK Resuscitation Guidelines</strong> this year. These contain differences in the BLS algorithm compared to what we have been teaching previously. Please review the updated guidelines before the course to ensure you are familiar with the changes. The full guidelines are at <a href="https://www.resus.org.uk/professional-library/2025-resuscitation-guidelines" target="_blank" style="color:#c0392b;">resus.org.uk/professional-library/2025-resuscitation-guidelines</a>.<br><br>
+        In line with these updated guidelines, <strong>we are reverting to the four-stage approach</strong> for skills teaching on this course.
+      </div>
+
+      <p>Our teaching approach aligns with the current RCUK guidelines.</p>
+
+      <div class="not-using">
+        <strong>Note:</strong> We do <strong>not</strong> use the Set – dialogue – closure approach on this course.
+      </div>
+
+      <p><strong>The stepwise teaching approach:</strong></p>
+
+      <table class="approach-table">
+        <tr>
+          <td class="step-label">Show it</td>
+          <td>Demonstrate the skill in real time without added narrative explanation.</td>
+        </tr>
+        <tr>
+          <td class="step-label">Teach it</td>
+          <td>Teach the concept and the course standard.</td>
+        </tr>
+        <tr>
+          <td class="step-label">Facilitate it</td>
+          <td>Get all candidates involved in trying the skill.</td>
+        </tr>
+        <tr>
+          <td class="step-label">Assess it</td>
+          <td>Confirm the course standard has been reached. This may be possible within the facilitation stage.</td>
+        </tr>
+      </table>
+
+      <p>Encourage peer-to-peer learning where reasonable, drawing on candidates' previous experiences.</p>
+
+      <hr class="section-divider">
+
+      <div class="section-heading">Session structure: Prepare – Open – Facilitate – Close</div>
+
+      <table class="approach-table">
+        <tr>
+          <td class="step-label">Prepare</td>
+          <td>The instructor, having <strong>prepared the session content</strong>, <strong>room layout</strong>, and <strong>environment</strong> beforehand, also ensures all <strong>equipment is working</strong>, <strong>briefs any co-instructor</strong> on their role, and remains constantly <strong>aware of the time</strong>.</td>
+        </tr>
+        <tr>
+          <td class="step-label">Open</td>
+          <td>The instructor <strong>introduces all participants</strong> (self, co-instructor, and candidates), then <strong>outlines the session's flow</strong>, and clearly <strong>states the learning and assessment outcomes</strong>.</td>
+        </tr>
+        <tr>
+          <td class="step-label">Facilitate</td>
+          <td>The instructor first <strong>explains and demonstrates</strong> the skill, then <strong>facilitates candidate practice</strong> while acknowledging prior experience, <strong>assesses whether learning outcomes are met</strong>, provides or organises <strong>additional coaching</strong> as needed, and as necessary <strong>interacts with the co-instructor</strong> to confirm assessment decisions.</td>
+        </tr>
+        <tr>
+          <td class="step-label">Close</td>
+          <td>The instructor <strong>gains feedback</strong> from candidates, <strong>summarises key learning points</strong>, <strong>informs candidates</strong> of their successful or unsuccessful <strong>outcome</strong>, completes all necessary <strong>documentation</strong>, <strong>outlines next steps</strong> or future sessions, <strong>thanks the co-instructor and candidates</strong>, and <strong>ensures the area is left tidy</strong>.</td>
+        </tr>
+      </table>
+
+      <div class="highlight-box">
+        The session guides, assessment tools, and slides have all been updated to reflect these approaches. Links to each session guide are embedded in the timetable.
+      </div>
+
+      <hr class="section-divider">
+
+      <p>The instructor weekend is a key event in the RMD annual programme, and I very much look forward to spending it with you.</p>
+
+      <p>If you have any questions or corrections, please contact me directly or use the RMD email address: <a href="mailto:rmd@contacts.bham.ac.uk" style="color:var(--rmd-navy);">rmd@contacts.bham.ac.uk</a>. <span class="confirm-flag">CONFIRM EMAIL</span></p>
+
+      <div class="signature-block">
+        <p style="margin:0;">With best wishes</p>
+        <div class="signature-name">Professor Jon Hulme MBChB MRCP DIMC FRCA FFICM</div>
+        <div class="signature-role">
+          Course Director<br>
+          RMD: Resuscitation. Mentorship. Development<br>
+          University of Birmingham<br>
+          <br>
+          Joint Clinical Lead for Critical Care Services<br>
+          Consultant in Intensive Care Medicine &amp; Anaesthesia<br>
+          Sandwell and West Birmingham NHS Trust
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
