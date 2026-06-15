@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,89 +6,100 @@
   <title>Recognition Of Heart Attack & Bls/Aed — RMD 2026</title>
   <link rel="stylesheet" href="../../css/rmd.css">
   <style>
-    * { box-sizing: border-box; }
-    body { background: #f0f3f6; font-family: var(--font); margin: 0; padding: 0 0 60px; }
-
-    .top-bar {
-      background: var(--rmd-navy); color: white;
-      padding: 12px 16px; display: flex; align-items: center; gap: 10px;
-      position: sticky; top: 0; z-index: 100;
+    *{box-sizing:border-box;}
+    body{background:#f0f3f6;font-family:var(--font);margin:0;padding:0 0 60px;}
+    .top-bar{background:var(--rmd-navy);color:white;padding:12px 16px;
+      display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100;}
+    .top-bar-title{font-size:15px;font-weight:700;flex:1;}
+    .back-btn{color:rgba(255,255,255,0.85);text-decoration:none;font-size:13px;
+      display:flex;align-items:center;gap:6px;white-space:nowrap;}
+    .back-btn:hover{color:white;}
+    .card{background:white;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,0.09);
+      margin:16px auto;padding:24px 28px;max-width:800px;}
+    h1{font-size:20px;font-weight:800;color:var(--rmd-navy);margin:0 0 6px;}
+    .aim{font-size:14px;color:var(--rmd-muted);margin:0 0 20px;
+      border-left:3px solid var(--rmd-blue);padding-left:10px;line-height:1.5;}
+    .context-note{font-size:13px;background:#fffbe6;border-left:3px solid #f0a500;
+      padding:8px 12px;border-radius:4px;margin:0 0 20px;color:#5a4500;}
+    .section-head{font-size:11px;font-weight:800;letter-spacing:0.8px;
+      text-transform:uppercase;color:var(--rmd-navy);background:#f0f3f6;
+      border-radius:6px;padding:6px 10px;margin:22px 0 10px;}
+    .pre-reqs{margin:0 0 4px;padding-left:20px;}
+    .pre-reqs li{font-size:14px;color:#2c3e50;line-height:1.7;margin-bottom:2px;}
+    .guide-table{width:100%;border-collapse:collapse;margin:10px 0 4px;font-size:13px;}
+    .guide-table th{background:var(--rmd-navy);color:white;padding:8px 12px;
+      text-align:left;font-weight:700;font-size:12px;}
+    .guide-table td{padding:10px 12px;border-bottom:1px solid #eef1f5;
+      vertical-align:top;line-height:1.6;}
+    .guide-table tr:last-child td{border-bottom:none;}
+    .guide-table tr:nth-child(even) td{background:#f8f9fb;}
+    .guide-table td:first-child{font-weight:700;color:var(--rmd-navy);
+      width:28%;font-size:12px;white-space:pre-line;}
+    .guide-table td:last-child{color:#2c3e50;white-space:pre-line;}
+    @media(max-width:600px){
+      .card{margin:10px;padding:16px;}
+      .guide-table td:first-child{width:35%;font-size:11px;}
     }
-    .top-bar img { height: 28px; }
-    .top-bar-title { font-size: 15px; font-weight: 700; flex: 1; }
-    .back-btn {
-      color: rgba(255,255,255,0.8); text-decoration: none; font-size: 13px;
-      display: flex; align-items: center; gap: 4px;
-    }
-    .back-btn:hover { color: white; }
-
-    .guide-card {
-      background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.10);
-      margin: 16px; padding: 24px 28px; max-width: 760px; margin-left: auto; margin-right: auto;
-    }
-
-    .session-title {
-      font-size: 20px; font-weight: 800; color: var(--rmd-navy);
-      margin: 0 0 4px;
-    }
-    .session-aim {
-      font-size: 14px; color: var(--rmd-muted); margin: 0 0 20px;
-      border-left: 3px solid var(--rmd-blue); padding-left: 10px;
-    }
-
-    .section-heading {
-      font-size: 11px; font-weight: 800; letter-spacing: 0.8px;
-      text-transform: uppercase; color: var(--rmd-navy);
-      background: #f0f3f6; border-radius: 6px;
-      padding: 6px 10px; margin: 20px 0 10px;
-    }
-
-    .guide-card p {
-      font-size: 14px; color: #2c3e50; line-height: 1.6; margin: 0 0 8px;
-    }
-    .guide-card ul, .guide-card ol {
-      font-size: 14px; color: #2c3e50; line-height: 1.7;
-      margin: 0 0 10px; padding-left: 22px;
-    }
-    .guide-card li { margin-bottom: 3px; }
-
-    .timing-table {
-      width: 100%; border-collapse: collapse; margin: 10px 0;
-      font-size: 13px;
-    }
-    .timing-table th {
-      background: var(--rmd-navy); color: white;
-      padding: 7px 10px; text-align: left; font-weight: 700;
-    }
-    .timing-table td {
-      padding: 7px 10px; border-bottom: 1px solid #eef1f5; vertical-align: top;
-    }
-    .timing-table tr:last-child td { border-bottom: none; }
-    .timing-table tr:nth-child(even) td { background: #f8f9fb; }
-
-    .tag-box {
-      display: inline-block; background: #e8f0fe; color: #3d52a0;
-      border-radius: 12px; padding: 3px 10px; font-size: 12px; font-weight: 700;
-      margin: 0 4px 4px 0;
-    }
-    .tag-box.warn { background: #fff3cd; color: #856404; }
   </style>
 </head>
 <body>
-
 <div class="top-bar">
-  <a href="../../timetable.html" class="back-btn" id="logoLink">
-    <img src="../../assets/rmd-logo.png" alt="RMD" height="28"
-         onerror="document.getElementById('logoLink').innerHTML='&#8592; RMD'">
-  </a>
-  <div class="top-bar-title">Recognition Of Heart Attack & Bls/Aed</div>
   <a href="javascript:history.back()" class="back-btn">← Back</a>
+  <div class="top-bar-title">Recognition Of Heart Attack & Bls/Aed</div>
+  <a href="../../timetable.html" class="back-btn" id="logoLink">
+    <img src="../../assets/rmd-logo.png" alt="RMD" height="26"
+         onerror="this.parentElement.innerHTML='RMD'">
+  </a>
 </div>
-
-<div class="guide-card">
-<h1 class="session-title">Recognition Of Heart Attack & Bls/Aed</h1><p>The aim of this session is to describe common symptoms of a heart attack (a common cause for ​​ cardiac arrest) followed by a description and then demonstration of basic life support & automated external defibrillator skills</p>
-<div class="section-heading">REQUIREMENTS FOR SESSION WITH ADVICE</div>
+<div class="card">
+  <h1>Recognition Of Heart Attack &amp; Bls/Aed</h1>
+  <p class="aim">The aim of this session is to describe common symptoms of a heart attack (a common cause for ​​ cardiac arrest) followed by a description and then demonstration of basic life support &amp; automated external defibrillator skills</p>
+  
+  <div class="section-head">Running the session</div>
+<table class="guide-table"><thead><tr><th>Stage / Role</th><th>Instructions</th></tr></thead><tbody>
+<tr><td>Manikin and session set up (Instructor)</td><td>Make sure manikin and AED working (do this during registration)
+Put manikin on the stage on blue mat before the scheduled start of the course introduction. Place the manikin longitudinal to audience (that is, head pointing to one side of stage &amp; feet to the other)
+Put AED at the rear of the room for second instructor to retrieve during scenario
+Projector screen will be in use for the introductory talk: ensure that the ‘Recognition of heart attack’ and BLS slides display properly</td></tr>
+<tr><td>Recognition of a heart attack</td><td>Review slides in advance, and practice before the weekend starts
+Explain what is about to happen followed by descriptions &amp; demonstrations of life support skills
+Relevance = heart attack is a common cause of cardiac arrest in the community
+Play video</td></tr>
+<tr><td>Plenary lecture: BLS/AED</td><td>Explain that this is description of most up to date guidelines of life support skills that will be taught &amp; tested on the rest of the course
+Present slide set
+Introduce facilitator for demonstration</td></tr>
+<tr><td>Session introduction (facilitator)</td><td>Explain what is about to happen: a real-time demonstration of management of the collapsed patient including use of BLS &amp; AED skills</td></tr>
+<tr><td>Real-time run through</td><td>Instructor 1 to demonstrate clearly BLS/AED on manikin
+Make sure clear movements
+Safety check: from a distance and in the vicinity of the patient
+Shake &amp; shout
+Call loudly for help (patient is not responsive)
+2 fingers under chin (thumb out of the way)
+Use actual timing (i.e. listen, look and feel for breaths for up to 10 seconds)
+999 call (using mobile phone) &amp; whilst on the phone, start chest compressions
+Care with hand placement: show one hand on the centre of the chest and then other hand placed on top of it
+Deliver best quality chest compressions
+Continue resuscitation 30:2 (give rescue breaths)
+When instructor 2 arrives ask them to fetch an AED
+Instructor 2: Do not arrive immediately, allow 30-60 seconds so there has been time for chest compressions &amp; rescue breaths. You should act shocked: “Oh my goodness, what’s happened, is everything ok?”
+Once briefed by Instructor 1, say out loud you are going to get an AED. Leave the scenario, go to back of the room and count to 60 before returning with the AED
+Instructor 1 to demonstrate AED use:
+Turn on AED, and place on same side as you are kneeling
+Make sure look around before pressing shock on AED
+Make sure not looking at shock button but around manikin when pressing shock button
+Once shock delivered, resume CPR</td></tr>
+<tr><td>BLS/AED Lecture (Facilitator)</td><td>Review slides in advance, and practice before the weekend starts
+Make sure you emphasise:
+Correct order of the algorithm
+What to tell operator &amp; numbers to dial
+Rate, depth &amp; location of compressions
+Rescue breaths
+When to stop</td></tr>
+<tr><td>Conclusions (Facilitator)</td><td>Any questions answered
+Summary of session
+Where to go for practical work in small groups</td></tr>
+<tr><td>End</td><td>RMD Course Team to clear up the manikin and AED and presentation</td></tr>
+</tbody></table>
 </div>
-
 </body>
 </html>
