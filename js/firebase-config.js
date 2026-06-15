@@ -40,7 +40,8 @@ const ROLES = {
   DIRECTOR:   "director",
   FACULTY:    "faculty",
   INSTRUCTOR: "instructor",   // instructor candidate
-  ASSESSOR:   "assessor"      // assessor candidate
+  ASSESSOR:   "assessor",     // assessor candidate
+  ITC:        "itc"           // instructor trainer candidate (rotates rooms)
 };
 
 // ── Firebase initialisation (loaded after firebase SDK scripts) ──────────────

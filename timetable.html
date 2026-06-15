@@ -150,6 +150,10 @@
   let currentDay       = "saturday";
   let currentProgramme = "instructor"; // "instructor" | "assessor"
 
+  // Set by Firebase auth lookup — real room/role from Firestore people record
+  let currentUserRoom  = null;  // e.g. "CM01"
+  let currentUserEmail = null;
+
   const ROLE_LABELS = {
     director:   "Director",
     faculty:    "Faculty",
@@ -403,20 +407,13 @@
     { id: "sun-10", label: "Continuous Assessment",         time: "Sun 13:30" }
   ];
 
-  async function loadGroupCard(role) {
-    const card = document.getElementById("groupCard");
-    const body = document.getElementById("groupCardBody");
-    const editLink = document.getElementById("groupEditLink");
+  // groupsData cache — populated once per page load
+  let _groupsCache    = null;
+  let _itcSchedCache  = null;
 
-    // Director: show edit link, no card content needed
-    if (role === "director") {
-      editLink.style.display = "inline";
-      card.style.display     = "none"; // director uses toolbar button instead
-      return;
-    }
+  async function fetchGroupsData() {
+    if (_groupsCache) return { groupsData: _groupsCache, itcSchedule: _itcSchedCache };
 
-    // For non-demo use, fetch from Firestore
-    // Demo fallback data
     const DEMO_GROUPS = {
       CM01: { it: "Dr Smith",   candidates: ["Alice Ahmed", "Ben Clark"] },
       CM02: { it: "Dr Jones",   candidates: ["Carol Davies", "David Evans"] },
@@ -429,55 +426,74 @@
     };
     const DEMO_ITC = { "sat-20": "CM01", "sun-4": "CM03", "sun-10": "CM05" };
 
-    let groupsData = DEMO_GROUPS;
+    let groupsData  = DEMO_GROUPS;
     let itcSchedule = DEMO_ITC;
 
     if (typeof db !== "undefined" && db) {
       try {
         const snap = await db.collection("groups").get();
-        const loaded = {};
-        let loadedItc = {};
+        const loaded = {}, loadedItc = {};
         snap.forEach(doc => {
-          if (doc.id === "itc_schedule") loadedItc = doc.data();
+          if (doc.id === "itc_schedule") Object.assign(loadedItc, doc.data());
           else loaded[doc.id] = doc.data();
         });
-        if (Object.keys(loaded).length) groupsData = loaded;
+        if (Object.keys(loaded).length)   groupsData  = loaded;
         if (Object.keys(loadedItc).length) itcSchedule = loadedItc;
-      } catch(e) { /* use demo data */ }
+      } catch(e) { /* fall through to demo data */ }
     }
+
+    _groupsCache   = groupsData;
+    _itcSchedCache = itcSchedule;
+    return { groupsData, itcSchedule };
+  }
+
+  // room: pass the real room from Firestore people lookup, or null for demo
+  async function loadGroupCard(role, room) {
+    const card     = document.getElementById("groupCard");
+    const body     = document.getElementById("groupCardBody");
+    const editLink = document.getElementById("groupEditLink");
+
+    if (role === "director") {
+      editLink.style.display = "inline";
+      card.style.display = "none";
+      return;
+    }
+
+    const { groupsData, itcSchedule } = await fetchGroupsData();
+
+    // Resolve room: use real Firestore room if available, else demo CM01
+    const resolvedRoom = room || (currentUserRoom) || "CM01";
+    const isDemo       = !room && !currentUserRoom;
 
     card.style.display = "block";
 
     if (role === "faculty") {
-      // Faculty = Instructor Trainer — show their room and candidates
-      // In demo mode pick CM01; in production match by email
-      const room = "CM01"; // TODO: match by auth email
-      const g = groupsData[room] || {};
+      const g = groupsData[resolvedRoom] || {};
       body.innerHTML = `
+        ${isDemo ? `<p style="font-size:11px;color:#a0adb7;margin:0 0 8px;">Demo — sign in to see your real room.</p>` : ""}
         <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start;">
           <div>
             <span style="font-size:11px;font-weight:700;color:#637282;text-transform:uppercase;letter-spacing:0.3px;">Your room</span>
-            <div style="font-size:20px;font-weight:900;color:#1a3a5c;">${room}</div>
+            <div style="font-size:20px;font-weight:900;color:#1a3a5c;">${resolvedRoom}</div>
           </div>
           <div style="flex:1;min-width:180px;">
             <span style="font-size:11px;font-weight:700;color:#637282;text-transform:uppercase;letter-spacing:0.3px;">Your candidates</span>
             <div style="margin-top:4px;">${
-              (g.candidates || []).map(c =>
-                `<span style="display:inline-block;background:#e8f0f7;border-radius:10px;padding:3px 9px;font-size:12px;margin:2px;">${c}</span>`
-              ).join("") || '<span style="color:#a0adb7;font-size:12px;">No candidates assigned</span>'
+              (g.candidates || []).length
+                ? g.candidates.map(c => `<span style="display:inline-block;background:#e8f0f7;border-radius:10px;padding:3px 9px;font-size:12px;margin:2px;">${c}</span>`).join("")
+                : '<span style="color:#a0adb7;font-size:12px;">No candidates assigned yet</span>'
             }</div>
           </div>
         </div>`;
 
     } else if (role === "instructor") {
-      // IC — show their room and IT
-      const room = "CM01"; // TODO: match by auth
-      const g = groupsData[room] || {};
+      const g = groupsData[resolvedRoom] || {};
       body.innerHTML = `
+        ${isDemo ? `<p style="font-size:11px;color:#a0adb7;margin:0 0 8px;">Demo — sign in to see your real room.</p>` : ""}
         <div style="display:flex;gap:16px;flex-wrap:wrap;">
           <div>
             <span style="font-size:11px;font-weight:700;color:#637282;text-transform:uppercase;letter-spacing:0.3px;">Your room</span>
-            <div style="font-size:20px;font-weight:900;color:#1a3a5c;">${room}</div>
+            <div style="font-size:20px;font-weight:900;color:#1a3a5c;">${resolvedRoom}</div>
           </div>
           <div>
             <span style="font-size:11px;font-weight:700;color:#637282;text-transform:uppercase;letter-spacing:0.3px;">Instructor Trainer</span>
@@ -486,7 +502,6 @@
         </div>`;
 
     } else if (role === "itc") {
-      // ITC — show rotation schedule across the 3 sessions
       const rows = ITC_SLOTS.map(slot => {
         const r = itcSchedule[slot.id] || "";
         const g = r ? (groupsData[r] || {}) : {};
@@ -499,6 +514,7 @@
           </tr>`;
       }).join("");
       body.innerHTML = `
+        ${isDemo ? `<p style="font-size:11px;color:#a0adb7;margin:0 0 8px;">Demo — sign in to see your personalised rotation.</p>` : ""}
         <div style="font-size:12px;color:#637282;margin-bottom:8px;">Your rotation for group practice sessions:</div>
         <table style="width:100%;border-collapse:collapse;font-size:13px;">
           <thead>
@@ -519,6 +535,33 @@
   setInterval(updateLiveBar, 30 * 1000);
   setInterval(() => { renderAll(); }, 5 * 60 * 1000);
 
+  // ── Firebase people lookup ─────────────────────────────────────────────────
+  async function lookupCurrentUser(user) {
+    if (!db) return;
+    try {
+      const snap = await db.collection("people")
+        .where("email", "==", user.email)
+        .limit(1)
+        .get();
+      if (snap.empty) return;
+      const person = snap.docs[0].data();
+      currentUserEmail = user.email;
+      currentUserRoom  = person.room || null;
+      // If person has a role in Firestore and it differs, honour it
+      const firestoreRole = person.role || null;
+      if (firestoreRole && firestoreRole !== currentRole) {
+        currentRole = firestoreRole;
+        document.getElementById("roleSelect").value = currentRole;
+        setRole(currentRole);
+      } else {
+        // Re-render group card with real room now that we have it
+        loadGroupCard(currentRole, currentUserRoom);
+      }
+    } catch(e) {
+      console.warn("Could not load people record:", e);
+    }
+  }
+
   // ── Init ───────────────────────────────────────────────────────────────────
   document.addEventListener("DOMContentLoaded", () => {
     const p      = new URLSearchParams(window.location.search);
@@ -537,6 +580,22 @@
     switchDay(dayMap[today] || "saturday");
 
     updateLiveBar();
+
+    // Firebase auth — look up people record for real room assignment
+    // Non-blocking: page works fine without it; auth just upgrades the group card
+    const firebaseReady = initFirebase();
+    if (firebaseReady) {
+      let authHandled = false;
+      const authTimeout = setTimeout(() => {
+        if (!authHandled) authHandled = true; // give up, stay in demo
+      }, 5000);
+      auth.onAuthStateChanged(user => {
+        if (authHandled) return;
+        authHandled = true;
+        clearTimeout(authTimeout);
+        if (user) lookupCurrentUser(user);
+      });
+    }
   });
 </script>
 </body>

@@ -368,10 +368,14 @@ const ITC_SLOTS = [
 // ── State ──────────────────────────────────────────────────────────────────
 // groups[room] = { it: "Name", candidates: ["Name1", "Name2", ...] }
 // itcSchedule[sessionId] = "CM01" | ""
-let groups     = {};
+let groups      = {};
 let itcSchedule = {};
-let isDirty    = false;
+let isDirty     = false;
 let usingFirebase = false;
+
+// peopleByName["Dr Smith"] = { id: "doc-id", email: "...", role: "faculty", ... }
+// Used to write room back to people records on save
+let peopleByName = {};
 
 // Demo seed data (used when Firebase unavailable)
 const DEMO_GROUPS = {
@@ -558,7 +562,7 @@ async function saveAll() {
   try {
     const batch = db.batch();
 
-    // Save room assignments
+    // Save room group assignments
     INSTRUCTOR_ROOMS.forEach(room => {
       const ref = db.collection(COLLECTIONS.groups).doc(room);
       batch.set(ref, groups[room] || { it: "", candidates: [] }, { merge: true });
@@ -569,6 +573,11 @@ async function saveAll() {
     batch.set(itcRef, itcSchedule, { merge: false });
 
     await batch.commit();
+
+    // Also write room field onto each person's people record
+    // so the timetable group card can look it up by email
+    await writeRoomsToPeople();
+
     clearDirty();
     showToast("Saved ✓");
   } catch (err) {
@@ -577,7 +586,33 @@ async function saveAll() {
   }
 }
 
+async function writeRoomsToPeople() {
+  // For each room, look up people by name and write room field
+  // This requires people to have been loaded from Firestore with emails
+  // If peopleByName map is populated, use it; otherwise skip silently
+  if (!peopleByName || !Object.keys(peopleByName).length) return;
+
+  const writes = [];
+  INSTRUCTOR_ROOMS.forEach(room => {
+    const g = groups[room] || {};
+    // Write IT room
+    if (g.it && peopleByName[g.it]) {
+      writes.push(db.collection(COLLECTIONS.people).doc(peopleByName[g.it].id)
+        .update({ room }));
+    }
+    // Write candidate rooms
+    (g.candidates || []).forEach(name => {
+      if (peopleByName[name]) {
+        writes.push(db.collection(COLLECTIONS.people).doc(peopleByName[name].id)
+          .update({ room }));
+      }
+    });
+  });
+  await Promise.all(writes);
+}
+
 async function loadFromFirestore() {
+  // Load group assignments
   try {
     const snap = await db.collection(COLLECTIONS.groups).get();
     snap.forEach(doc => {
@@ -589,6 +624,69 @@ async function loadFromFirestore() {
     });
   } catch (err) {
     console.warn("Could not load groups from Firestore:", err);
+  }
+
+  // Load people to populate name lists and build peopleByName index
+  try {
+    const pSnap = await db.collection(COLLECTIONS.people).get();
+    const facultyNames    = [];
+    const candidateNames  = [];
+    pSnap.forEach(doc => {
+      const d = doc.data();
+      const name = d.name || d.displayName || d.email || doc.id;
+      peopleByName[name] = { id: doc.id, email: d.email || "", role: d.role || "", ...d };
+      if (d.role === "faculty" || d.role === "director") {
+        facultyNames.push(name);
+      } else if (d.role === "instructor" || d.role === "itc") {
+        candidateNames.push(name);
+      }
+    });
+    if (facultyNames.length)   FACULTY_OPTIONS   = facultyNames.sort();
+    if (candidateNames.length) {
+      // Put unassigned candidates in the pool
+      const assigned = new Set(
+        Object.values(groups).flatMap(g => g.candidates || [])
+      );
+      renderPool(candidateNames.filter(n => !assigned.has(n)));
+    }
+  } catch (err) {
+    console.warn("Could not load people from Firestore:", err);
+  }
+}
+
+function renderPool(names) {
+  const chips = document.getElementById("poolChips");
+  if (!chips) return;
+  if (!names.length) {
+    chips.innerHTML = '<span class="pool-empty">All candidates assigned.</span>';
+    return;
+  }
+  chips.innerHTML = names.map(name =>
+    `<span class="pool-chip" onclick="assignFromPool('${name.replace(/'/g,"\\'")}')">
+      ${name}
+    </span>`
+  ).join("");
+}
+
+function assignFromPool(name) {
+  const room = prompt(`Assign "${name}" to which room?\n(${INSTRUCTOR_ROOMS.join(", ")})`);
+  if (!room || !INSTRUCTOR_ROOMS.includes(room.toUpperCase())) {
+    if (room !== null) alert("Invalid room. Use: " + INSTRUCTOR_ROOMS.join(", "));
+    return;
+  }
+  const r = room.toUpperCase();
+  if (!groups[r]) groups[r] = { it: "", candidates: [] };
+  if (!groups[r].candidates.includes(name)) {
+    groups[r].candidates.push(name);
+    markDirty();
+    refreshRoomCard(r);
+    // Remove from pool
+    const chip = [...document.querySelectorAll(".pool-chip")]
+      .find(el => el.textContent.trim() === name);
+    if (chip) chip.remove();
+    if (!document.querySelectorAll(".pool-chip").length) {
+      document.getElementById("poolChips").innerHTML = '<span class="pool-empty">All candidates assigned.</span>';
+    }
   }
 }
 
