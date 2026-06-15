@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>Instructor Development</title>
+  <title>Instructor Development — RMD 2026</title>
   <link rel="stylesheet" href="css/rmd.css">
   <style>
     * { box-sizing: border-box; }
@@ -30,7 +30,7 @@
     }
     .view-tab.active { color: var(--rmd-blue); border-bottom-color: var(--rmd-blue); }
 
-    /* ── Room tabs ── */
+    /* ── Room strip ── */
     .room-strip {
       display: flex; gap: 8px; padding: 10px 14px; background: white;
       border-bottom: 1px solid #dce3ea; overflow-x: auto;
@@ -47,16 +47,12 @@
     .view.active { display: block; }
 
     /* ── Assessment table ── */
-    .table-wrap { overflow-x: auto; padding: 10px 0; }
+    .table-wrap { overflow-x: auto; }
 
     table.atbl {
-      border-collapse: collapse;
-      width: 100%;
-      min-width: 640px;
-      background: white;
+      border-collapse: collapse; width: 100%; min-width: 640px; background: white;
     }
 
-    /* Sticky name column */
     table.atbl th:first-child,
     table.atbl td:first-child {
       position: sticky; left: 0; z-index: 2; background: white;
@@ -68,8 +64,7 @@
     table.atbl th {
       background: var(--rmd-navy); color: white;
       padding: 9px 8px; font-size: 11px; text-transform: uppercase;
-      letter-spacing: 0.4px; font-weight: 700; text-align: center;
-      white-space: nowrap;
+      letter-spacing: 0.4px; font-weight: 700; text-align: center; white-space: nowrap;
     }
     table.atbl th:first-child { text-align: left; padding-left: 12px; }
 
@@ -81,17 +76,13 @@
       text-align: left; padding-left: 12px;
       font-size: 13px; font-weight: 700; color: var(--rmd-navy);
     }
-    table.atbl tr:hover td { background: #f8f9fb; }
+    table.atbl tr:hover td           { background: #f8f9fb; }
     table.atbl tr:hover td:first-child { background: #f8f9fb; }
 
-    /* Notes rows */
     table.atbl tr.notes-row td {
-      padding: 0; border-bottom: 2px solid #dce3ea;
-      background: #f8f9fb;
+      padding: 0; border-bottom: 2px solid #dce3ea; background: #f8f9fb;
     }
-    table.atbl tr.notes-row td:first-child {
-      background: #f8f9fb; border-right: none;
-    }
+    table.atbl tr.notes-row td:first-child { background: #f8f9fb; border-right: none; }
 
     /* ── Traffic lights ── */
     .tl-cell { display: flex; gap: 4px; justify-content: center; align-items: center; }
@@ -117,10 +108,10 @@
       transition: all 0.1s;
     }
     .overall-badge:active { transform: scale(0.93); }
-    .overall-none    { background: #f0f3f6; color: #aab8c2; }
-    .overall-green   { background: #e6f4ea; color: #1a6e31; }
-    .overall-amber   { background: #fff3cd; color: #856404; }
-    .overall-red     { background: #fde8e4; color: #b7410e; }
+    .overall-none  { background: #f0f3f6; color: #aab8c2; }
+    .overall-green { background: #e6f4ea; color: #1a6e31; }
+    .overall-amber { background: #fff3cd; color: #856404; }
+    .overall-red   { background: #fde8e4; color: #b7410e; }
 
     /* ── Flags ── */
     .flag-cell { display: flex; gap: 4px; justify-content: center; }
@@ -128,8 +119,7 @@
       width: 28px; height: 28px; border-radius: 50%;
       border: 2px solid #dce3ea; background: white;
       font-size: 13px; cursor: pointer; display: flex;
-      align-items: center; justify-content: center; transition: all 0.1s;
-      opacity: 0.35;
+      align-items: center; justify-content: center; transition: all 0.1s; opacity: 0.35;
     }
     .fl:active { transform: scale(0.88); }
     .fl.on { opacity: 1; border-color: transparent; }
@@ -141,27 +131,30 @@
       width: 28px; height: 28px; border-radius: 50%;
       border: 2px solid #dce3ea; background: white;
       font-size: 13px; cursor: pointer; display: flex;
-      align-items: center; justify-content: center; transition: all 0.1s;
-      opacity: 0.4;
+      align-items: center; justify-content: center; transition: all 0.1s; opacity: 0.4;
     }
     .notes-btn:active { transform: scale(0.88); }
     .notes-btn.has-notes { opacity: 1; background: #e8f0fe; border-color: var(--rmd-blue); }
     .notes-btn.open { opacity: 1; background: var(--rmd-blue); border-color: var(--rmd-blue); }
 
     /* ── Notes panel ── */
-    .notes-panel {
-      padding: 10px 12px;
-    }
+    .notes-panel { padding: 10px 12px; }
     .notes-req { font-size: 11px; color: #b7410e; font-weight: 700; margin-bottom: 6px; display: none; }
     .notes-req.show { display: block; }
     textarea.notes-ta {
       width: 100%; min-height: 72px; padding: 9px 10px;
       border: 2px solid #ccd6dd; border-radius: 6px;
-      font-size: 14px; font-family: var(--font); resize: vertical;
-      color: var(--rmd-navy);
+      font-size: 14px; font-family: var(--font); resize: vertical; color: var(--rmd-navy);
     }
     textarea.notes-ta:focus { outline: none; border-color: var(--rmd-blue); }
     textarea.notes-ta.required { border-color: #b7410e; }
+
+    /* ── Save indicator ── */
+    .save-ind {
+      font-size: 10px; font-weight: 700; margin-left: 4px;
+      color: #34a853; opacity: 0; transition: opacity 0.3s;
+    }
+    .save-ind.show { opacity: 1; }
 
     /* ── Legend ── */
     .legend {
@@ -171,7 +164,7 @@
     }
     .legend span { display: flex; align-items: center; gap: 4px; }
 
-    /* ── History / overview ── */
+    /* ── Overview ── */
     .hist-wrap { padding: 12px 14px; }
     .cand-card {
       background: white; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.08);
@@ -186,12 +179,11 @@
     .cand-card-body.open { display: block; }
 
     .traj-grid {
-      display: grid;
-      grid-template-columns: 90px repeat(5, 1fr);
+      display: grid; grid-template-columns: 90px repeat(5, 1fr);
       gap: 3px; font-size: 11px; margin-bottom: 10px;
     }
-    .traj-hdr { text-align: center; font-weight: 700; color: var(--rmd-muted); font-size: 10px; padding: 2px; }
-    .traj-dim { font-size: 10px; color: var(--rmd-muted); text-align: right; padding-right: 4px; align-self: center; }
+    .traj-hdr  { text-align: center; font-weight: 700; color: var(--rmd-muted); font-size: 10px; padding: 2px; }
+    .traj-dim  { font-size: 10px; color: var(--rmd-muted); text-align: right; padding-right: 4px; align-self: center; }
     .traj-cell {
       height: 22px; border-radius: 4px; display: flex; align-items: center;
       justify-content: center; font-size: 11px; font-weight: 700;
@@ -201,46 +193,52 @@
     .tc-amber { background: #c17a00; color: white; }
     .tc-red   { background: #b7410e; color: white; }
 
+    .stream-badge {
+      font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 10px;
+      text-transform: uppercase;
+    }
+    .stream-ic  { background: #e8f0fe; color: #3d52a0; }
+    .stream-itc { background: #f3e8fd; color: #6b3d9a; }
+
     .empty-state { text-align: center; padding: 40px; color: var(--rmd-muted); font-size: 14px; }
+    .loading     { text-align: center; padding: 40px; color: var(--rmd-muted); }
+
+    /* ── Toast ── */
+    #toast {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+      padding: 10px 20px; border-radius: 24px; font-size: 14px; font-weight: 700;
+      color: white; z-index: 999; opacity: 0; transition: opacity 0.2s; pointer-events: none;
+    }
+    #toast.show  { opacity: 1; }
+    #toast.green { background: #34a853; }
+    #toast.amber { background: #e65c00; }
+    #toast.red   { background: #ea4335; }
   </style>
 </head>
 <body>
 
-<!-- Top bar -->
 <div class="top-bar">
-  <a href="timetable.html" title="Back to programme" style="display:flex;align-items:center;">
+  <a href="timetable.html" style="display:flex;align-items:center;">
     <img src="assets/rmd-logo.png" alt="RMD" style="cursor:pointer;opacity:1;transition:opacity 0.15s;" onmouseover="this.style.opacity=0.75" onmouseout="this.style.opacity=1">
   </a>
   <div class="top-bar-title">Instructor Development</div>
   <div class="top-bar-time" id="topBarTime">--:--</div>
 </div>
 
-<!-- View tabs -->
 <div class="view-tabs">
-  <button class="view-tab active" onclick="switchView('assess')"  id="vtab-assess">📋 Assessment</button>
+  <button class="view-tab active" onclick="switchView('assess')"   id="vtab-assess">📋 Assessment</button>
   <button class="view-tab"        onclick="switchView('overview')" id="vtab-overview">📈 Overview</button>
 </div>
 
 <!-- ── ASSESSMENT VIEW ── -->
 <div class="view active" id="view-assess">
-
-  <!-- Room filter -->
-  <div class="room-strip">
-    <button class="room-btn active" onclick="setRoom('all')"  id="room-all">All rooms</button>
-    <button class="room-btn"        onclick="setRoom('WF15')" id="room-WF15">WF15</button>
-    <button class="room-btn"        onclick="setRoom('WF19')" id="room-WF19">WF19</button>
-    <button class="room-btn"        onclick="setRoom('ATH')"  id="room-ATH">ATH</button>
-  </div>
-
-  <!-- Legend -->
+  <div class="room-strip" id="roomStrip"></div>
   <div class="legend">
     <span><span style="width:12px;height:12px;border-radius:50%;background:#1a6e31;display:inline-block;"></span> On track</span>
     <span><span style="width:12px;height:12px;border-radius:50%;background:#c17a00;display:inline-block;"></span> Developing</span>
     <span><span style="width:12px;height:12px;border-radius:50%;background:#b7410e;display:inline-block;"></span> Concern</span>
-    <span>· Tap 📝 to add notes · Notes required for ⚠️</span>
+    <span>· Tap 📝 for notes · Notes required for ⚠️</span>
   </div>
-
-  <!-- Grid -->
   <div class="table-wrap">
     <table class="atbl" id="assessTable">
       <thead>
@@ -256,96 +254,176 @@
           <th>Notes</th>
         </tr>
       </thead>
-      <tbody id="assessBody"></tbody>
+      <tbody id="assessBody">
+        <tr><td colspan="9"><div class="loading">Loading…</div></td></tr>
+      </tbody>
     </table>
   </div>
-
 </div>
 
 <!-- ── OVERVIEW VIEW ── -->
 <div class="view" id="view-overview">
-  <div class="room-strip">
-    <button class="room-btn active" onclick="setOvRoom('all')"  id="ovroom-all">All rooms</button>
-    <button class="room-btn"        onclick="setOvRoom('WF15')" id="ovroom-WF15">WF15</button>
-    <button class="room-btn"        onclick="setOvRoom('WF19')" id="ovroom-WF19">WF19</button>
-    <button class="room-btn"        onclick="setOvRoom('ATH')"  id="ovroom-ATH">ATH</button>
-  </div>
+  <div class="room-strip" id="ovRoomStrip"></div>
   <div class="hist-wrap" id="overviewBody"></div>
 </div>
 
+<div id="toast"></div>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="js/firebase-config.js"></script>
 <script>
 
-// ── Config ────────────────────────────────────────────────────────────────
+// ── URL params ──────────────────────────────────────────────────────────────
+const params     = new URLSearchParams(window.location.search);
+const myRole     = (params.get("role") || "faculty").toLowerCase();
+const myRoom     = (params.get("room") || "").toUpperCase();
+const isDirector = myRole === "director";
+
+// ── Checkpoints ─────────────────────────────────────────────────────────────
 const CHECKPOINTS = [
-  { id: "sat-teach",   short: "Sat\nTeach"  },
-  { id: "sat-debrief", short: "Sat\nDebrief"},
-  { id: "sun-teach",   short: "Sun\nTeach"  },
-  { id: "sun-itc",     short: "Sun\nITC"    },
-  { id: "sun-final",   short: "Sun\nFinal"  }
+  { id: "sat-teach",   label: "Sat Teach"   },
+  { id: "sat-debrief", label: "Sat Debrief" },
+  { id: "sun-teach",   label: "Sun Teach"   },
+  { id: "sun-itc",     label: "Sun ITC obs" },
+  { id: "sun-final",   label: "Sun Final"   }
 ];
 
-const CANDIDATES = [
-  { id: "c01", name: "Dr A. Ahmed",     room: "WF15" },
-  { id: "c02", name: "Dr B. Brennan",   room: "WF15" },
-  { id: "c03", name: "Dr C. Carter",    room: "WF19" },
-  { id: "c04", name: "Dr D. Davies",    room: "WF19" },
-  { id: "c05", name: "Dr E. Evans",     room: "ATH"  },
-  { id: "c06", name: "Dr F. Fletcher",  room: "ATH"  },
-  { id: "c07", name: "Dr G. Green",     room: "WF15" },
-  { id: "c08", name: "Dr H. Harris",    room: "WF19" },
-  { id: "c09", name: "Dr I. Ingram",    room: "ATH"  },
-  { id: "c10", name: "Dr J. Jones",     room: "WF15" },
-  { id: "c11", name: "Dr K. Khan",      room: "WF19" },
-  { id: "c12", name: "Dr L. Lewis",     room: "ATH"  }
-];
-
-// ── State ─────────────────────────────────────────────────────────────────
-// state[candidateId] = { ratings: {cpId: "green"|"amber"|"red"}, flags: {concern, standout}, notes, overallOverride }
-const STORE_KEY = "rmd_dev2";
-var state = {};
-var currentRoom   = "all";
+// ── State ───────────────────────────────────────────────────────────────────
+var candidates    = [];       // [{id, name, stream, room}]
+var assessments   = {};       // {candidateId: {ratings, flags, notes, overallOverride}}
+var allRooms      = [];
+var currentRoom   = myRoom || "all";
 var currentOvRoom = "all";
+var saveTimers    = {};       // per-candidate debounce for notes
+var unsubscribe   = null;
 
-function loadState() {
-  try { state = JSON.parse(localStorage.getItem(STORE_KEY) || "{}"); }
-  catch { state = {}; }
-}
-function saveState() {
-  localStorage.setItem(STORE_KEY, JSON.stringify(state));
-}
-function getC(id) {
-  if (!state[id]) state[id] = { ratings: {}, flags: {}, notes: "", overallOverride: null };
-  return state[id];
-}
+// ── Boot ────────────────────────────────────────────────────────────────────
+initFirebase();
 
-// ── Init ──────────────────────────────────────────────────────────────────
-document.addEventListener("DOMContentLoaded", () => {
-  loadState();
-  renderAssessTable();
-  updateClock();
-  setInterval(updateClock, 10000);
+auth.onAuthStateChanged(user => {
+  if (user) {
+    boot();
+  } else {
+    document.getElementById("assessBody").innerHTML =
+      `<tr><td colspan="9" style="text-align:center;padding:30px;">Please <a href="index.html">sign in</a> to access assessments.</td></tr>`;
+  }
 });
 
-// ── Room filter ────────────────────────────────────────────────────────────
+async function boot() {
+  updateClock();
+  setInterval(updateClock, 10000);
+  await loadCandidates();
+  buildRoomStrips();
+  startListener();
+}
+
+// ── Load candidates ──────────────────────────────────────────────────────────
+async function loadCandidates() {
+  try {
+    const snap = await db.collection(COLLECTIONS.people).get();
+    if (!snap.empty) {
+      candidates = snap.docs.map(d => {
+        const data = d.data();
+        return {
+          id:     d.id,
+          name:   data.name   || d.id,
+          stream: data.stream || "Instructor Candidate",
+          room:   (data.room  || "").toUpperCase()
+        };
+      }).sort((a, b) => a.name.localeCompare(b.name));
+    } else {
+      loadDemo();
+    }
+  } catch (err) {
+    console.warn("Could not load people, using demo data:", err);
+    loadDemo();
+  }
+  const roomSet = new Set(candidates.map(c => c.room).filter(Boolean));
+  allRooms = Array.from(roomSet).sort();
+  if (!myRoom && allRooms.length) currentRoom = "all";
+}
+
+function loadDemo() {
+  const rooms = ["WF15","WF19","ATH"];
+  const names = [
+    ["Dr A. Ahmed","WF15"],["Dr B. Brennan","WF15"],["Dr G. Green","WF15"],["Dr J. Jones","WF15"],
+    ["Dr C. Carter","WF19"],["Dr D. Davies","WF19"],["Dr H. Harris","WF19"],["Dr K. Khan","WF19"],
+    ["Dr E. Evans","ATH"], ["Dr F. Fletcher","ATH"],["Dr I. Ingram","ATH"],["Dr L. Lewis","ATH"]
+  ];
+  candidates = names.map(([name, room], i) => ({
+    id: "demo_" + (i + 1),
+    name,
+    stream: i % 5 === 0 ? "ITC" : "Instructor Candidate",
+    room
+  }));
+  allRooms = rooms;
+}
+
+// ── Room strips ──────────────────────────────────────────────────────────────
+function buildRoomStrips() {
+  const rooms = isDirector ? ["all", ...allRooms] : (myRoom ? [myRoom] : ["all", ...allRooms]);
+
+  const makeBtn = (r, prefix, active) =>
+    `<button class="room-btn ${active?'active':''}" id="${prefix}-${r}" onclick="${prefix==='room'?'setRoom':'setOvRoom'}('${r}')">${r === 'all' ? 'All rooms' : r}</button>`;
+
+  document.getElementById("roomStrip").innerHTML   = rooms.map(r => makeBtn(r, "room",   r === currentRoom)).join("");
+  document.getElementById("ovRoomStrip").innerHTML = ["all",...allRooms].map(r => makeBtn(r, "ovroom", r === currentOvRoom)).join("");
+}
+
+// ── Firestore listener ───────────────────────────────────────────────────────
+function startListener() {
+  if (unsubscribe) unsubscribe();
+  unsubscribe = db.collection("development_assessments")
+    .onSnapshot(snap => {
+      snap.docChanges().forEach(change => {
+        if (change.type === "removed") {
+          delete assessments[change.doc.id];
+        } else {
+          const data = change.doc.data();
+          assessments[change.doc.id] = {
+            ratings:         data.ratings         || {},
+            flags:           data.flags           || {},
+            notes:           data.notes           || "",
+            overallOverride: data.overallOverride || null
+          };
+        }
+      });
+      renderAssessTable();
+      if (document.getElementById("view-overview").classList.contains("active")) {
+        renderOverview();
+      }
+    }, err => {
+      console.error("Listener error:", err);
+      renderAssessTable();
+    });
+}
+
+// ── Room filter ──────────────────────────────────────────────────────────────
 function setRoom(r) {
   currentRoom = r;
   document.querySelectorAll(".room-btn[id^='room-']").forEach(b => b.classList.remove("active"));
-  document.getElementById("room-" + r).classList.add("active");
+  const el = document.getElementById("room-" + r);
+  if (el) el.classList.add("active");
   renderAssessTable();
 }
+
 function setOvRoom(r) {
   currentOvRoom = r;
   document.querySelectorAll(".room-btn[id^='ovroom-']").forEach(b => b.classList.remove("active"));
-  document.getElementById("ovroom-" + r).classList.add("active");
+  const el = document.getElementById("ovroom-" + r);
+  if (el) el.classList.add("active");
   renderOverview();
 }
 
 function visibleCandidates(room) {
-  return room === "all" ? CANDIDATES : CANDIDATES.filter(c => c.room === room);
+  if (room === "all") return candidates;
+  return candidates.filter(c => c.room === room);
 }
 
-// ── Assessment table ───────────────────────────────────────────────────────
+// ── Assessment table ─────────────────────────────────────────────────────────
 function renderAssessTable() {
   const tbody = document.getElementById("assessBody");
   const cands = visibleCandidates(currentRoom);
@@ -353,80 +431,100 @@ function renderAssessTable() {
     tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:30px;color:var(--rmd-muted);">No candidates in this room.</td></tr>`;
     return;
   }
-
-  tbody.innerHTML = cands.map(c => {
-    const s = getC(c.id);
-
-    // Traffic light cells
-    const cpCells = CHECKPOINTS.map(cp => {
-      const v = s.ratings[cp.id] || null;
-      return `<td>
-        <div class="tl-cell">
-          <button class="tl g ${v==='green'?'on':''}" onclick="setRating('${c.id}','${cp.id}','green',this)" title="On track">G</button>
-          <button class="tl a ${v==='amber'?'on':''}" onclick="setRating('${c.id}','${cp.id}','amber',this)" title="Developing">A</button>
-          <button class="tl r ${v==='red'?'on':''}"   onclick="setRating('${c.id}','${cp.id}','red',this)"   title="Concern">R</button>
-        </div>
-      </td>`;
-    }).join("");
-
-    // Overall
-    const ov = computeOverall(c.id);
-    const ovClass = {green:"overall-green", amber:"overall-amber", red:"overall-red", null:"overall-none"}[ov] || "overall-none";
-    const ovLabel = {green:"🟢 On track", amber:"🟡 Developing", red:"🔴 Concern"}[ov] || "–";
-
-    // Flags
-    const hasConcern  = s.flags.concern;
-    const hasStandout = s.flags.standout;
-
-    // Notes btn
-    const hasNotes = s.notes && s.notes.trim().length > 0;
-
-    return `
-      <tr id="row-${c.id}">
-        <td>${c.name}<br><span style="font-size:10px;color:var(--rmd-muted);font-weight:400;">${c.room}</span></td>
-        ${cpCells}
-        <td>
-          <span class="overall-badge ${ovClass}" onclick="cycleOverall('${c.id}')">${ovLabel}</span>
-        </td>
-        <td>
-          <div class="flag-cell">
-            <button class="fl concern ${hasConcern?'on':''}" onclick="toggleFlag('${c.id}','concern')" title="Concern">⚠️</button>
-            <button class="fl standout ${hasStandout?'on':''}" onclick="toggleFlag('${c.id}','standout')" title="Standout">⭐</button>
-          </div>
-        </td>
-        <td>
-          <button class="notes-btn ${hasNotes?'has-notes':''}" id="nbtn-${c.id}" onclick="toggleNotes('${c.id}')" title="Add notes">📝</button>
-        </td>
-      </tr>
-      <tr class="notes-row" id="notes-row-${c.id}" style="display:none;">
-        <td colspan="9">
-          <div class="notes-panel">
-            <div class="notes-req" id="notes-req-${c.id}">⚠️ Notes required when concern is flagged</div>
-            <textarea class="notes-ta" id="notes-ta-${c.id}"
-              placeholder="Observations, teaching moments, development areas…"
-              onblur="saveNotes('${c.id}')">${s.notes||""}</textarea>
-          </div>
-        </td>
-      </tr>`;
-  }).join("");
+  // Preserve which notes panels are open
+  const openNotes = new Set();
+  document.querySelectorAll(".notes-row").forEach(row => {
+    if (row.style.display !== "none") openNotes.add(row.id.replace("notes-row-",""));
+  });
+  tbody.innerHTML = cands.map(c => buildCandidateRows(c, openNotes.has(c.id))).join("");
 }
 
-// ── Traffic lights ─────────────────────────────────────────────────────────
-function setRating(cid, cpId, val, btn) {
-  const s = getC(cid);
-  // Toggle off if already selected
+function buildCandidateRows(c, notesOpen) {
+  const s  = getA(c.id);
+  const streamCls = (c.stream === "ITC" || c.stream === "Instructor Trainer Candidate") ? "stream-itc" : "stream-ic";
+  const streamLbl = (c.stream === "ITC" || c.stream === "Instructor Trainer Candidate") ? "ITC" : "IC";
+
+  const cpCells = CHECKPOINTS.map(cp => {
+    const v = s.ratings[cp.id] || null;
+    return `<td><div class="tl-cell">
+      <button class="tl g ${v==='green'?'on':''}" onclick="setRating('${c.id}','${cp.id}','green')" title="On track">G</button>
+      <button class="tl a ${v==='amber'?'on':''}" onclick="setRating('${c.id}','${cp.id}','amber')" title="Developing">A</button>
+      <button class="tl r ${v==='red'?'on':''}"   onclick="setRating('${c.id}','${cp.id}','red')"   title="Concern">R</button>
+    </div></td>`;
+  }).join("");
+
+  const ov     = computeOverall(c.id);
+  const ovCls  = {green:"overall-green",amber:"overall-amber",red:"overall-red"}[ov] || "overall-none";
+  const ovLbl  = {green:"🟢 On track",amber:"🟡 Developing",red:"🔴 Concern"}[ov] || "–";
+  const hasNotes = s.notes && s.notes.trim().length > 0;
+  const nbCls    = "notes-btn" + (notesOpen ? " open" : hasNotes ? " has-notes" : "");
+
+  return `
+    <tr id="row-${c.id}">
+      <td>
+        ${c.name}
+        <br><span class="stream-badge ${streamCls}">${streamLbl}</span>
+        <span style="font-size:10px;color:var(--rmd-muted);"> ${c.room}</span>
+      </td>
+      ${cpCells}
+      <td><span class="overall-badge ${ovCls}" onclick="cycleOverall('${c.id}')">${ovLbl}</span></td>
+      <td>
+        <div class="flag-cell">
+          <button class="fl concern ${s.flags.concern?'on':''}"   onclick="toggleFlag('${c.id}','concern')"  title="Concern">⚠️</button>
+          <button class="fl standout ${s.flags.standout?'on':''}" onclick="toggleFlag('${c.id}','standout')" title="Standout">⭐</button>
+        </div>
+      </td>
+      <td><button class="${nbCls}" id="nbtn-${c.id}" onclick="toggleNotes('${c.id}')" title="Notes">📝</button></td>
+    </tr>
+    <tr class="notes-row" id="notes-row-${c.id}" style="${notesOpen?'':'display:none;'}">
+      <td colspan="9">
+        <div class="notes-panel">
+          <div class="notes-req ${s.flags.concern?'show':''}" id="notes-req-${c.id}">⚠️ Notes required when concern is flagged</div>
+          <textarea class="notes-ta ${s.flags.concern&&!s.notes.trim()?'required':''}" id="notes-ta-${c.id}"
+            placeholder="Observations, teaching moments, development areas…"
+            oninput="scheduleNoteSave('${c.id}')"
+            onblur="flushNoteSave('${c.id}')">${s.notes||""}</textarea>
+          <div style="font-size:11px;color:#34a853;margin-top:4px;min-height:14px;" id="save-ind-${c.id}"></div>
+        </div>
+      </td>
+    </tr>`;
+}
+
+// ── Get/init assessment state ─────────────────────────────────────────────────
+function getA(id) {
+  if (!assessments[id]) assessments[id] = { ratings: {}, flags: {}, notes: "", overallOverride: null };
+  return assessments[id];
+}
+
+// ── Firestore write helpers ──────────────────────────────────────────────────
+async function saveField(candidateId, data) {
+  try {
+    await db.collection("development_assessments").doc(candidateId).set(
+      { ...data, updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+        updatedBy: auth.currentUser ? auth.currentUser.uid : null },
+      { merge: true }
+    );
+  } catch (err) {
+    showToast("Save failed — check connection", "red");
+    console.error(err);
+  }
+}
+
+// ── Traffic lights ───────────────────────────────────────────────────────────
+async function setRating(cid, cpId, val) {
+  const s = getA(cid);
   if (s.ratings[cpId] === val) {
     delete s.ratings[cpId];
   } else {
     s.ratings[cpId] = val;
   }
-  saveState();
-  // Update just this row's cells and overall (avoid full re-render to preserve notes open state)
+  // Optimistic local update
   refreshRow(cid);
+  await saveField(cid, { ratings: s.ratings });
 }
 
 function computeOverall(cid) {
-  const s = getC(cid);
+  const s = getA(cid);
   if (s.overallOverride) return s.overallOverride;
   const vals = Object.values(s.ratings);
   if (vals.length === 0) return null;
@@ -435,34 +533,33 @@ function computeOverall(cid) {
   return "green";
 }
 
-function cycleOverall(cid) {
-  const s = getC(cid);
-  const cur = s.overallOverride;
+async function cycleOverall(cid) {
+  const s   = getA(cid);
   const seq = [null, "green", "amber", "red"];
-  const idx = seq.indexOf(cur);
+  const idx = seq.indexOf(s.overallOverride);
   s.overallOverride = seq[(idx + 1) % seq.length];
-  saveState();
   refreshRow(cid);
+  await saveField(cid, { overallOverride: s.overallOverride });
 }
 
-// ── Flags ──────────────────────────────────────────────────────────────────
-function toggleFlag(cid, flag) {
-  const s = getC(cid);
+// ── Flags ────────────────────────────────────────────────────────────────────
+async function toggleFlag(cid, flag) {
+  const s = getA(cid);
   s.flags[flag] = !s.flags[flag];
-  saveState();
   refreshRow(cid);
-  // If concern flagged, auto-open notes
   if (flag === "concern" && s.flags.concern) openNotes(cid);
+  await saveField(cid, { flags: s.flags });
 }
 
-// ── Notes ──────────────────────────────────────────────────────────────────
+// ── Notes ────────────────────────────────────────────────────────────────────
 function toggleNotes(cid) {
   const row = document.getElementById("notes-row-" + cid);
-  const isOpen = row.style.display !== "none";
-  if (isOpen) {
-    saveNotes(cid);
+  if (!row) return;
+  if (row.style.display !== "none") {
+    flushNoteSave(cid);
     row.style.display = "none";
-    document.getElementById("nbtn-" + cid).classList.remove("open");
+    const btn = document.getElementById("nbtn-" + cid);
+    if (btn) btn.classList.remove("open");
   } else {
     openNotes(cid);
   }
@@ -472,163 +569,97 @@ function openNotes(cid) {
   const row = document.getElementById("notes-row-" + cid);
   if (!row) return;
   row.style.display = "";
-  document.getElementById("nbtn-" + cid).classList.add("open");
-  const s = getC(cid);
+  const btn = document.getElementById("nbtn-" + cid);
+  if (btn) { btn.classList.remove("has-notes"); btn.classList.add("open"); }
   const reqEl = document.getElementById("notes-req-" + cid);
-  if (reqEl) reqEl.classList.toggle("show", !!s.flags.concern);
+  if (reqEl) reqEl.classList.toggle("show", !!(getA(cid).flags.concern));
   const ta = document.getElementById("notes-ta-" + cid);
   if (ta) setTimeout(() => ta.focus(), 50);
 }
 
-function saveNotes(cid) {
-  const ta = document.getElementById("notes-ta-" + cid);
-  if (!ta) return;
-  const s = getC(cid);
-  s.notes = ta.value;
-  saveState();
-  // Update notes button style
-  const btn = document.getElementById("nbtn-" + cid);
-  if (btn) {
-    btn.classList.toggle("has-notes", s.notes.trim().length > 0);
-  }
-  // Validate if concern
-  if (s.flags.concern) {
-    ta.classList.toggle("required", s.notes.trim().length === 0);
-  }
+function scheduleNoteSave(cid) {
+  if (saveTimers[cid]) clearTimeout(saveTimers[cid]);
+  saveTimers[cid] = setTimeout(() => flushNoteSave(cid), 1500);
 }
 
-// ── Row refresh (without full re-render) ───────────────────────────────────
+async function flushNoteSave(cid) {
+  if (saveTimers[cid]) { clearTimeout(saveTimers[cid]); delete saveTimers[cid]; }
+  const ta = document.getElementById("notes-ta-" + cid);
+  if (!ta) return;
+  const s = getA(cid);
+  s.notes = ta.value;
+  const btn = document.getElementById("nbtn-" + cid);
+  if (btn) btn.classList.toggle("has-notes", s.notes.trim().length > 0);
+  if (s.flags.concern) ta.classList.toggle("required", s.notes.trim().length === 0);
+  await saveField(cid, { notes: s.notes });
+  const ind = document.getElementById("save-ind-" + cid);
+  if (ind) { ind.textContent = "✓ Saved"; setTimeout(() => { ind.textContent = ""; }, 2000); }
+}
+
+// ── Row refresh ───────────────────────────────────────────────────────────────
 function refreshRow(cid) {
-  // Re-render just this candidate's row (keep notes open state)
-  const c = CANDIDATES.find(x => x.id === cid);
+  const c = candidates.find(x => x.id === cid);
   if (!c) return;
-  const s = getC(cid);
   const notesOpen = document.getElementById("notes-row-" + cid) &&
                     document.getElementById("notes-row-" + cid).style.display !== "none";
-
-  // Update TL buttons
-  CHECKPOINTS.forEach(cp => {
-    const v = s.ratings[cp.id] || null;
-    const row = document.getElementById("row-" + cid);
-    if (!row) return;
-    row.querySelectorAll(`.tl`).forEach(btn => {
-      // Match by title
-      const bval = btn.classList.contains("g") ? "green" : btn.classList.contains("a") ? "amber" : "red";
-      // Only update if this button belongs to this checkpoint
-    });
-  });
-
-  // Easiest: just re-render the two rows
-  const tbody = document.getElementById("assessBody");
   const existRow  = document.getElementById("row-" + cid);
   const existNRow = document.getElementById("notes-row-" + cid);
   if (!existRow) return;
-
-  const tempDiv = document.createElement("tbody");
-  tempDiv.innerHTML = buildCandidateRows(c, notesOpen);
-  const [newRow, newNRow] = tempDiv.children;
-
-  existRow.replaceWith(newRow);
-  existNRow.replaceWith(newNRow);
+  const temp = document.createElement("tbody");
+  temp.innerHTML = buildCandidateRows(c, notesOpen);
+  existRow.replaceWith(temp.children[0]);
+  existNRow.replaceWith(temp.children[0]);
 }
 
-function buildCandidateRows(c, notesOpen) {
-  const s = getC(c.id);
-
-  const cpCells = CHECKPOINTS.map(cp => {
-    const v = s.ratings[cp.id] || null;
-    return `<td>
-      <div class="tl-cell">
-        <button class="tl g ${v==='green'?'on':''}" onclick="setRating('${c.id}','${cp.id}','green',this)">G</button>
-        <button class="tl a ${v==='amber'?'on':''}" onclick="setRating('${c.id}','${cp.id}','amber',this)">A</button>
-        <button class="tl r ${v==='red'?'on':''}"   onclick="setRating('${c.id}','${cp.id}','red',this)">R</button>
-      </div>
-    </td>`;
-  }).join("");
-
-  const ov = computeOverall(c.id);
-  const ovClass = {green:"overall-green", amber:"overall-amber", red:"overall-red"}[ov] || "overall-none";
-  const ovLabel = {green:"🟢 On track", amber:"🟡 Developing", red:"🔴 Concern"}[ov] || "–";
-
-  const hasNotes = s.notes && s.notes.trim().length > 0;
-  const nbtnClass = "notes-btn" + (notesOpen ? " open" : hasNotes ? " has-notes" : "");
-
-  return `
-    <tr id="row-${c.id}">
-      <td>${c.name}<br><span style="font-size:10px;color:var(--rmd-muted);font-weight:400;">${c.room}</span></td>
-      ${cpCells}
-      <td><span class="overall-badge ${ovClass}" onclick="cycleOverall('${c.id}')">${ovLabel}</span></td>
-      <td>
-        <div class="flag-cell">
-          <button class="fl concern ${s.flags.concern?'on':''}"  onclick="toggleFlag('${c.id}','concern')">⚠️</button>
-          <button class="fl standout ${s.flags.standout?'on':''}" onclick="toggleFlag('${c.id}','standout')">⭐</button>
-        </div>
-      </td>
-      <td><button class="${nbtnClass}" id="nbtn-${c.id}" onclick="toggleNotes('${c.id}')">📝</button></td>
-    </tr>
-    <tr class="notes-row" id="notes-row-${c.id}" style="${notesOpen?'':'display:none;'}">
-      <td colspan="9">
-        <div class="notes-panel">
-          <div class="notes-req ${s.flags.concern?'show':''}" id="notes-req-${c.id}">⚠️ Notes required when concern is flagged</div>
-          <textarea class="notes-ta ${s.flags.concern&&!s.notes.trim()?'required':''}" id="notes-ta-${c.id}"
-            placeholder="Observations, teaching moments, development areas…"
-            onblur="saveNotes('${c.id}')">${s.notes||""}</textarea>
-        </div>
-      </td>
-    </tr>`;
-}
-
-// ── Overview ───────────────────────────────────────────────────────────────
+// ── Overview ──────────────────────────────────────────────────────────────────
 function renderOverview() {
   const cands = visibleCandidates(currentOvRoom);
   const body  = document.getElementById("overviewBody");
-
   if (cands.length === 0) {
     body.innerHTML = `<div class="empty-state">No candidates in this room.</div>`;
     return;
   }
-
   const cpShorts = ["S:T","S:D","Su:T","Su:I","Su:F"];
-
   body.innerHTML = cands.map((c, ci) => {
-    const s = getC(c.id);
+    const s  = getA(c.id);
     const ov = computeOverall(c.id);
-    const ovClass = {green:"overall-green",amber:"overall-amber",red:"overall-red"}[ov]||"overall-none";
-    const ovLabel = {green:"🟢 On track",amber:"🟡 Developing",red:"🔴 Concern"}[ov]||"No data";
+    const ovCls = {green:"overall-green",amber:"overall-amber",red:"overall-red"}[ov] || "overall-none";
+    const ovLbl = {green:"🟢 On track",amber:"🟡 Developing",red:"🔴 Concern"}[ov] || "No data";
+    const streamCls = (c.stream === "ITC" || c.stream === "Instructor Trainer Candidate") ? "stream-itc" : "stream-ic";
+    const streamLbl = (c.stream === "ITC" || c.stream === "Instructor Trainer Candidate") ? "ITC" : "IC";
 
     const flagHtml = [
-      s.flags.concern  ? `<span style="font-size:12px;padding:2px 8px;border-radius:10px;background:#fde8e4;color:#b7410e;font-weight:700;">⚠️ Concern</span>` : "",
+      s.flags.concern  ? `<span style="font-size:12px;padding:2px 8px;border-radius:10px;background:#fde8e4;color:#b7410e;font-weight:700;">⚠️ Concern</span>`  : "",
       s.flags.standout ? `<span style="font-size:12px;padding:2px 8px;border-radius:10px;background:#e6f4ea;color:#1a6e31;font-weight:700;">⭐ Standout</span>` : ""
     ].filter(Boolean).join(" ");
 
-    // Mini trajectory
     const trajCells = cpShorts.map((sh, i) => {
-      const cp = CHECKPOINTS[i];
-      const v  = s.ratings[cp.id];
-      const cls = {green:"tc-green",amber:"tc-amber",red:"tc-red"}[v]||"tc-none";
-      const lbl = {green:"G",amber:"A",red:"R"}[v]||"–";
+      const cp  = CHECKPOINTS[i];
+      const v   = s.ratings[cp.id];
+      const cls = {green:"tc-green",amber:"tc-amber",red:"tc-red"}[v] || "tc-none";
+      const lbl = {green:"G",amber:"A",red:"R"}[v] || "–";
       return `<div class="traj-cell ${cls}">${lbl}</div>`;
     }).join("");
-
-    const notesHtml = s.notes
-      ? `<div style="margin-top:8px;font-size:13px;color:#456b8c;background:#f5f7fa;border-radius:6px;padding:8px 10px;">${s.notes}</div>`
-      : "";
 
     return `
       <div class="cand-card">
         <div class="cand-card-header" onclick="toggleOverviewCard('ovc-${ci}')">
-          <div class="cand-card-name">${c.name} <span style="font-size:11px;font-weight:400;color:var(--rmd-muted);">${c.room}</span></div>
-          <span class="overall-badge ${ovClass}" style="cursor:default;">${ovLabel}</span>
+          <div class="cand-card-name">
+            ${c.name}
+            <span class="stream-badge ${streamCls}" style="margin-left:6px;">${streamLbl}</span>
+            <span style="font-size:11px;font-weight:400;color:var(--rmd-muted);margin-left:4px;">${c.room}</span>
+          </div>
+          <span class="overall-badge ${ovCls}" style="cursor:default;">${ovLbl}</span>
         </div>
         <div class="cand-card-body" id="ovc-${ci}">
           <div class="traj-grid">
             <div></div>
-            ${cpShorts.map(s=>`<div class="traj-hdr">${s}</div>`).join("")}
+            ${cpShorts.map(sh => `<div class="traj-hdr">${sh}</div>`).join("")}
             <div class="traj-dim">RAG</div>
             ${trajCells}
           </div>
-          ${flagHtml ? `<div style="margin-bottom:8px;display:flex;gap:6px;">${flagHtml}</div>` : ""}
-          ${notesHtml}
+          ${flagHtml ? `<div style="margin-bottom:8px;display:flex;gap:6px;flex-wrap:wrap;">${flagHtml}</div>` : ""}
+          ${s.notes ? `<div style="margin-top:8px;font-size:13px;color:#456b8c;background:#f5f7fa;border-radius:6px;padding:8px 10px;">${s.notes}</div>` : ""}
         </div>
       </div>`;
   }).join("");
@@ -647,11 +678,21 @@ function switchView(v) {
   if (v === "overview") renderOverview();
 }
 
-// ── Clock ─────────────────────────────────────────────────────────────────
+// ── Toast ─────────────────────────────────────────────────────────────────────
+var toastTimer = null;
+function showToast(msg, type) {
+  const el = document.getElementById("toast");
+  el.textContent = msg;
+  el.className   = `show ${type}`;
+  if (toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { el.className = type; }, 2200);
+}
+
+// ── Clock ─────────────────────────────────────────────────────────────────────
 function updateClock() {
   const now = new Date();
   document.getElementById("topBarTime").textContent =
-    now.getHours().toString().padStart(2,"0") + ":" + now.getMinutes().toString().padStart(2,"0");
+    String(now.getHours()).padStart(2,"0") + ":" + String(now.getMinutes()).padStart(2,"0");
 }
 
 </script>
