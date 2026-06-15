@@ -92,12 +92,7 @@
 </main>
 
 <!-- ── Faculty floating toolbar ── -->
-<div id="facultyToolbar" class="hidden" style="
-  position:fixed; bottom:0; left:0; right:0;
-  background:#1a3a5c; padding:10px 16px;
-  display:flex; gap:10px; align-items:center; z-index:200;
-  box-shadow: 0 -2px 10px rgba(0,0,0,0.3); overflow-x:auto;
-">
+<div id="facultyToolbar" style="display:none;position:fixed;bottom:0;left:0;right:0;background:#1a3a5c;padding:10px 16px;gap:10px;align-items:center;z-index:200;box-shadow:0 -2px 10px rgba(0,0,0,0.3);overflow-x:auto;">
   <span style="color:white;font-size:13px;font-weight:700;flex-shrink:0;">Assessments</span>
   <button class="btn btn-sm" onclick="window.location.href='assessment-gateway.html?role=faculty'">🚦 BLS Gateway</button>
   <button class="btn btn-sm" onclick="window.location.href='assessment-development.html?role=faculty'">📝 Development</button>
@@ -145,7 +140,7 @@
 
     // Faculty toolbar
     const ftb = document.getElementById("facultyToolbar");
-    ftb.classList.toggle("hidden", role !== "faculty");
+    ftb.style.display = (role === "faculty") ? "flex" : "none";
 
     // Noticeboard visibility
     document.getElementById("noticeboard").classList.toggle("hidden", role === "director");
