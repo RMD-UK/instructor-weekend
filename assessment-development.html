@@ -301,16 +301,39 @@ var saveTimers    = {};       // per-candidate debounce for notes
 var unsubscribe   = null;
 
 // ── Boot ────────────────────────────────────────────────────────────────────
-initFirebase();
+var authResolved = false;
 
-auth.onAuthStateChanged(user => {
-  if (user) {
+const authTimeout = setTimeout(() => {
+  if (!authResolved) {
+    console.warn("Auth timeout — running in demo mode.");
+    authResolved = true;
     boot();
-  } else {
-    document.getElementById("assessBody").innerHTML =
-      `<tr><td colspan="9" style="text-align:center;padding:30px;">Please <a href="index.html">sign in</a> to access assessments.</td></tr>`;
   }
-});
+}, 5000);
+
+const firebaseReady = initFirebase();
+
+if (!firebaseReady) {
+  authResolved = true;
+  clearTimeout(authTimeout);
+  boot();
+} else {
+  auth.onAuthStateChanged(user => {
+    if (authResolved) return;
+    authResolved = true;
+    clearTimeout(authTimeout);
+    if (user) {
+      boot();
+    } else {
+      // Demo mode with sign-in prompt
+      document.querySelector(".view-tabs").insertAdjacentHTML("beforebegin",
+        `<div style="background:#fff3cd;color:#856404;padding:8px 16px;font-size:12px;text-align:center;font-weight:600;">
+          Demo mode · <a href="index.html" style="color:#856404;">Sign in</a> to save real data
+        </div>`);
+      boot();
+    }
+  });
+}
 
 async function boot() {
   updateClock();
