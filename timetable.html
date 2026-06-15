@@ -22,7 +22,10 @@
 
 <!-- ── Header ── -->
 <header class="rmd-header">
-  <img src="assets/rmd-logo.png" alt="RMD logo" class="logo">
+  <a href="index.html" style="display:flex;align-items:center;text-decoration:none;" id="logoLink">
+    <img src="assets/rmd-logo.png" alt="RMD logo" class="logo"
+         onerror="document.getElementById('logoLink').innerHTML='<span style=\'background:rgba(255,255,255,0.15);color:white;font-size:13px;font-weight:900;border:2px solid rgba(255,255,255,0.6);padding:3px 8px;border-radius:4px;letter-spacing:1px;\'>RMD</span>'">
+  </a>
   <div class="title">
     RMD Instructor Weekend 2026
     <span class="subtitle">Birmingham Medical School</span>
@@ -147,9 +150,8 @@
   }
 
   // ── Programme switching ────────────────────────────────────────────────────
-  function setProgramme(prog) {
-    currentProgramme = prog;
-    // Update button styles
+  function updateProgrammeButtons() {
+    const prog = currentProgramme;
     document.getElementById("prog-instructor").style.cssText =
       prog === "instructor"
         ? "padding:5px 14px;border-radius:16px;border:2px solid #1a3a5c;background:#1a3a5c;color:white;font-size:12px;font-weight:700;font-family:var(--font);cursor:pointer;"
@@ -158,6 +160,11 @@
       prog === "assessor"
         ? "padding:5px 14px;border-radius:16px;border:2px solid #1a3a5c;background:#1a3a5c;color:white;font-size:12px;font-weight:700;font-family:var(--font);cursor:pointer;"
         : "padding:5px 14px;border-radius:16px;border:2px solid #dce3ea;background:white;color:#637282;font-size:12px;font-weight:700;font-family:var(--font);cursor:pointer;";
+  }
+
+  function setProgramme(prog) {
+    currentProgramme = prog;
+    updateProgrammeButtons();
     renderAll();
   }
 
@@ -204,7 +211,7 @@
     ["friday", "saturday", "sunday"].forEach(day => renderDay(day));
     updateLiveBar();
     updateGatewayAlert();
-    setProgramme(currentProgramme); // keep button states in sync
+    updateProgrammeButtons(); // keep button states in sync (no re-render loop)
     scrollToCurrent();
   }
 
