@@ -186,8 +186,9 @@
 <body>
 
 <div class="top-bar">
-  <a href="timetable.html" style="display:flex;align-items:center;">
-    <img src="assets/rmd-logo.png" alt="RMD">
+  <a href="timetable.html" style="display:flex;align-items:center;text-decoration:none;" id="logoLink">
+    <img src="assets/rmd-logo.png" alt="RMD" height="32"
+         onerror="document.getElementById('logoLink').innerHTML='<span style=\'color:white;font-size:13px;font-weight:900;border:2px solid rgba(255,255,255,0.7);padding:3px 8px;border-radius:4px;letter-spacing:1px;\'>RMD</span>'">
   </a>
   <div class="top-bar-title">BLS Gateway Assessment</div>
   <div class="clock-pill" id="clockEl">–:–</div>
@@ -236,22 +237,48 @@ var allRooms      = [];
 var unsubscribe   = null;
 
 // ── Boot ────────────────────────────────────────────────────────────────────
-initFirebase();
+var authResolved = false;
 
-auth.onAuthStateChanged(user => {
-  if (user) {
-    // Director override: verify email
-    if (isDirector && !DIRECTOR_EMAILS.includes(user.email.toLowerCase())) {
-      checkFirestoreDirector(user.email).then(ok => {
-        if (ok) boot(); else showError("Director access required.");
-      });
+// Fallback: if Firebase auth hasn't resolved in 5 seconds, run in demo mode
+const authTimeout = setTimeout(() => {
+  if (!authResolved) {
+    console.warn("Auth timeout — running in demo mode.");
+    authResolved = true;
+    boot();
+  }
+}, 5000);
+
+const firebaseReady = initFirebase();
+
+if (!firebaseReady) {
+  // Firebase SDK not available — skip auth entirely
+  authResolved = true;
+  clearTimeout(authTimeout);
+  boot();
+} else {
+  auth.onAuthStateChanged(user => {
+    if (authResolved) return; // timeout already fired
+    authResolved = true;
+    clearTimeout(authTimeout);
+    if (user) {
+      // Director override: verify email
+      if (isDirector && !DIRECTOR_EMAILS.includes(user.email.toLowerCase())) {
+        checkFirestoreDirector(user.email).then(ok => {
+          if (ok) boot(); else showError("Director access required.");
+        });
+      } else {
+        boot();
+      }
     } else {
+      // Not signed in — show demo data with sign-in prompt
+      document.getElementById("deadlineBar").insertAdjacentHTML("afterend",
+        `<div style="background:#fff3cd;color:#856404;padding:8px 16px;font-size:12px;text-align:center;font-weight:600;">
+          Demo mode · <a href="index.html" style="color:#856404;">Sign in</a> to save real data
+        </div>`);
       boot();
     }
-  } else {
-    showError('Please <a href="index.html">sign in</a> to access assessments.');
-  }
-});
+  });
+}
 
 async function checkFirestoreDirector(email) {
   try {

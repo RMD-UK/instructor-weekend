@@ -222,32 +222,6 @@ const PROGRAMME = {
         tags: ["break"]
       },
 
-      // ── Assessor stream (Saturday) — placeholder until Naveed confirms ──
-      {
-        id: "sat-assessor-am",
-        start: "09:35",
-        duration: 235,
-        title: "Assessor Training (Morning)",
-        location: "TBC",
-        lead: "Naveed",
-        roles: ["assessor", "faculty", "director"],
-        notes: "Programme to be confirmed by Naveed. Runs parallel to instructor candidate morning sessions.",
-        resources: [],
-        tags: ["assessor-stream", "placeholder"]
-      },
-      {
-        id: "sat-assessor-pm",
-        start: "13:30",
-        duration: 210,
-        title: "Assessor Training (Afternoon)",
-        location: "TBC",
-        lead: "Naveed",
-        roles: ["assessor", "faculty", "director"],
-        notes: "Assessor training concludes Saturday. Assessor candidates do not return Sunday.",
-        resources: [],
-        tags: ["assessor-stream", "placeholder"]
-      },
-
       // ── Instructor development (Saturday afternoon) ──
       {
         id: "sat-13",
@@ -563,6 +537,158 @@ const PROGRAMME = {
         lead: "",
         roles: ["faculty", "director"],
         notes: "End-of-course debrief. ITC outcomes discussed.",
+        resources: [],
+        tags: ["faculty-only"]
+      }
+    ]
+  }
+};
+
+/**
+ * RMD Assessor Course 2026 — Programme Data
+ *
+ * Runs in parallel with the Instructor Weekend on Saturday 10 Oct.
+ * Assessor candidates attend Saturday only.
+ * Programme to be confirmed by Naveed.
+ */
+
+const ASSESSOR_PROGRAMME = {
+
+  friday: {
+    label: "Friday 9 Oct",
+    date: "Friday 9 October 2026",
+    sessions: [
+      {
+        id: "afri-1",
+        start: "18:00",
+        duration: 60,
+        title: "Faculty Arrival",
+        location: "TBC",
+        lead: "",
+        roles: ["faculty", "director"],
+        notes: "Arrival and informal networking before the meeting.",
+        resources: [],
+        tags: []
+      },
+      {
+        id: "afri-2",
+        start: "19:00",
+        duration: 120,
+        title: "Faculty Meeting & Dinner",
+        location: "TBC",
+        lead: "Jon",
+        roles: ["faculty", "director"],
+        notes: "Briefing for the weekend.",
+        resources: [],
+        tags: ["faculty-only"]
+      }
+    ]
+  },
+
+  saturday: {
+    label: "Saturday 10 Oct",
+    date: "Saturday 10 October 2026",
+    sessions: [
+      {
+        id: "asat-0",
+        start: "07:45",
+        duration: 15,
+        title: "Faculty Meeting",
+        location: "WF15",
+        lead: "Jon",
+        roles: ["faculty", "director"],
+        notes: "Pre-course briefing for faculty before candidates arrive.",
+        resources: [],
+        tags: ["faculty-only"]
+      },
+      {
+        id: "asat-1",
+        start: "08:00",
+        duration: 45,
+        title: "Registration",
+        location: "ATH",
+        lead: "Student faculty",
+        roles: ["all"],
+        notes: "Self-scan QR code on arrival.",
+        resources: [],
+        tags: []
+      },
+      {
+        id: "asat-2",
+        start: "08:45",
+        duration: 30,
+        title: "Plenary Introduction & Welcome",
+        location: "ATH",
+        lead: "Jon",
+        roles: ["all"],
+        notes: "",
+        resources: [],
+        tags: []
+      },
+      {
+        id: "asat-3",
+        start: "09:35",
+        duration: 235,
+        title: "Assessor Training (Morning)",
+        location: "TBC",
+        lead: "Naveed",
+        roles: ["assessor", "faculty", "director"],
+        notes: "Programme to be confirmed by Naveed. Runs parallel to instructor candidate morning sessions.",
+        resources: [],
+        tags: ["placeholder"]
+      },
+      {
+        id: "asat-4",
+        start: "13:30",
+        duration: 210,
+        title: "Assessor Training (Afternoon)",
+        location: "TBC",
+        lead: "Naveed",
+        roles: ["assessor", "faculty", "director"],
+        notes: "Assessor training concludes Saturday. Assessor candidates do not return Sunday.",
+        resources: [],
+        tags: ["placeholder"]
+      },
+      {
+        id: "asat-5",
+        start: "16:45",
+        duration: 30,
+        title: "Whole Course Photo",
+        location: "Medical School steps",
+        lead: "",
+        roles: ["all"],
+        notes: "All groups please. Wear your course polo shirts.",
+        resources: [],
+        tags: []
+      }
+    ]
+  },
+
+  sunday: {
+    label: "Sunday 11 Oct",
+    date: "Sunday 11 October 2026",
+    sessions: [
+      {
+        id: "asun-1",
+        start: "09:00",
+        duration: 15,
+        title: "No sessions Sunday",
+        location: "",
+        lead: "",
+        roles: ["assessor"],
+        notes: "Assessor candidates do not attend Sunday. Thank you for completing the course.",
+        resources: [],
+        tags: []
+      },
+      {
+        id: "asun-2",
+        start: "16:15",
+        duration: 45,
+        title: "Faculty Meeting",
+        location: "WF19",
+        lead: "",
+        roles: ["faculty", "director"],
+        notes: "End-of-course debrief.",
         resources: [],
         tags: ["faculty-only"]
       }

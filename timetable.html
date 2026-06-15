@@ -84,6 +84,15 @@
   ⚠️ Gateway assessment deadline: <strong>11:45</strong> — check dashboard for outstanding assessments
 </div>
 
+<!-- ── Programme switcher (faculty + director only) ── -->
+<div id="programmeSwitcher" style="display:none;padding:8px 14px;background:#f0f3f6;border-bottom:1px solid #dce3ea;">
+  <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+    <span style="font-size:12px;font-weight:700;color:#637282;text-transform:uppercase;letter-spacing:0.4px;">Programme:</span>
+    <button id="prog-instructor" onclick="setProgramme('instructor')" style="padding:5px 14px;border-radius:16px;border:2px solid #1a3a5c;background:#1a3a5c;color:white;font-size:12px;font-weight:700;font-family:var(--font);cursor:pointer;">Instructor Weekend</button>
+    <button id="prog-assessor"   onclick="setProgramme('assessor')"   style="padding:5px 14px;border-radius:16px;border:2px solid #dce3ea;background:white;color:#637282;font-size:12px;font-weight:700;font-family:var(--font);cursor:pointer;">Assessor Course</button>
+  </div>
+</div>
+
 <!-- ── Timetable ── -->
 <main class="timetable">
   <div class="day-section" id="day-friday"></div>
@@ -119,8 +128,9 @@
 <script src="js/programme-data.js"></script>
 <script>
   // ── State ──────────────────────────────────────────────────────────────────
-  let currentRole = "director";
-  let currentDay  = "saturday";
+  let currentRole      = "director";
+  let currentDay       = "saturday";
+  let currentProgramme = "instructor"; // "instructor" | "assessor"
 
   const ROLE_LABELS = {
     director:   "Director",
@@ -129,23 +139,52 @@
     assessor:   "Assessor Candidate"
   };
 
+  // Candidates are locked to their stream; faculty/director can switch
+  const LOCKED_ROLES = { instructor: "instructor", assessor: "assessor" };
+
+  function activeProgrammeData() {
+    return currentProgramme === "assessor" ? ASSESSOR_PROGRAMME : PROGRAMME;
+  }
+
+  // ── Programme switching ────────────────────────────────────────────────────
+  function setProgramme(prog) {
+    currentProgramme = prog;
+    // Update button styles
+    document.getElementById("prog-instructor").style.cssText =
+      prog === "instructor"
+        ? "padding:5px 14px;border-radius:16px;border:2px solid #1a3a5c;background:#1a3a5c;color:white;font-size:12px;font-weight:700;font-family:var(--font);cursor:pointer;"
+        : "padding:5px 14px;border-radius:16px;border:2px solid #dce3ea;background:white;color:#637282;font-size:12px;font-weight:700;font-family:var(--font);cursor:pointer;";
+    document.getElementById("prog-assessor").style.cssText =
+      prog === "assessor"
+        ? "padding:5px 14px;border-radius:16px;border:2px solid #1a3a5c;background:#1a3a5c;color:white;font-size:12px;font-weight:700;font-family:var(--font);cursor:pointer;"
+        : "padding:5px 14px;border-radius:16px;border:2px solid #dce3ea;background:white;color:#637282;font-size:12px;font-weight:700;font-family:var(--font);cursor:pointer;";
+    renderAll();
+  }
+
   // ── Role management ────────────────────────────────────────────────────────
   function setRole(role) {
     currentRole = role;
     document.getElementById("roleBadge").textContent = ROLE_LABELS[role] || role;
 
+    // Candidates are locked to their programme stream
+    if (LOCKED_ROLES[role]) {
+      currentProgramme = LOCKED_ROLES[role];
+      document.getElementById("programmeSwitcher").style.display = "none";
+    } else {
+      // Faculty and director can switch programmes
+      document.getElementById("programmeSwitcher").style.display =
+        (role === "faculty" || role === "director") ? "block" : "none";
+    }
+
     // Director toolbar
-    const tb = document.getElementById("directorToolbar");
-    tb.classList.toggle("hidden", role !== "director");
+    document.getElementById("directorToolbar").classList.toggle("hidden", role !== "director");
 
     // Faculty toolbar
-    const ftb = document.getElementById("facultyToolbar");
-    ftb.style.display = (role === "faculty") ? "flex" : "none";
+    document.getElementById("facultyToolbar").style.display = (role === "faculty") ? "flex" : "none";
 
-    // Noticeboard visibility
+    // Noticeboard
     document.getElementById("noticeboard").classList.toggle("hidden", role === "director");
 
-    // Regenerate timetable for new role
     renderAll();
   }
 
@@ -157,69 +196,65 @@
     document.getElementById("day-" + day).classList.add("active");
     document.getElementById("tab-" + day).classList.add("active");
     updateLiveBar();
+    scrollToCurrent();
   }
 
-  // ── Render timetable ───────────────────────────────────────────────────────
+  // ── Render ─────────────────────────────────────────────────────────────────
   function renderAll() {
     ["friday", "saturday", "sunday"].forEach(day => renderDay(day));
     updateLiveBar();
     updateGatewayAlert();
+    setProgramme(currentProgramme); // keep button states in sync
+    scrollToCurrent();
   }
 
   function renderDay(day) {
     const container = document.getElementById("day-" + day);
-    const sessions = sessionsForRole(day, currentRole);
-
-    // Sort by start time
-    sessions.sort((a, b) => timeToMinutes(a.start) - timeToMinutes(b.start));
+    const prog = activeProgrammeData();
+    const daySessions = prog[day] ? prog[day].sessions : [];
+    const sessions = daySessions
+      .filter(s => s.roles.includes("all") || s.roles.includes(currentRole))
+      .sort((a, b) => timeToMinutes(a.start) - timeToMinutes(b.start));
 
     if (sessions.length === 0) {
       container.innerHTML = `<p class="text-muted text-sm" style="padding:24px;text-align:center;">No sessions for your role on this day.</p>`;
       return;
     }
-
     container.innerHTML = sessions.map(s => renderSession(s)).join("");
   }
 
   function renderSession(s) {
-    const end     = sessionEndTime(s);
-    const current = isSessionCurrent(s);
-    const past    = isSessionPast(s);
-    const isBreak = s.tags.includes("break");
+    const current       = isSessionCurrent(s);
+    const past          = isSessionPast(s);
+    const isBreak       = s.tags.includes("break");
     const isFacultyOnly = s.tags.includes("faculty-only");
-    const isGateway = s.tags.includes("gateway-deadline");
-    const isITC    = s.tags.includes("itc-observation");
+    const isGateway     = s.tags.includes("gateway-deadline");
+    const isITC         = s.tags.includes("itc-observation");
     const isPlaceholder = s.tags.includes("placeholder");
-    const isAssessor = s.tags.includes("assessor-stream");
 
     let rowClass = "session-row";
-    if (current) rowClass += " current";
-    else if (past) rowClass += " past";
-    if (isBreak)  rowClass += " break-row";
+    if (current)      rowClass += " current";
+    else if (past)    rowClass += " past";
+    if (isBreak)      rowClass += " break-row";
     if (isFacultyOnly) rowClass += " faculty-only";
 
-    // Tags
     let tags = "";
-    if (s.location) tags += `<span class="meta-tag tag-location">📍 ${s.location}</span>`;
-    if (s.lead)     tags += `<span class="meta-tag tag-lead">👤 ${s.lead}</span>`;
+    if (s.location)    tags += `<span class="meta-tag tag-location">📍 ${s.location}</span>`;
+    if (s.lead)        tags += `<span class="meta-tag tag-lead">👤 ${s.lead}</span>`;
     if (isGateway && !isBreak) tags += `<span class="meta-tag tag-gateway">⏱ Gateway deadline: 11:45</span>`;
-    if (isITC)      tags += `<span class="meta-tag tag-itc">🔍 ITC observation</span>`;
+    if (isITC)         tags += `<span class="meta-tag tag-itc">🔍 ITC observation</span>`;
     if (isPlaceholder) tags += `<span class="meta-tag" style="background:#fff3cd;color:#856404;">⚠ To be confirmed</span>`;
 
-    // Resources
     let resources = "";
     if (s.resources && s.resources.length) {
       resources = s.resources.map(r => {
-        const href = r.url || r.path || "#";
+        const href   = r.url || r.path || "#";
         const target = r.url ? 'target="_blank"' : '';
         return `<a class="resource-btn" href="${href}" ${target}><span class="icon">${r.icon || "📄"}</span>${r.title}</a>`;
       }).join("");
     }
 
-    // Notes
-    const notes = s.notes ? `<p class="session-notes">${s.notes}</p>` : "";
-
-    // Detail section (notes + resources) — only if there's something to show
+    const notes     = s.notes ? `<p class="session-notes">${s.notes}</p>` : "";
     const hasDetail = notes || resources;
     const detailSection = hasDetail ? `
       <div class="session-detail" id="detail-${s.id}">
@@ -227,7 +262,6 @@
         ${resources ? `<div class="resource-links">${resources}</div>` : ""}
       </div>` : "";
 
-    // Timer button (director only)
     const timerBtn = currentRole === "director" && !isBreak
       ? `<button class="session-timer-btn" onclick="event.stopPropagation();launchTimer('${s.id}','${s.title.replace(/'/g,"\\'")}',${s.duration})">⏱ Timer</button>`
       : "";
@@ -253,7 +287,17 @@
     </div>`;
   }
 
-  // ── Toggle session detail ──────────────────────────────────────────────────
+  // ── Scroll to current session ──────────────────────────────────────────────
+  function scrollToCurrent() {
+    setTimeout(() => {
+      const current = document.querySelector(".day-section.active .session-row.current");
+      if (current) {
+        current.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+    }, 150);
+  }
+
+  // ── Toggle detail ──────────────────────────────────────────────────────────
   function toggleDetail(id) {
     const detail  = document.getElementById("detail-" + id);
     const chevron = document.getElementById("chevron-" + id);
@@ -262,54 +306,51 @@
     if (chevron) chevron.style.transform = open ? "rotate(90deg)" : "";
   }
 
-  // ── Live bar update ────────────────────────────────────────────────────────
+  // ── Live bar ───────────────────────────────────────────────────────────────
   function updateLiveBar() {
     const now = new Date();
-    const h = now.getHours().toString().padStart(2,"0");
-    const m = now.getMinutes().toString().padStart(2,"0");
-    document.getElementById("currentTime").textContent = `${h}:${m}`;
+    document.getElementById("currentTime").textContent =
+      now.getHours().toString().padStart(2,"0") + ":" + now.getMinutes().toString().padStart(2,"0");
 
-    const sessions = sessionsForRole(currentDay, currentRole)
+    const prog = activeProgrammeData();
+    const daySessions = prog[currentDay] ? prog[currentDay].sessions : [];
+    const sessions = daySessions
+      .filter(s => s.roles.includes("all") || s.roles.includes(currentRole))
       .sort((a,b) => timeToMinutes(a.start) - timeToMinutes(b.start));
 
-    const live = sessions.find(s => isSessionCurrent(s));
+    const live      = sessions.find(s => isSessionCurrent(s));
     const liveLabel = document.getElementById("liveSessionLabel");
     const nextInfo  = document.getElementById("nextSessionInfo");
 
     if (live) {
       liveLabel.textContent = `▶ ${live.title}`;
-      const end = timeToMinutes(live.start) + live.duration;
-      const remaining = end - (now.getHours()*60 + now.getMinutes());
+      const remaining = (timeToMinutes(live.start) + live.duration) - (now.getHours()*60 + now.getMinutes());
       nextInfo.textContent = `${remaining} min remaining`;
     } else {
       liveLabel.textContent = "";
-      const next = sessions.find(s => timeToMinutes(s.start) > (now.getHours()*60+now.getMinutes()));
+      const nowMins = now.getHours()*60 + now.getMinutes();
+      const next = sessions.find(s => timeToMinutes(s.start) > nowMins);
       nextInfo.textContent = next ? `Next: ${next.start} — ${next.title}` : "";
     }
   }
 
-  // ── Gateway alert (director + faculty) ────────────────────────────────────
+  // ── Gateway alert ──────────────────────────────────────────────────────────
   function updateGatewayAlert() {
     const alert = document.getElementById("gatewayAlert");
     if (!alert) return;
-    const now = new Date();
-    const nowMins = now.getHours()*60 + now.getMinutes();
-    const showRoles = ["director","faculty"];
-    const gatewayMins = 10*60+45; // 10:45 start of group practice
-    const deadlineMins = 11*60+45; // 11:45
-    const isSatOnView = currentDay === "saturday";
-    const isRelevantRole = showRoles.includes(currentRole);
-    const isWindow = nowMins >= gatewayMins && nowMins < deadlineMins;
-    alert.style.display = (isSatOnView && isRelevantRole && isWindow) ? "flex" : "none";
+    const nowMins     = new Date().getHours()*60 + new Date().getMinutes();
+    const isInstructor = currentProgramme === "instructor";
+    const isRelevant  = ["director","faculty"].includes(currentRole) && isInstructor;
+    const isWindow    = nowMins >= (10*60+45) && nowMins < (11*60+45);
+    alert.style.display = (currentDay === "saturday" && isRelevant && isWindow) ? "flex" : "none";
   }
 
-  // ── Timer launcher (director) ──────────────────────────────────────────────
+  // ── Timer ──────────────────────────────────────────────────────────────────
   function launchTimer(sessionId, title, durationMins) {
-    const url = `room-screen.html?timer=${durationMins}&label=${encodeURIComponent(title)}&sessionId=${sessionId}`;
-    window.open(url, "rmd-room-timer", "width=800,height=600");
+    window.open(`room-screen.html?timer=${durationMins}&label=${encodeURIComponent(title)}&sessionId=${sessionId}`, "rmd-room-timer", "width=800,height=600");
   }
 
-  // ── Message panel ──────────────────────────────────────────────────────────
+  // ── Messaging ──────────────────────────────────────────────────────────────
   function togglePanel(id) {
     document.getElementById(id).classList.toggle("hidden");
   }
@@ -318,41 +359,40 @@
     const text   = document.getElementById("msgText").value.trim();
     const target = document.getElementById("msgTarget").value;
     if (!text) return;
-
-    // TODO: write to Firebase messages collection
-    // db.collection(COLLECTIONS.messages).add({ text, target, ts: firebase.firestore.FieldValue.serverTimestamp(), author: "director" });
-
-    // Demo: show in noticeboard immediately
     const body = document.getElementById("noticeboardBody");
     const now  = new Date();
-    const time = `${now.getHours().toString().padStart(2,"0")}:${now.getMinutes().toString().padStart(2,"0")}`;
+    const time = now.getHours().toString().padStart(2,"0") + ":" + now.getMinutes().toString().padStart(2,"0");
     const item = document.createElement("div");
     item.className = "message-item";
     item.innerHTML = `<div>${text}</div><div class="message-time">${time} · to: ${target}</div>`;
     body.querySelector(".no-messages") && body.querySelector(".no-messages").remove();
     body.prepend(item);
-
     document.getElementById("msgText").value = "";
     document.getElementById("noticeboard").classList.remove("hidden");
   }
 
   // ── Auto-refresh ───────────────────────────────────────────────────────────
-  // Refresh live bar every 30s; full re-render every 5 minutes
   setInterval(updateLiveBar, 30 * 1000);
   setInterval(() => { renderAll(); }, 5 * 60 * 1000);
 
   // ── Init ───────────────────────────────────────────────────────────────────
   document.addEventListener("DOMContentLoaded", () => {
-    const urlRole = new URLSearchParams(window.location.search).get("role") || "director";
-    document.getElementById("roleSelect").value = urlRole;
-    setRole(urlRole);
-    switchDay("saturday");
+    const p      = new URLSearchParams(window.location.search);
+    const role   = p.get("role")   || "director";
+    const stream = p.get("stream") || null;
+
+    // If stream is specified (candidate QR login), lock to that programme
+    if (stream === "assessor") currentProgramme = "assessor";
+
+    document.getElementById("roleSelect").value = role;
+    setRole(role);
+
+    // Auto-select Saturday (main course day) or today if it matches
+    const today = new Date().getDay(); // 0=Sun,5=Fri,6=Sat
+    const dayMap = { 5: "friday", 6: "saturday", 0: "sunday" };
+    switchDay(dayMap[today] || "saturday");
+
     updateLiveBar();
-    // Scroll to current session
-    setTimeout(() => {
-      const current = document.querySelector(".session-row.current");
-      if (current) current.scrollIntoView({ behavior: "smooth", block: "center" });
-    }, 300);
   });
 </script>
 </body>

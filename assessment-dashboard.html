@@ -317,7 +317,10 @@
 
 <!-- Top bar -->
 <div class="top-bar">
-  <a href="timetable.html" title="Back to programme" style="display:flex;align-items:center;"><img src="assets/rmd-logo.png" alt="RMD" style="cursor:pointer;opacity:1;transition:opacity 0.15s;" onmouseover="this.style.opacity=0.75" onmouseout="this.style.opacity=1"></a>
+  <a href="timetable.html" title="Back to programme" style="display:flex;align-items:center;text-decoration:none;" id="logoLink">
+    <img src="assets/rmd-logo.png" alt="RMD" height="32"
+         onerror="document.getElementById('logoLink').innerHTML='<span style=\'color:white;font-size:13px;font-weight:900;border:2px solid rgba(255,255,255,0.7);padding:3px 8px;border-radius:4px;letter-spacing:1px;\'>RMD</span>'">
+  </a>
   <div class="top-bar-title">Assessment Dashboard</div>
   <div class="top-bar-time" id="topBarTime">--:--</div>
 </div>
