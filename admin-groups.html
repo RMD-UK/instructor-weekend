@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Group Management — RMD Instructor Weekend 2026</title>
+  <link rel="stylesheet" href="css/rmd.css">
+  <style>
+    body { background: #f0f3f6; }
+
+    .page-header {
+      background: var(--rmd-navy);
+      color: white;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .page-header a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 13px; }
+    .page-header a:hover { color: white; }
+    .page-header h1 { margin: 0; font-size: 17px; font-weight: 700; flex: 1; }
+
+    .save-bar {
+      background: #fff3cd;
+      border-bottom: 1px solid #ffc107;
+      padding: 8px 16px;
+      display: none;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      color: #856404;
+    }
+    .save-bar.visible { display: flex; }
+    .save-bar button {
+      background: #ffc107;
+      color: #3d2a00;
+      border: none;
+      padding: 5px 14px;
+      border-radius: 4px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: var(--font);
+    }
+    .save-bar button:hover { background: #e0a800; }
+
+    .section {
+      padding: 16px;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    .section-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #637282;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin: 0 0 12px;
+    }
+
+    /* ── Room grid ── */
+    .room-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 12px;
+    }
+
+    .room-card {
+      background: white;
+      border-radius: 8px;
+      border: 2px solid #dce3ea;
+      overflow: hidden;
+      transition: border-color 0.15s;
+    }
+    .room-card:focus-within { border-color: var(--rmd-navy); }
+
+    .room-card-header {
+      background: var(--rmd-navy);
+      color: white;
+      padding: 8px 12px;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    .room-card-body { padding: 10px 12px; }
+
+    .field-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: #637282;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      margin-bottom: 4px;
+    }
+
+    .field-label + select,
+    .field-label + input {
+      width: 100%;
+      padding: 6px 8px;
+      border: 1px solid #ccd6dd;
+      border-radius: 4px;
+      font-size: 13px;
+      font-family: var(--font);
+      color: #1a3a5c;
+      box-sizing: border-box;
+      margin-bottom: 10px;
+    }
+
+    .candidate-list {
+      min-height: 36px;
+      border: 1px dashed #ccd6dd;
+      border-radius: 4px;
+      padding: 4px 6px;
+      margin-bottom: 6px;
+      font-size: 12px;
+      color: #1a3a5c;
+    }
+    .candidate-list .cand-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: #e8f0f7;
+      border-radius: 12px;
+      padding: 3px 8px;
+      margin: 2px;
+      font-size: 12px;
+    }
+    .candidate-list .cand-chip button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #637282;
+      font-size: 11px;
+      padding: 0 0 0 2px;
+      line-height: 1;
+    }
+    .candidate-list .cand-chip button:hover { color: #c0392b; }
+    .candidate-list .empty-hint {
+      color: #a0adb7;
+      font-size: 12px;
+      padding: 4px 2px;
+    }
+
+    .add-cand-row {
+      display: flex;
+      gap: 4px;
+      margin-top: 2px;
+    }
+    .add-cand-row input {
+      flex: 1;
+      padding: 5px 7px;
+      border: 1px solid #ccd6dd;
+      border-radius: 4px;
+      font-size: 12px;
+      font-family: var(--font);
+    }
+    .add-cand-row button {
+      padding: 5px 10px;
+      background: var(--rmd-navy);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-size: 12px;
+      cursor: pointer;
+      font-family: var(--font);
+    }
+    .add-cand-row button:hover { background: #14305a; }
+
+    /* ── ITC rotation ── */
+    .itc-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 12px;
+    }
+
+    .itc-card {
+      background: white;
+      border-radius: 8px;
+      border: 2px solid #e8d5f0;
+      overflow: hidden;
+    }
+    .itc-card-header {
+      background: #6f42c1;
+      color: white;
+      padding: 8px 12px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .itc-card-header .itc-time {
+      opacity: 0.8;
+      font-weight: 400;
+      font-size: 11px;
+      margin-top: 2px;
+    }
+    .itc-card-body { padding: 12px; }
+    .itc-card-body select {
+      width: 100%;
+      padding: 7px 8px;
+      border: 1px solid #ccd6dd;
+      border-radius: 4px;
+      font-size: 13px;
+      font-family: var(--font);
+      color: #1a3a5c;
+      box-sizing: border-box;
+    }
+    .itc-note {
+      font-size: 11px;
+      color: #637282;
+      margin-top: 6px;
+    }
+
+    /* ── Overview table ── */
+    .overview-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      background: white;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .overview-table th {
+      background: var(--rmd-navy);
+      color: white;
+      padding: 8px 12px;
+      text-align: left;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+    .overview-table td {
+      padding: 8px 12px;
+      border-bottom: 1px solid #f0f3f6;
+      vertical-align: top;
+    }
+    .overview-table tr:last-child td { border-bottom: none; }
+    .overview-table tr:hover td { background: #f8fafc; }
+    .itc-here-badge {
+      display: inline-block;
+      background: #6f42c1;
+      color: white;
+      border-radius: 10px;
+      padding: 2px 7px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .no-itc { color: #a0adb7; font-size: 12px; }
+
+    .demo-banner {
+      background: #fff3cd;
+      border: 1px solid #ffc107;
+      border-radius: 6px;
+      padding: 10px 14px;
+      font-size: 13px;
+      color: #856404;
+      margin-bottom: 16px;
+    }
+
+    .unassigned-pool {
+      background: white;
+      border-radius: 8px;
+      border: 2px solid #dce3ea;
+      padding: 12px;
+    }
+    .unassigned-pool .pool-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      min-height: 32px;
+    }
+    .pool-chip {
+      background: #f0f3f6;
+      border: 1px solid #ccd6dd;
+      border-radius: 12px;
+      padding: 4px 10px;
+      font-size: 12px;
+      color: #1a3a5c;
+      cursor: pointer;
+      transition: background 0.1s;
+    }
+    .pool-chip:hover { background: #d0e8ff; border-color: var(--rmd-navy); }
+    .pool-empty { color: #a0adb7; font-size: 12px; padding: 4px 0; }
+  </style>
+</head>
+<body>
+
+<!-- ── Header ── -->
+<div class="page-header">
+  <a href="timetable.html?role=director">← Timetable</a>
+  <h1>Group Management</h1>
+  <span style="font-size:12px;opacity:0.7;">Director only</span>
+</div>
+
+<!-- ── Save bar ── -->
+<div class="save-bar" id="saveBar">
+  ⚠ You have unsaved changes.
+  <button onclick="saveAll()">Save to Firestore</button>
+  <button onclick="discardChanges()" style="background:#e0e0e0;color:#333;">Discard</button>
+</div>
+
+<!-- ── Room assignments ── -->
+<div class="section">
+  <p class="section-title">Breakout Room Assignments</p>
+  <div id="demoBanner" class="demo-banner" style="display:none;">
+    🔌 Firebase not connected — showing demo data. Changes will not be saved until connected.
+  </div>
+  <div class="room-grid" id="roomGrid">
+    <!-- populated by JS -->
+  </div>
+</div>
+
+<!-- ── Unassigned candidates pool ── -->
+<div class="section" id="poolSection">
+  <p class="section-title">Unassigned Candidates</p>
+  <div class="unassigned-pool">
+    <div class="pool-chips" id="poolChips">
+      <span class="pool-empty">All candidates assigned.</span>
+    </div>
+    <p style="font-size:11px;color:#a0adb7;margin:8px 0 0;">Click a name to assign — you'll be prompted to choose a room.</p>
+  </div>
+</div>
+
+<!-- ── ITC rotation ── -->
+<div class="section">
+  <p class="section-title">ITC Rotation Schedule</p>
+  <p style="font-size:13px;color:#637282;margin:-4px 0 12px;">
+    For the three group practice sessions, assign the ITC to a specific breakout room.
+    All other sessions, the ITC is in the main plenary with everyone.
+  </p>
+  <div class="itc-grid" id="itcGrid">
+    <!-- populated by JS -->
+  </div>
+</div>
+
+<!-- ── Overview ── -->
+<div class="section">
+  <p class="section-title">Overview</p>
+  <div style="overflow-x:auto;">
+    <table class="overview-table" id="overviewTable">
+      <thead>
+        <tr>
+          <th>Room</th>
+          <th>Instructor Trainer</th>
+          <th>Candidates</th>
+          <th>Sat 16:00</th>
+          <th>Sun 10:30</th>
+          <th>Sun 13:30</th>
+        </tr>
+      </thead>
+      <tbody id="overviewBody">
+        <!-- populated by JS -->
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script src="js/firebase-config.js"></script>
+<script>
+
+// ── ITC session slots ──────────────────────────────────────────────────────
+const ITC_SLOTS = [
+  { id: "sat-20", label: "Group Practice: The Learning Conversation", time: "Sat 16:00 – 16:45" },
+  { id: "sun-4",  label: "Group Practice: Teaching",                   time: "Sun 10:30 – 12:00" },
+  { id: "sun-10", label: "Group Practice: Continuous Assessment",       time: "Sun 13:30 – 15:00" }
+];
+
+// ── State ──────────────────────────────────────────────────────────────────
+// groups[room] = { it: "Name", candidates: ["Name1", "Name2", ...] }
+// itcSchedule[sessionId] = "CM01" | ""
+let groups     = {};
+let itcSchedule = {};
+let isDirty    = false;
+let usingFirebase = false;
+
+// Demo seed data (used when Firebase unavailable)
+const DEMO_GROUPS = {
+  CM01: { it: "Dr Smith",   candidates: ["Alice Ahmed", "Ben Clark"] },
+  CM02: { it: "Dr Jones",   candidates: ["Carol Davies", "David Evans"] },
+  CM03: { it: "Dr Patel",   candidates: ["Emma Fisher", "Frank Green"] },
+  CM04: { it: "Dr Wilson",  candidates: ["Grace Harris", "Harry Ito"] },
+  CM13: { it: "Dr Taylor",  candidates: ["Isla James", "Jack King"] },
+  CM14: { it: "Dr Brown",   candidates: ["Karen Lee", "Liam Moore"] },
+  CM15: { it: "Dr Miller",  candidates: ["Mia Nelson", "Noah Owen"] },
+  CM16: { it: "Dr Davis",   candidates: ["Olivia Park", "Peter Quinn"] }
+};
+const DEMO_ITC_SCHEDULE = { "sat-20": "CM01", "sun-4": "CM03", "sun-10": "CM05" };
+
+// Faculty options (loaded from Firestore or demo)
+let FACULTY_OPTIONS = [
+  "Dr Smith", "Dr Jones", "Dr Patel", "Dr Wilson",
+  "Dr Taylor", "Dr Brown", "Dr Miller", "Dr Davis", "Dr Hughes"
+];
+
+// ── Dirty tracking ──────────────────────────────────────────────────────────
+function markDirty() {
+  isDirty = true;
+  document.getElementById("saveBar").classList.add("visible");
+  renderOverview();
+}
+
+function clearDirty() {
+  isDirty = false;
+  document.getElementById("saveBar").classList.remove("visible");
+}
+
+// ── Room card rendering ────────────────────────────────────────────────────
+function buildRoomGrid() {
+  const grid = document.getElementById("roomGrid");
+  grid.innerHTML = INSTRUCTOR_ROOMS.map(room => buildRoomCard(room)).join("");
+}
+
+function buildRoomCard(room) {
+  const g = groups[room] || { it: "", candidates: [] };
+  const itOptions = ["", ...FACULTY_OPTIONS].map(f =>
+    `<option value="${f}" ${f === g.it ? "selected" : ""}>${f || "— Assign IT —"}</option>`
+  ).join("");
+
+  const chips = g.candidates.length
+    ? g.candidates.map(c => `
+        <span class="cand-chip">
+          ${c}
+          <button title="Remove" onclick="removeCandidate('${room}','${c.replace(/'/g,"\\'")}')">✕</button>
+        </span>`).join("")
+    : `<span class="empty-hint">No candidates assigned</span>`;
+
+  return `
+  <div class="room-card" id="room-card-${room}">
+    <div class="room-card-header">${room}</div>
+    <div class="room-card-body">
+      <div class="field-label">Instructor Trainer</div>
+      <select onchange="setIT('${room}', this.value)">${itOptions}</select>
+      <div class="field-label">Instructor Candidates</div>
+      <div class="candidate-list" id="cands-${room}">${chips}</div>
+      <div class="add-cand-row">
+        <input type="text" id="newcand-${room}" placeholder="Add candidate name…"
+               onkeydown="if(event.key==='Enter') addCandidate('${room}')">
+        <button onclick="addCandidate('${room}')">Add</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function refreshRoomCard(room) {
+  const g = groups[room] || { it: "", candidates: [] };
+  const list = document.getElementById("cands-" + room);
+  if (!list) return;
+  list.innerHTML = g.candidates.length
+    ? g.candidates.map(c => `
+        <span class="cand-chip">
+          ${c}
+          <button title="Remove" onclick="removeCandidate('${room}','${c.replace(/'/g,"\\'")}')">✕</button>
+        </span>`).join("")
+    : `<span class="empty-hint">No candidates assigned</span>`;
+}
+
+// ── Room operations ────────────────────────────────────────────────────────
+function setIT(room, value) {
+  if (!groups[room]) groups[room] = { it: "", candidates: [] };
+  groups[room].it = value;
+  markDirty();
+}
+
+function addCandidate(room) {
+  const input = document.getElementById("newcand-" + room);
+  const name  = input.value.trim();
+  if (!name) return;
+  if (!groups[room]) groups[room] = { it: "", candidates: [] };
+  if (!groups[room].candidates.includes(name)) {
+    groups[room].candidates.push(name);
+    markDirty();
+    refreshRoomCard(room);
+  }
+  input.value = "";
+}
+
+function removeCandidate(room, name) {
+  if (!groups[room]) return;
+  groups[room].candidates = groups[room].candidates.filter(c => c !== name);
+  markDirty();
+  refreshRoomCard(room);
+}
+
+// ── ITC rotation ───────────────────────────────────────────────────────────
+function buildITCGrid() {
+  const grid = document.getElementById("itcGrid");
+  grid.innerHTML = ITC_SLOTS.map(slot => {
+    const currentRoom = itcSchedule[slot.id] || "";
+    const options = ["", ...INSTRUCTOR_ROOMS].map(r =>
+      `<option value="${r}" ${r === currentRoom ? "selected" : ""}>${r || "— Not assigned —"}</option>`
+    ).join("");
+    return `
+    <div class="itc-card">
+      <div class="itc-card-header">
+        ${slot.label}
+        <div class="itc-time">${slot.time}</div>
+      </div>
+      <div class="itc-card-body">
+        <div class="field-label">ITC assigned to room</div>
+        <select onchange="setITCRoom('${slot.id}', this.value)">${options}</select>
+        <p class="itc-note" id="itc-note-${slot.id}">${buildITCNote(slot.id)}</p>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+function buildITCNote(slotId) {
+  const room = itcSchedule[slotId];
+  if (!room) return "ITC will be in the main plenary for this session.";
+  const it = groups[room] ? groups[room].it : "";
+  return it
+    ? `ITC will observe <strong>${room}</strong> with <strong>${it}</strong>.`
+    : `ITC will observe <strong>${room}</strong>.`;
+}
+
+function setITCRoom(slotId, room) {
+  itcSchedule[slotId] = room;
+  const note = document.getElementById("itc-note-" + slotId);
+  if (note) note.innerHTML = buildITCNote(slotId);
+  markDirty();
+  renderOverview();
+}
+
+// ── Overview table ─────────────────────────────────────────────────────────
+function renderOverview() {
+  const tbody = document.getElementById("overviewBody");
+  tbody.innerHTML = INSTRUCTOR_ROOMS.map(room => {
+    const g  = groups[room] || { it: "", candidates: [] };
+    const it = g.it || '<span class="no-itc">Not assigned</span>';
+
+    const cands = g.candidates.length
+      ? g.candidates.join(", ")
+      : '<span class="no-itc">None</span>';
+
+    function itcCell(slotId) {
+      if (itcSchedule[slotId] === room) return '<span class="itc-here-badge">ITC here</span>';
+      return '<span class="no-itc">—</span>';
+    }
+
+    return `
+    <tr>
+      <td><strong>${room}</strong></td>
+      <td>${it}</td>
+      <td style="font-size:12px;">${cands}</td>
+      <td>${itcCell("sat-20")}</td>
+      <td>${itcCell("sun-4")}</td>
+      <td>${itcCell("sun-10")}</td>
+    </tr>`;
+  }).join("");
+}
+
+// ── Save / load ────────────────────────────────────────────────────────────
+async function saveAll() {
+  if (!usingFirebase || !db) {
+    alert("Firebase not connected — cannot save. In production, connect Firebase first.");
+    return;
+  }
+  try {
+    const batch = db.batch();
+
+    // Save room assignments
+    INSTRUCTOR_ROOMS.forEach(room => {
+      const ref = db.collection(COLLECTIONS.groups).doc(room);
+      batch.set(ref, groups[room] || { it: "", candidates: [] }, { merge: true });
+    });
+
+    // Save ITC schedule
+    const itcRef = db.collection(COLLECTIONS.groups).doc("itc_schedule");
+    batch.set(itcRef, itcSchedule, { merge: false });
+
+    await batch.commit();
+    clearDirty();
+    showToast("Saved ✓");
+  } catch (err) {
+    console.error("Save failed:", err);
+    alert("Save failed: " + err.message);
+  }
+}
+
+async function loadFromFirestore() {
+  try {
+    const snap = await db.collection(COLLECTIONS.groups).get();
+    snap.forEach(doc => {
+      if (doc.id === "itc_schedule") {
+        itcSchedule = doc.data() || {};
+      } else if (INSTRUCTOR_ROOMS.includes(doc.id)) {
+        groups[doc.id] = doc.data();
+      }
+    });
+  } catch (err) {
+    console.warn("Could not load groups from Firestore:", err);
+  }
+}
+
+function discardChanges() {
+  if (!confirm("Discard unsaved changes?")) return;
+  initDemoData();
+  buildRoomGrid();
+  buildITCGrid();
+  renderOverview();
+  clearDirty();
+}
+
+function initDemoData() {
+  groups      = JSON.parse(JSON.stringify(DEMO_GROUPS));
+  itcSchedule = JSON.parse(JSON.stringify(DEMO_ITC_SCHEDULE));
+}
+
+// ── Toast ──────────────────────────────────────────────────────────────────
+function showToast(msg) {
+  let t = document.getElementById("toast");
+  if (!t) {
+    t = document.createElement("div");
+    t.id = "toast";
+    t.style.cssText = "position:fixed;bottom:24px;right:16px;background:#1a3a5c;color:white;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:700;z-index:999;transition:opacity 0.3s;";
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.style.opacity = "1";
+  setTimeout(() => { t.style.opacity = "0"; }, 2500);
+}
+
+// ── Init ───────────────────────────────────────────────────────────────────
+document.addEventListener("DOMContentLoaded", async () => {
+  const firebaseReady = initFirebase();
+
+  if (firebaseReady) {
+    usingFirebase = true;
+    await loadFromFirestore();
+    // If nothing loaded, use demo data as starting point
+    if (Object.keys(groups).length === 0) initDemoData();
+  } else {
+    document.getElementById("demoBanner").style.display = "block";
+    initDemoData();
+  }
+
+  buildRoomGrid();
+  buildITCGrid();
+  renderOverview();
+});
+</script>
+</body>
+</html>

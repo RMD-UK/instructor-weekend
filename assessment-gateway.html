@@ -326,12 +326,14 @@ async function loadCandidates() {
 }
 
 function loadDemo() {
-  const demoRooms = ["WF15","WF16","WF17","G06","G07"];
+  const demoRooms = ["CM01","CM02","CM03","CM04","CM13","CM14","CM15","CM16"];
   if (!currentRoom) currentRoom = demoRooms[0];
   allRooms = demoRooms;
   const names = [
-    "Alex Patel","Bea Thompson","Chris Owusu","Divya Mehta","Ed Walsh",
-    "Fiona Clarke","George Ivanova","Hannah Brown","Isaac Wong","Julia Nakamura"
+    "Dr A. Ahmed","Dr B. Brennan","Dr C. Carter","Dr D. Davies",
+    "Dr E. Evans","Dr F. Fletcher","Dr G. Green","Dr H. Harris",
+    "Dr I. Ingram","Dr J. Jones","Dr K. Khan","Dr L. Lewis",
+    "Dr M. Morgan","Dr N. Nguyen","Dr O. Okafor","Dr P. Patel"
   ];
   demoRooms.forEach(room => {
     const offset = demoRooms.indexOf(room) * 2;

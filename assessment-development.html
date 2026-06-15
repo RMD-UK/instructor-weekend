@@ -371,11 +371,16 @@ async function loadCandidates() {
 }
 
 function loadDemo() {
-  const rooms = ["WF15","WF19","ATH"];
+  const rooms = ["CM01","CM02","CM03","CM04","CM13","CM14","CM15","CM16"];
   const names = [
-    ["Dr A. Ahmed","WF15"],["Dr B. Brennan","WF15"],["Dr G. Green","WF15"],["Dr J. Jones","WF15"],
-    ["Dr C. Carter","WF19"],["Dr D. Davies","WF19"],["Dr H. Harris","WF19"],["Dr K. Khan","WF19"],
-    ["Dr E. Evans","ATH"], ["Dr F. Fletcher","ATH"],["Dr I. Ingram","ATH"],["Dr L. Lewis","ATH"]
+    ["Dr A. Ahmed","CM01"],["Dr B. Brennan","CM01"],
+    ["Dr C. Carter","CM02"],["Dr D. Davies","CM02"],
+    ["Dr E. Evans","CM03"],["Dr F. Fletcher","CM03"],
+    ["Dr G. Green","CM04"],["Dr H. Harris","CM04"],
+    ["Dr I. Ingram","CM13"],["Dr J. Jones","CM13"],
+    ["Dr K. Khan","CM14"],["Dr L. Lewis","CM14"],
+    ["Dr M. Morgan","CM15"],["Dr N. Nguyen","CM15"],
+    ["Dr O. Okafor","CM16"],["Dr P. Patel","CM16"]
   ];
   candidates = names.map(([name, room], i) => ({
     id: "demo_" + (i + 1),

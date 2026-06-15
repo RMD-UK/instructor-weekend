@@ -28,8 +28,12 @@ const COLLECTIONS = {
   messages:    "messages",      // broadcast messages (room screens + noticeboard)
   rooms:       "rooms",         // room state (timer, current message)
   feedback:    "feedback",      // faculty voice feedback (transcripts)
-  itcObs:      "itc_observations" // ITC observation records
+  itcObs:      "itc_observations", // ITC observation records
+  groups:      "groups"          // room assignments: IT + candidates + ITC rotation
 };
+
+// ── Rooms ───────────────────────────────────────────────────────────────────
+const INSTRUCTOR_ROOMS = ["CM01","CM02","CM03","CM04","CM13","CM14","CM15","CM16"];
 
 // ── Roles ───────────────────────────────────────────────────────────────────
 const ROLES = {
