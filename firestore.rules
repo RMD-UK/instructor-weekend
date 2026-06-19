@@ -28,11 +28,13 @@ service cloud.firestore {
     }
 
     // ── Faculty pre-course form ─────────────────────────────────────────────
-    // Create: public — form is sent to faculty before they have a platform login
-    // Read/update/delete: authenticated only — only you can view responses
+    // Create, read, update: public — form is sent to faculty before they have a
+    //   platform login, and they can reopen it to look up and edit their own
+    //   answers by email (the form only ever queries/writes its own record)
+    // Delete: authenticated only — only you can remove responses
     match /faculty_responses/{docId} {
-      allow create: if true;
-      allow read, update, delete: if request.auth != null;
+      allow create, read, update: if true;
+      allow delete: if request.auth != null;
     }
 
     // ── Assessments ─────────────────────────────────────────────────────────
