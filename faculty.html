@@ -35,7 +35,8 @@
 
   <div class="content-card">
     <h2 id="groupHeading">Student Faculty</h2>
-    <p class="text-muted text-sm mb-8">Photos coming soon. Names are drawn from the current academic year's RMD Birmingham MOU roster.</p>
+    <p class="text-muted text-sm mb-8" id="groupNote">Photos coming soon. Roles are drawn from the current academic year's RMD Birmingham student faculty structure.</p>
+    <div id="facultyTeams"></div>
     <ul class="faculty-list" id="facultyList"></ul>
   </div>
 
@@ -43,23 +44,46 @@
 
 <script src="js/firebase-config.js"></script>
 <script>
-  // ── Static faculty names, sourced from the MOU roster ───────────────────────
+  // ── Static faculty roster, sourced from the MOU roster + student faculty
+  // role list ──────────────────────────────────────────────────────────────
   // The mou_roster Firestore collection is authenticated-read-only (it holds
   // member emails — see firestore.rules), so this public page uses a static
   // name-only list instead of querying it live, to avoid exposing emails.
   //
-  // Refresh this list each academic year the same way the MOU roster itself is
-  // refreshed (see admin-mou-dashboard.html "Manage roster" tab / project notes):
-  // export that year's roster, filter for role "RMD Student Faculty" / "RMD
-  // Senior Faculty", and replace the arrays below with names only.
+  // Refresh this each academic year alongside the MOU roster reimport (see
+  // admin-mou-dashboard.html "Manage roster" tab) and the student faculty
+  // role document Jon circulates at the start of the year: filter the roster
+  // for role "RMD Student Faculty" / "RMD Senior Faculty" for names, and use
+  // the role document for team/lead structure on the student side.
   const ROSTER_YEAR = (typeof CURRENT_MOU_YEAR !== "undefined") ? CURRENT_MOU_YEAR : "2026/27";
 
   const FACULTY = {
     student: [
-      "Tanwen Bird", "Alessandro Pace", "Stella Szeckler", "Krishan Patel",
-      "Isabel Winfield", "Holly Smyth", "Megan Harrison", "Tess Brock",
-      "Ellie Scholes", "Sophie McKillop", "Tegan Bailey", "Georgia Crutchfield",
-      "Jaimini Lakhani", "Emily Bracegirdle-Morais", "Kit Smith"
+      { team: "Student Faculty Chair", members: [
+        { name: "Tanwen Bird", role: "Chair" }
+      ]},
+      { team: "Team Teachers", members: [
+        { name: "Alessandro Pace", role: "Team Lead" },
+        { name: "Isabel (Issy) Winfield", role: "Team Member" },
+        { name: "Theresa (Tess) Brock", role: "Team Member" },
+        { name: "Tegan Bailey", role: "Team Member" }
+      ]},
+      { team: "Team Admin", members: [
+        { name: "Stella Szeckler", role: "Team Lead" },
+        { name: "Holly Smyth", role: "Team Member" },
+        { name: "Stephanie (Ellie) Scholes", role: "Team Member" },
+        { name: "Georgia Crutchfield", role: "Team Member" }
+      ]},
+      { team: "Team Logistics", members: [
+        { name: "Krishan (Krish) Patel", role: "Team Lead" },
+        { name: "Megan Harrison", role: "Team Member" },
+        { name: "Jaimini Lakhani", role: "Team Member" },
+        { name: "Sophie McKillop", role: "Team Member" }
+      ]},
+      { team: "Nurse Refresher Co-leads", members: [
+        { name: "Emily Bracegirdle-Morais", role: "Co-lead" },
+        { name: "Kit (Katharine) Smith", role: "Co-lead" }
+      ]}
     ],
     senior: [
       "Tom Burton", "Ben Stanley", "Chesca Harper", "Zanita Volschenk",
@@ -77,12 +101,44 @@
   document.getElementById("groupHeading").textContent = group === "senior" ? "Senior Faculty" : "Student Faculty";
   document.getElementById("pageTitle").textContent = "RMD Birmingham " + (group === "senior" ? "Senior" : "Student") + " Faculty";
 
-  const list = document.getElementById("facultyList");
-  FACULTY[group].forEach(name => {
-    const li = document.createElement("li");
-    li.textContent = name;
-    list.appendChild(li);
-  });
+  const teamsEl = document.getElementById("facultyTeams");
+  const listEl  = document.getElementById("facultyList");
+  const noteEl  = document.getElementById("groupNote");
+
+  if (group === "senior") {
+    // Flat list — no team structure for senior faculty.
+    noteEl.textContent = "Photos coming soon. Names are drawn from the current academic year's RMD Birmingham MOU roster.";
+    FACULTY.senior.forEach(name => {
+      const li = document.createElement("li");
+      li.textContent = name;
+      listEl.appendChild(li);
+    });
+  } else {
+    // Grouped by team, with lead/member/co-lead roles.
+    FACULTY.student.forEach(team => {
+      const wrap = document.createElement("div");
+      wrap.className = "faculty-team-group";
+
+      const title = document.createElement("div");
+      title.className = "faculty-team-title";
+      title.textContent = team.team;
+      wrap.appendChild(title);
+
+      const ul = document.createElement("ul");
+      ul.className = "faculty-list";
+      team.members.forEach(m => {
+        const li = document.createElement("li");
+        li.textContent = m.name;
+        const roleSpan = document.createElement("span");
+        roleSpan.className = "faculty-role";
+        roleSpan.textContent = m.role;
+        li.appendChild(roleSpan);
+        ul.appendChild(li);
+      });
+      wrap.appendChild(ul);
+      teamsEl.appendChild(wrap);
+    });
+  }
 </script>
 </body>
 </html>
