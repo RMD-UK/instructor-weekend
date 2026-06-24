@@ -786,6 +786,34 @@ body {
   margin-bottom: 8px;
 }
 
+.faculty-list.has-photos {
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+}
+
+.faculty-list.has-photos li {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 6px;
+  padding: 14px 10px 12px;
+}
+
+.faculty-photo-placeholder {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--rmd-light);
+  border: 2px dashed var(--rmd-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--rmd-muted);
+  flex-shrink: 0;
+}
+
 .faculty-toggle { display: flex; gap: 10px; margin-bottom: 20px; }
 
 .faculty-toggle a {
