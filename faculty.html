@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RMD Birmingham Faculty — RMD UK</title>
+  <link rel="stylesheet" href="css/rmd.css">
+</head>
+<body>
+
+<nav class="site-nav">
+  <a href="index.html" style="display:flex;align-items:center;text-decoration:none;" id="logoLink">
+    <img src="assets/rmd-logo.png" alt="RMD logo" class="logo">
+  </a>
+  <span class="site-title">RMD UK</span>
+  <div class="site-links">
+    <a href="index.html">Home</a>
+    <a href="rmd-birmingham.html">RMD Birmingham</a>
+  </div>
+</nav>
+
+<div class="rmd-hero">
+  <h1 id="pageTitle">RMD Birmingham Faculty</h1>
+  <p>Academic year <span id="rosterYear"></span></p>
+</div>
+
+<div class="content-wrap">
+
+  <a href="rmd-birmingham.html" class="back-link">← Back to RMD Birmingham</a>
+
+  <div class="faculty-toggle">
+    <a id="tabStudent" href="faculty.html?group=student">Student Faculty</a>
+    <a id="tabSenior" href="faculty.html?group=senior">Senior Faculty</a>
+  </div>
+
+  <div class="content-card">
+    <h2 id="groupHeading">Student Faculty</h2>
+    <p class="text-muted text-sm mb-8">Photos coming soon. Names are drawn from the current academic year's RMD Birmingham MOU roster.</p>
+    <ul class="faculty-list" id="facultyList"></ul>
+  </div>
+
+</div>
+
+<script src="js/firebase-config.js"></script>
+<script>
+  // ── Static faculty names, sourced from the MOU roster ───────────────────────
+  // The mou_roster Firestore collection is authenticated-read-only (it holds
+  // member emails — see firestore.rules), so this public page uses a static
+  // name-only list instead of querying it live, to avoid exposing emails.
+  //
+  // Refresh this list each academic year the same way the MOU roster itself is
+  // refreshed (see admin-mou-dashboard.html "Manage roster" tab / project notes):
+  // export that year's roster, filter for role "RMD Student Faculty" / "RMD
+  // Senior Faculty", and replace the arrays below with names only.
+  const ROSTER_YEAR = (typeof CURRENT_MOU_YEAR !== "undefined") ? CURRENT_MOU_YEAR : "2026/27";
+
+  const FACULTY = {
+    student: [
+      "Tanwen Bird", "Alessandro Pace", "Stella Szeckler", "Krishan Patel",
+      "Isabel Winfield", "Holly Smyth", "Megan Harrison", "Tess Brock",
+      "Ellie Scholes", "Sophie McKillop", "Tegan Bailey", "Georgia Crutchfield",
+      "Jaimini Lakhani", "Emily Bracegirdle-Morais", "Kit Smith"
+    ],
+    senior: [
+      "Tom Burton", "Ben Stanley", "Chesca Harper", "Zanita Volschenk",
+      "Rosie Lilwall", "Breanna Blackboro", "Cameron Parkes",
+      "Naveed Kordmahalleh", "Laura Smith", "Jon Hulme", "Nick Coffin",
+      "Joe Alderman"
+    ]
+  };
+
+  const params = new URLSearchParams(window.location.search);
+  const group  = params.get("group") === "senior" ? "senior" : "student";
+
+  document.getElementById("rosterYear").textContent = ROSTER_YEAR;
+  document.getElementById("tab" + (group === "senior" ? "Senior" : "Student")).classList.add("active");
+  document.getElementById("groupHeading").textContent = group === "senior" ? "Senior Faculty" : "Student Faculty";
+  document.getElementById("pageTitle").textContent = "RMD Birmingham " + (group === "senior" ? "Senior" : "Student") + " Faculty";
+
+  const list = document.getElementById("facultyList");
+  FACULTY[group].forEach(name => {
+    const li = document.createElement("li");
+    li.textContent = name;
+    list.appendChild(li);
+  });
+</script>
+</body>
+</html>
