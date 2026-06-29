@@ -687,6 +687,85 @@ body {
 .chapter-card.coming-soon { opacity: 0.55; cursor: default; }
 .chapter-card .chapter-status { display: block; font-size: 11px; font-weight: 400; opacity: 0.8; margin-top: 2px; }
 
+/* ── RMD UK national landing hero (index.html only) ── */
+.rmd-hero-home {
+  position: relative;
+  overflow: hidden;
+  background: var(--rmd-white);
+  padding: 72px 20px 60px;
+  text-align: center;
+}
+
+.rmd-hero-home::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 760px;
+  height: 760px;
+  max-width: 150vw;
+  max-height: 150vw;
+  background: url('../assets/rmd-logo.png') center / contain no-repeat;
+  opacity: 0.08;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.rmd-hero-home-inner {
+  position: relative;
+  z-index: 1;
+}
+
+.rmd-hero-home h1 {
+  font-size: clamp(40px, 9vw, 76px);
+  font-weight: 800;
+  color: #2c2c2c;
+  letter-spacing: 0.01em;
+  margin-bottom: 18px;
+  line-height: 1.05;
+}
+
+.rmd-hero-home-divider {
+  width: 64px;
+  height: 4px;
+  background: var(--rmd-navy);
+  margin: 0 auto 18px;
+  border-radius: 2px;
+}
+
+.rmd-hero-home-tagline {
+  font-size: clamp(16px, 3vw, 24px);
+  font-weight: 700;
+  color: var(--rmd-blue);
+  letter-spacing: 0.02em;
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.rmd-mission-banner {
+  background: linear-gradient(160deg, var(--rmd-navy) 0%, var(--rmd-blue) 100%);
+  color: white;
+  padding: 36px 20px 40px;
+}
+
+.rmd-mission-banner-inner {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.rmd-mission-banner p {
+  font-size: 14px;
+  line-height: 1.7;
+  opacity: 0.95;
+  max-width: 640px;
+  margin: 0 auto 10px;
+  text-align: center;
+}
+
+.rmd-mission-banner p:last-of-type { margin-bottom: 0; }
+
+.rmd-mission-banner .chapter-grid { margin-top: 26px; }
+
 .content-card {
   background: var(--rmd-white);
   border-radius: var(--radius);
