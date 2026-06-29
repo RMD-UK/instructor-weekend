@@ -15,9 +15,10 @@
   </a>
   <span class="site-title">RMD UK</span>
   <div class="site-links">
-    <div class="nav-dropdown">
-      <button class="nav-dropdown-toggle" type="button">Chapters</button>
-      <div class="nav-dropdown-menu">
+    <a href="index.html">Home</a>
+    <div class="nav-dropdown" id="navMenu">
+      <button class="nav-dropdown-toggle" type="button" id="navMenuToggle" aria-haspopup="true" aria-expanded="false">Chapters</button>
+      <div class="nav-dropdown-menu" id="navMenuPanel">
         <a href="rmd-birmingham.html">RMD Birmingham</a>
         <a class="is-disabled" href="#">RMD Bristol<span class="menu-status">Coming soon</span></a>
         <a class="is-disabled" href="#">RMD Warwick<span class="menu-status">Coming soon</span></a>
@@ -29,16 +30,11 @@
 </nav>
 
 <div class="rmd-hero-home">
+  <img src="assets/rmd-logo.png" alt="" class="hero-watermark">
   <div class="rmd-hero-home-inner">
-    <img src="assets/rmd-logo.png" alt="RMD logo" class="hero-logo">
     <h1>RMD UK</h1>
-    <p class="hero-subtitle">Resuscitation. Mentorship. Development.</p>
-
-    <div class="stat-row hero-stat-row">
-      <div class="stat-box"><div class="stat-num">1995</div><div class="stat-label">Founded in Birmingham</div></div>
-      <div class="stat-box"><div class="stat-num">1,000+</div><div class="stat-label">Candidates trained / year</div></div>
-      <div class="stat-box"><div class="stat-num">4</div><div class="stat-label">Chapters, live &amp; coming soon</div></div>
-    </div>
+    <div class="hero-divider"></div>
+    <p class="hero-subtitle">Resuscitation | Mentorship | Development</p>
 
     <div class="hero-carousel" id="heroCarousel">
       <div class="carousel-track" id="carouselTrack">
@@ -108,6 +104,37 @@
       Array.from(dotsWrap.children).forEach((d, idx) => d.classList.toggle('active', idx === i));
     }
     setInterval(() => goTo((i + 1) % slides.length), 5000);
+  })();
+</script>
+
+<script>
+  // Top-right "Chapters" menu — click-toggle (works on touch/click, not just
+  // hover), closes on outside click or Escape.
+  (function () {
+    const menu   = document.getElementById('navMenu');
+    const toggle = document.getElementById('navMenuToggle');
+    const panel  = document.getElementById('navMenuPanel');
+    if (!menu || !toggle || !panel) return;
+
+    function close() {
+      menu.classList.remove('is-open');
+      toggle.setAttribute('aria-expanded', 'false');
+    }
+    function open() {
+      menu.classList.add('is-open');
+      toggle.setAttribute('aria-expanded', 'true');
+    }
+
+    toggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      menu.classList.contains('is-open') ? close() : open();
+    });
+    document.addEventListener('click', (e) => {
+      if (!menu.contains(e.target)) close();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') close();
+    });
   })();
 </script>
 

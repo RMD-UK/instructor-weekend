@@ -648,10 +648,10 @@ body {
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
-  padding: 0;
+  padding: 6px 4px;
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
 }
 
 .nav-dropdown-toggle:hover { color: white; }
@@ -672,9 +672,12 @@ body {
 }
 
 .nav-dropdown:hover .nav-dropdown-menu,
-.nav-dropdown:focus-within .nav-dropdown-menu {
+.nav-dropdown:focus-within .nav-dropdown-menu,
+.nav-dropdown.is-open .nav-dropdown-menu {
   display: block;
 }
+
+.nav-dropdown-toggle[aria-expanded="true"] { color: white; }
 
 .nav-dropdown-menu a {
   display: block;
@@ -755,24 +758,31 @@ body {
 
 /* ── RMD UK national landing hero (index.html only) ── */
 .rmd-hero-home {
+  position: relative;
   background: linear-gradient(180deg, var(--rmd-pale) 0%, var(--rmd-white) 100%);
-  padding: 48px 20px 40px;
+  padding: 44px 20px 28px;
   text-align: center;
+  overflow: hidden;
 }
 
 .rmd-hero-home-inner {
+  position: relative;
   max-width: 760px;
   margin: 0 auto;
+  z-index: 1;
 }
 
-.hero-logo {
-  width: 96px;
-  height: 96px;
-  border-radius: 50%;
-  background: white;
-  box-shadow: var(--rmd-shadow);
-  margin: 0 auto 18px;
-  display: block;
+/* Large faded logo sitting behind the headline, like the original RMD UK mark */
+.hero-watermark {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 560px;
+  height: 560px;
+  transform: translate(-50%, -50%);
+  opacity: 0.1;
+  z-index: 0;
+  pointer-events: none;
 }
 
 .rmd-hero-home h1 {
@@ -780,33 +790,31 @@ body {
   font-weight: 800;
   color: var(--rmd-navy);
   letter-spacing: 0.01em;
-  margin-bottom: 8px;
+  margin-bottom: 14px;
   line-height: 1.05;
 }
 
-.hero-subtitle {
-  font-size: clamp(14px, 2.2vw, 17px);
-  color: var(--rmd-muted);
-  line-height: 1.5;
-  max-width: 440px;
-  margin: 0 auto 28px;
+.hero-divider {
+  width: 56px;
+  height: 4px;
+  background: var(--rmd-navy);
+  border-radius: 2px;
+  margin: 0 auto 16px;
 }
 
-.hero-stat-row {
-  max-width: 540px;
+.hero-subtitle {
+  font-size: clamp(15px, 2.4vw, 19px);
+  color: var(--rmd-blue);
+  font-weight: 700;
+  line-height: 1.5;
+  max-width: 480px;
   margin: 0 auto;
 }
 
-/* More vibrant, varied colours for the homepage stat strip */
-.hero-stat-row .stat-box:nth-child(2) { background: var(--rmd-current-bg); }
-.hero-stat-row .stat-box:nth-child(2) .stat-num { color: var(--rmd-warn); }
-.hero-stat-row .stat-box:nth-child(3) { background: #e8f5e9; }
-.hero-stat-row .stat-box:nth-child(3) .stat-num { color: var(--rmd-success); }
-
 /* ── Homepage image carousel (branded placeholders until real photos arrive) ── */
 .hero-carousel {
-  max-width: 900px;
-  margin: 32px auto 0;
+  max-width: 1000px;
+  margin: 28px auto 0;
   position: relative;
   border-radius: var(--radius);
   overflow: hidden;
@@ -820,13 +828,13 @@ body {
 
 .carousel-slide {
   flex: 0 0 100%;
-  min-height: 200px;
+  min-height: 320px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: 32px 24px 40px;
+  padding: 32px 24px 44px;
   color: white;
 }
 
