@@ -608,33 +608,99 @@ body {
 }
 
 .site-nav .logo {
-  height: 36px;
-  width: 36px;
+  height: 48px;
+  width: 48px;
   border-radius: 50%;
   background: white;
 }
 
 .site-nav .site-title {
-  font-weight: 700;
-  font-size: 16px;
+  font-weight: 800;
+  font-size: 19px;
   letter-spacing: 0.02em;
 }
 
 .site-nav .site-links {
   margin-left: auto;
   display: flex;
-  gap: 18px;
+  align-items: center;
+  gap: 22px;
   flex-wrap: wrap;
 }
 
-.site-nav .site-links a {
+.site-nav .site-links > a {
   color: rgba(255,255,255,0.85);
   text-decoration: none;
   font-size: 13px;
   font-weight: 600;
 }
 
-.site-nav .site-links a:hover { color: white; text-decoration: underline; }
+.site-nav .site-links > a:hover { color: white; text-decoration: underline; }
+
+/* ── Nav dropdown (Chapters menu, etc.) ── */
+.nav-dropdown { position: relative; }
+
+.nav-dropdown-toggle {
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.85);
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.nav-dropdown-toggle:hover { color: white; }
+.nav-dropdown-toggle::after { content: "\25BE"; font-size: 10px; }
+
+.nav-dropdown-menu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 14px;
+  background: white;
+  border-radius: var(--radius-sm);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.22);
+  min-width: 200px;
+  padding: 6px;
+  z-index: 200;
+}
+
+.nav-dropdown:hover .nav-dropdown-menu,
+.nav-dropdown:focus-within .nav-dropdown-menu {
+  display: block;
+}
+
+.nav-dropdown-menu a {
+  display: block;
+  padding: 9px 12px;
+  border-radius: var(--radius-sm);
+  color: var(--rmd-navy);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.nav-dropdown-menu a:hover { background: var(--rmd-pale); }
+
+.nav-dropdown-menu .menu-status {
+  display: block;
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--rmd-muted);
+  margin-top: 1px;
+}
+
+.nav-dropdown-menu a.is-disabled {
+  opacity: 0.55;
+  cursor: default;
+  pointer-events: none;
+}
 
 .content-wrap {
   max-width: 820px;
@@ -689,84 +755,121 @@ body {
 
 /* ── RMD UK national landing hero (index.html only) ── */
 .rmd-hero-home {
-  background: var(--rmd-white);
-  padding: 64px 20px 48px;
+  background: linear-gradient(180deg, var(--rmd-pale) 0%, var(--rmd-white) 100%);
+  padding: 48px 20px 40px;
   text-align: center;
 }
 
 .rmd-hero-home-inner {
-  max-width: 720px;
+  max-width: 760px;
   margin: 0 auto;
 }
 
-.hero-badge {
-  display: inline-block;
-  background: var(--rmd-light);
-  color: var(--rmd-navy);
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  padding: 6px 14px;
-  border-radius: 999px;
-  margin-bottom: 18px;
+.hero-logo {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  background: white;
+  box-shadow: var(--rmd-shadow);
+  margin: 0 auto 18px;
+  display: block;
 }
 
 .rmd-hero-home h1 {
-  font-size: clamp(34px, 7vw, 56px);
+  font-size: clamp(36px, 8vw, 60px);
   font-weight: 800;
   color: var(--rmd-navy);
   letter-spacing: 0.01em;
-  margin-bottom: 14px;
-  line-height: 1.08;
+  margin-bottom: 8px;
+  line-height: 1.05;
 }
 
 .hero-subtitle {
-  font-size: clamp(14px, 2.4vw, 17px);
+  font-size: clamp(14px, 2.2vw, 17px);
   color: var(--rmd-muted);
-  line-height: 1.6;
-  max-width: 560px;
+  line-height: 1.5;
+  max-width: 440px;
   margin: 0 auto 28px;
 }
 
-.hero-cta-row {
+.hero-stat-row {
+  max-width: 540px;
+  margin: 0 auto;
+}
+
+/* More vibrant, varied colours for the homepage stat strip */
+.hero-stat-row .stat-box:nth-child(2) { background: var(--rmd-current-bg); }
+.hero-stat-row .stat-box:nth-child(2) .stat-num { color: var(--rmd-warn); }
+.hero-stat-row .stat-box:nth-child(3) { background: #e8f5e9; }
+.hero-stat-row .stat-box:nth-child(3) .stat-num { color: var(--rmd-success); }
+
+/* ── Homepage image carousel (branded placeholders until real photos arrive) ── */
+.hero-carousel {
+  max-width: 900px;
+  margin: 32px auto 0;
+  position: relative;
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--rmd-shadow);
+}
+
+.carousel-track {
   display: flex;
+  transition: transform 0.6s ease;
+}
+
+.carousel-slide {
+  flex: 0 0 100%;
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   justify-content: center;
-  gap: 14px;
-  flex-wrap: wrap;
-  margin-bottom: 36px;
-}
-
-.btn-hero-primary,
-.btn-hero-secondary {
-  display: inline-block;
-  text-decoration: none;
-  font-weight: 700;
-  font-size: 14px;
-  padding: 12px 24px;
-  border-radius: var(--radius-sm);
-  transition: background 0.2s, color 0.2s;
-}
-
-.btn-hero-primary {
-  background: var(--rmd-navy);
+  text-align: center;
+  padding: 32px 24px 40px;
   color: white;
 }
 
-.btn-hero-primary:hover { background: var(--rmd-blue); }
-
-.btn-hero-secondary {
-  background: transparent;
-  color: var(--rmd-navy);
-  border: 1.5px solid var(--rmd-border);
+.carousel-slide h3 {
+  font-size: clamp(19px, 3.2vw, 26px);
+  font-weight: 800;
+  margin-bottom: 8px;
+  line-height: 1.2;
 }
 
-.btn-hero-secondary:hover { border-color: var(--rmd-navy); }
-
-.hero-stat-row {
-  max-width: 460px;
+.carousel-slide p {
+  font-size: 14px;
+  opacity: 0.92;
+  max-width: 480px;
   margin: 0 auto;
 }
+
+.carousel-slide.slide-1 { background: linear-gradient(135deg, var(--rmd-navy), var(--rmd-blue)); }
+.carousel-slide.slide-2 { background: linear-gradient(135deg, var(--rmd-warn), var(--rmd-current)); }
+.carousel-slide.slide-3 { background: linear-gradient(135deg, var(--rmd-mid), var(--rmd-success)); }
+.carousel-slide.slide-4 { background: linear-gradient(135deg, var(--rmd-amber), var(--rmd-warn)); }
+
+.carousel-dots {
+  position: absolute;
+  bottom: 12px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+
+.carousel-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.5);
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.carousel-dot.active { background: white; }
 
 .rmd-mission-banner {
   background: linear-gradient(160deg, var(--rmd-navy) 0%, var(--rmd-blue) 100%);
