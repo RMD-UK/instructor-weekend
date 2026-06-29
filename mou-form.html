@@ -82,11 +82,33 @@
 </head>
 <body>
 
+<!-- ── Sign-in gate — MOU form requires an RMD member account ── -->
+<div class="login-page" id="mouSigninGate">
+  <div class="login-card">
+    <img src="assets/rmd-logo.png" alt="RMD logo" class="login-logo">
+    <h1 class="login-title">RMD Memorandum of Understanding</h1>
+    <p class="login-subtitle">Sign in with your RMD account to continue</p>
+
+    <form class="login-form" id="mouSigninForm" onsubmit="handleMouSignin(event)">
+      <input class="form-input" type="email" id="signinEmail" placeholder="Email address" required autocomplete="email">
+      <input class="form-input" type="password" id="signinPassword" placeholder="Password" required autocomplete="current-password">
+      <button type="submit" class="btn-login" id="signinBtn">Sign in</button>
+    </form>
+    <p id="signinError" style="color:var(--rmd-warn);font-size:13px;margin-top:10px;display:none;"></p>
+
+    <hr class="login-divider">
+    <p class="qr-hint">Don&rsquo;t have an account yet? Contact RMD Birmingham to be added.</p>
+  </div>
+</div>
+
+<div id="mouAppRoot" style="display:none;">
+
 <div class="form-header">
   <img src="assets/rmd-logo.png" alt="RMD logo">
   <h1>RMD Memorandum of Understanding</h1>
   <p>Resuscitation · Mentorship · Development — University of Birmingham</p>
   <span class="year-badge" id="yearBadge"></span>
+  <p style="margin-top:10px;font-size:12px;opacity:0.7;">Signed in as <span id="signedInEmail"></span> &middot; <a href="#" onclick="handleMouSignout(event)" style="color:white;text-decoration:underline;">Sign out</a></p>
 </div>
 
 <div class="wrap" id="formWrap">
@@ -277,6 +299,8 @@
   <p style="margin-top:16px;"><strong>RMD Birmingham</strong><br>Resuscitation · Mentorship · Development</p>
 </div>
 
+</div><!-- /#mouAppRoot -->
+
 <!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
@@ -288,6 +312,53 @@ initFirebase();
 
 document.getElementById("yearBadge").textContent = CURRENT_MOU_YEAR + " academic year";
 document.getElementById("academicYear").value = CURRENT_MOU_YEAR;
+
+// ── Sign-in gate — MOU form is for signed-in RMD members only ──────────────
+auth.onAuthStateChanged(function (user) {
+  if (user) {
+    document.getElementById("mouSigninGate").style.display = "none";
+    document.getElementById("mouAppRoot").style.display = "block";
+    document.getElementById("signedInEmail").textContent = user.email;
+    const emailField = document.getElementById("memberEmail");
+    emailField.value = user.email;
+    emailField.disabled = true;
+  } else {
+    document.getElementById("mouSigninGate").style.display = "flex";
+    document.getElementById("mouAppRoot").style.display = "none";
+  }
+});
+
+async function handleMouSignin(e) {
+  e.preventDefault();
+  const email    = document.getElementById("signinEmail").value.trim().toLowerCase();
+  const password = document.getElementById("signinPassword").value;
+  const errEl    = document.getElementById("signinError");
+  const btn      = document.getElementById("signinBtn");
+
+  errEl.style.display = "none";
+  btn.textContent = "Signing in…";
+  btn.disabled    = true;
+
+  try {
+    await auth.signInWithEmailAndPassword(email, password);
+  } catch (err) {
+    btn.textContent = "Sign in";
+    btn.disabled    = false;
+    if (err.code === "auth/wrong-password" || err.code === "auth/user-not-found" || err.code === "auth/invalid-credential") {
+      errEl.textContent = "Incorrect email or password.";
+    } else if (err.code === "auth/too-many-requests") {
+      errEl.textContent = "Too many attempts — try again in a few minutes.";
+    } else {
+      errEl.textContent = "Sign in failed. Check your connection and try again.";
+    }
+    errEl.style.display = "block";
+  }
+}
+
+function handleMouSignout(e) {
+  e.preventDefault();
+  auth.signOut();
+}
 
 let agreed = null;
 
@@ -326,6 +397,7 @@ async function submitForm() {
     agreed: agreed,
     comment: agreed ? "" : comment,
     submittedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    submittedByUid: auth.currentUser ? auth.currentUser.uid : null,
     source: "mou-form"
   };
 

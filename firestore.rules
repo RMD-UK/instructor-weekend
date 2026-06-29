@@ -92,10 +92,10 @@ service cloud.firestore {
     }
 
     // ── MOU responses ───────────────────────────────────────────────────────
-    // Create: public — annual Memorandum of Understanding form is sent before login
+    // Create: authenticated only — MOU form now sits behind RMD member sign-in
     // Read/update/delete: authenticated only — only directors view responses
     match /mou_responses/{docId} {
-      allow create: if true;
+      allow create: if request.auth != null;
       allow read, update, delete: if request.auth != null;
     }
 
