@@ -13,8 +13,13 @@
     <img src="assets/rmd-logo.png" alt="RMD logo" class="logo">
   </a>
   <span class="site-title">RMD UK</span>
-  <div class="site-links">
+  <button class="nav-toggle" type="button" id="navToggle" aria-label="Toggle menu" aria-expanded="false">
+    <span></span><span></span><span></span>
+  </button>
+  <div class="site-links" id="siteLinks">
     <a href="index.html">Home</a>
+    <a href="about.html">About</a>
+    <a href="faculty-directory.html">Faculty</a>
     <a href="mou-form.html">Submit MOU</a>
     <a href="#signin">Sign In</a>
   </div>
@@ -106,6 +111,26 @@
   </p>
 </div>
 
+<footer class="rmd-footer">
+  <div class="rmd-footer-inner">
+    <div>
+      <h4>RMD Birmingham</h4>
+      <p>University of Birmingham · College of Medical and Dental Sciences. Founded 1995.</p>
+    </div>
+    <div>
+      <h4>Navigate</h4>
+      <ul>
+        <li><a href="index.html">RMD UK Home</a></li>
+        <li><a href="faculty-directory.html">Faculty</a></li>
+        <li><a href="mou-form.html">Submit MOU</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="rmd-footer-bottom">
+    <span>&copy; 2026 RMD UK. All rights reserved.</span>
+  </div>
+</footer>
+
 <!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
@@ -185,6 +210,19 @@
       errEl.style.display = "block";
     }
   }
+</script>
+
+<script>
+  // Mobile hamburger toggle for the nav link set.
+  (function () {
+    const toggle = document.getElementById('navToggle');
+    const links  = document.getElementById('siteLinks');
+    if (!toggle || !links) return;
+    toggle.addEventListener('click', () => {
+      const isOpen = links.classList.toggle('is-open');
+      toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    });
+  })();
 </script>
 
 </body>

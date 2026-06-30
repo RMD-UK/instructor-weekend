@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RMD Plymouth (In Development) — RMD UK</title>
+  <meta name="description" content="RMD Plymouth: a new RMD UK chapter being established at the University of Plymouth.">
+  <link rel="stylesheet" href="css/rmd.css">
+</head>
+<body>
+
+<nav class="site-nav">
+  <a href="index.html" style="display:flex;align-items:center;text-decoration:none;" id="logoLink">
+    <img src="assets/rmd-logo.png" alt="RMD logo" class="logo">
+  </a>
+  <span class="site-title">RMD UK</span>
+  <button class="nav-toggle" type="button" id="navToggle" aria-label="Toggle menu" aria-expanded="false">
+    <span></span><span></span><span></span>
+  </button>
+  <div class="site-links" id="siteLinks">
+    <a href="index.html">Home</a>
+    <a href="about.html">About</a>
+    <div class="nav-dropdown" id="navMenu">
+      <button class="nav-dropdown-toggle" type="button" id="navMenuToggle" aria-haspopup="true" aria-expanded="false">Chapters</button>
+      <div class="nav-dropdown-menu" id="navMenuPanel">
+        <a href="rmd-birmingham.html">RMD Birmingham</a>
+        <a href="rmd-bristol.html">RMD Bristol</a>
+        <a href="rmd-warwick.html">RMD Warwick</a>
+        <a href="rmd-brunel.html">RMD Brunel</a>
+        <a class="is-disabled" href="#">RMD Plymouth<span class="menu-status">Coming soon</span></a>
+        <a href="sites.html" class="nav-dropdown-viewall">View all chapters &rarr;</a>
+      </div>
+    </div>
+    <a href="faculty-directory.html">Faculty</a>
+    <a href="resources.html">Resources</a>
+    <a href="news.html">News</a>
+    <a href="for-institutions.html" class="nav-cta">For Institutions</a>
+  </div>
+</nav>
+
+<section class="page-hero">
+  <div class="container">
+    <div class="breadcrumb">
+      <a href="index.html">Home</a>
+      <span class="breadcrumb-sep">/</span>
+      <span>RMD Plymouth</span>
+    </div>
+    <div style="margin-bottom:0.6rem;">
+      <span class="status-badge in-dev"><span class="dot"></span>In development</span>
+    </div>
+    <h1>RMD Plymouth</h1>
+    <p>University of Plymouth &mdash; a new chapter being established with support from the RMD UK network</p>
+  </div>
+</section>
+
+<section>
+  <div class="container" style="max-width:780px;">
+    <p class="section-label">Status</p>
+    <h2 class="section-title">A chapter in development</h2>
+    <p>RMD Plymouth is a new RMD UK chapter currently being established at the University of Plymouth. As with all RMD chapters, RMD Plymouth will run its own near-peer Basic Life Support programme, recruit and train its own student instructors and assessors, and join the network tier alongside Birmingham, Bristol, Warwick, and Brunel.</p>
+    <p>There is no live programme, course content, or faculty roster to show yet. This page will be updated as the chapter develops &mdash; in the meantime, get in touch if you're involved in setting it up, or interested in helping.</p>
+    <div class="btn-group" style="justify-content:flex-start;">
+      <a href="for-institutions.html" class="btn btn-primary">Get in touch</a>
+      <a href="index.html#chapters" class="btn btn-outline">See our live chapters</a>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<section class="bg-offwhite">
+  <div class="container">
+    <div class="section-header centered">
+      <p class="section-label accent-magenta">What's ahead</p>
+      <h2 class="section-title">The near-peer pathway RMD Plymouth will run</h2>
+      <p class="section-intro">Every RMD UK chapter follows the same development pathway, from candidate through to senior faculty. Plymouth will build towards this structure as the chapter matures.</p>
+    </div>
+    <div class="pathway">
+      <div class="pathway-step"><div class="pathway-num">1</div><h4>Candidate</h4><p>Receives BLS training from near-peer instructors.</p></div>
+      <div class="pathway-step"><div class="pathway-num">2</div><h4>Instructor</h4><p>Trains to teach BLS to the next cohort of candidates.</p></div>
+      <div class="pathway-step"><div class="pathway-num">3</div><h4>Assessor</h4><p>Quality-assures teaching and signs off competency.</p></div>
+      <div class="pathway-step"><div class="pathway-num">4</div><h4>Senior Faculty</h4><p>Leads chapter governance and faculty development.</p></div>
+    </div>
+  </div>
+</section>
+
+<footer class="rmd-footer">
+  <div class="rmd-footer-inner">
+    <div>
+      <h4>RMD UK</h4>
+      <p>A nationwide community of student-led Basic Life Support chapters at UK Higher Education Institutions. Near-peer resuscitation education since 1995.</p>
+    </div>
+    <div>
+      <h4>Navigate</h4>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="about.html">About RMD</a></li>
+        <li><a href="faculty-directory.html">Faculty</a></li>
+        <li><a href="resources.html">Resources</a></li>
+        <li><a href="for-institutions.html">For Institutions</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>Our Network</h4>
+      <ul>
+        <li><a href="rmd-birmingham.html">RMD Birmingham</a></li>
+        <li><a href="rmd-bristol.html">RMD Bristol</a></li>
+        <li><a href="rmd-warwick.html">RMD Warwick</a></li>
+        <li><a href="rmd-brunel.html">RMD Brunel</a></li>
+        <li>RMD Plymouth <span style="opacity:0.6;">(coming soon)</span></li>
+      </ul>
+    </div>
+  </div>
+  <div class="rmd-footer-bottom">
+    <span>&copy; 2026 RMD UK. All rights reserved.</span>
+  </div>
+</footer>
+
+<script>
+  (function () {
+    const toggle = document.getElementById('navToggle');
+    const links  = document.getElementById('siteLinks');
+    if (!toggle || !links) return;
+    toggle.addEventListener('click', () => {
+      const isOpen = links.classList.toggle('is-open');
+      toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    });
+  })();
+</script>
+<script>
+  // Top-right "Chapters" menu — click-toggle (works on touch/click, not just
+  // hover), closes on outside click or Escape.
+  (function () {
+    const menu   = document.getElementById('navMenu');
+    const toggle = document.getElementById('navMenuToggle');
+    const panel  = document.getElementById('navMenuPanel');
+    if (!menu || !toggle || !panel) return;
+
+    function close() {
+      menu.classList.remove('is-open');
+      toggle.setAttribute('aria-expanded', 'false');
+    }
+    function open() {
+      menu.classList.add('is-open');
+      toggle.setAttribute('aria-expanded', 'true');
+    }
+
+    toggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      menu.classList.contains('is-open') ? close() : open();
+    });
+    document.addEventListener('click', (e) => {
+      if (!menu.contains(e.target)) close();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') close();
+    });
+  })();
+</script>
+
+</body>
+</html>

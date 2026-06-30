@@ -13,9 +13,13 @@
     <img src="assets/rmd-logo.png" alt="RMD logo" class="logo">
   </a>
   <span class="site-title">RMD UK</span>
-  <div class="site-links">
+  <button class="nav-toggle" type="button" id="navToggle" aria-label="Toggle menu" aria-expanded="false">
+    <span></span><span></span><span></span>
+  </button>
+  <div class="site-links" id="siteLinks">
     <a href="index.html">Home</a>
     <a href="rmd-birmingham.html">RMD Birmingham</a>
+    <a href="faculty-directory.html">All Faculty</a>
   </div>
 </nav>
 
@@ -159,6 +163,38 @@
       teamsEl.appendChild(wrap);
     });
   }
+</script>
+
+<footer class="rmd-footer">
+  <div class="rmd-footer-inner">
+    <div>
+      <h4>RMD Birmingham</h4>
+      <p>Run day-to-day by a student faculty of healthcare undergraduates, overseen by a senior faculty of clinical and non-clinical staff.</p>
+    </div>
+    <div>
+      <h4>Navigate</h4>
+      <ul>
+        <li><a href="index.html">RMD UK Home</a></li>
+        <li><a href="rmd-birmingham.html">RMD Birmingham</a></li>
+        <li><a href="faculty-directory.html">All Faculty (national)</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="rmd-footer-bottom">
+    <span>&copy; 2026 RMD UK. All rights reserved.</span>
+  </div>
+</footer>
+
+<script>
+  (function () {
+    const toggle = document.getElementById('navToggle');
+    const links  = document.getElementById('siteLinks');
+    if (!toggle || !links) return;
+    toggle.addEventListener('click', () => {
+      const isOpen = links.classList.toggle('is-open');
+      toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    });
+  })();
 </script>
 </body>
 </html>

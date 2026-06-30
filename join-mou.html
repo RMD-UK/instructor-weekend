@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MOU Submission — RMD UK</title>
+  <meta name="description" content="Submit a Memorandum of Understanding enquiry to formalise your institution's involvement with the RMD UK network.">
+  <link rel="stylesheet" href="css/rmd.css">
+</head>
+<body>
+
+<nav class="site-nav">
+  <a href="index.html" style="display:flex;align-items:center;text-decoration:none;" id="logoLink">
+    <img src="assets/rmd-logo.png" alt="RMD logo" class="logo">
+  </a>
+  <span class="site-title">RMD UK</span>
+  <button class="nav-toggle" type="button" id="navToggle" aria-label="Toggle menu" aria-expanded="false">
+    <span></span><span></span><span></span>
+  </button>
+  <div class="site-links" id="siteLinks">
+    <a href="index.html">Home</a>
+    <a href="about.html">About</a>
+    <a href="faculty-directory.html">Faculty</a>
+    <a href="news.html">News</a>
+    <a href="for-institutions.html" class="nav-cta">For Institutions</a>
+  </div>
+</nav>
+
+<div class="rmd-hero">
+  <h1>Memorandum of Understanding</h1>
+  <p>For institutions ready to formalise their involvement with the RMD UK network.</p>
+</div>
+
+<div class="content-wrap">
+
+  <a href="for-institutions.html" class="back-link">← Back to For Institutions</a>
+
+  <div class="content-card">
+    <h2>What this form is for</h2>
+    <p>This form is for institutions who have already had an initial conversation with RMD UK — usually via the <a href="for-institutions.html">enquiry form</a> — and are ready to take the next step. Submitting this form does not create a binding agreement; it tells us you'd like to proceed and gives us the detail we need to draft an MOU for your institution to review.</p>
+    <p style="background:var(--rmd-pale); border:1px solid var(--rmd-border); border-radius:8px; padding:1rem 1.25rem; font-size:0.9rem; color:var(--rmd-muted);">
+      Haven't spoken to us yet? Start with the <a href="for-institutions.html">general enquiry form</a> instead — it's a better fit for early-stage questions.
+    </p>
+  </div>
+
+  <div class="content-card">
+    <div style="text-align:center; margin-bottom:1.5rem;">
+      <img src="assets/rmd-logo.png" alt="RMD UK" style="width:80px;height:80px;display:inline-block;">
+    </div>
+    <h2 style="text-align:center;">Submit MOU details</h2>
+    <p style="font-size:0.9rem; color:var(--rmd-muted); margin-bottom:1.75rem; text-align:center;">A member of RMD UK's governance group will follow up to confirm details and share a draft MOU.</p>
+
+    <!-- NOTE: this form currently posts to a placeholder Web3Forms endpoint —
+         replace YOUR_WEB3FORMS_ACCESS_KEY with a real access key before this
+         page goes live for external institutions. -->
+    <form action="https://api.web3forms.com/submit" method="POST">
+      <input type="hidden" name="access_key" value="YOUR_WEB3FORMS_ACCESS_KEY">
+      <input type="hidden" name="subject" value="RMD UK MOU Submission">
+      <input type="hidden" name="redirect" value="https://www.rmd.uk.com/join-thanks.html">
+      <input type="checkbox" name="botcheck" style="display:none;">
+
+      <div class="field">
+        <label for="institution">Institution / University <span style="color:var(--rmd-warn);">*</span></label>
+        <input type="text" id="institution" name="institution" required placeholder="e.g. University of Edinburgh">
+      </div>
+      <div class="field">
+        <label for="first_name">Primary contact: first name <span style="color:var(--rmd-warn);">*</span></label>
+        <input type="text" id="first_name" name="first_name" required autocomplete="given-name">
+      </div>
+      <div class="field">
+        <label for="last_name">Primary contact: last name <span style="color:var(--rmd-warn);">*</span></label>
+        <input type="text" id="last_name" name="last_name" required autocomplete="family-name">
+      </div>
+      <div class="field">
+        <label for="email">Email address <span style="color:var(--rmd-warn);">*</span></label>
+        <input type="email" id="email" name="email" required autocomplete="email" placeholder="you@university.ac.uk">
+      </div>
+      <div class="field">
+        <label for="phone">Phone number</label>
+        <input type="tel" id="phone" name="phone" autocomplete="tel">
+      </div>
+      <div class="field">
+        <label for="role">Primary contact's role <span style="color:var(--rmd-warn);">*</span></label>
+        <input type="text" id="role" name="role" required placeholder="e.g. Programme Lead, Senior Lecturer">
+      </div>
+      <div class="field">
+        <label for="signatory">Authorised signatory (if different from primary contact)</label>
+        <input type="text" id="signatory" name="signatory" placeholder="Name and title of the person who would sign the MOU on behalf of your institution">
+      </div>
+      <div class="field">
+        <label for="programme_status">Current programme status <span style="color:var(--rmd-warn);">*</span></label>
+        <select id="programme_status" name="programme_status" required>
+          <option value="" disabled selected>Select an option</option>
+          <option>We have an active BLS programme</option>
+          <option>We are planning a new programme</option>
+          <option>We are exploring options</option>
+          <option>No programme yet</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="start_date">Intended start date or academic year</label>
+        <input type="text" id="start_date" name="start_date" placeholder="e.g. September 2026, or 'flexible'">
+      </div>
+      <div class="field">
+        <label for="message">Anything else we should know</label>
+        <textarea id="message" name="message" placeholder="Any context from your earlier conversation with RMD UK, or details relevant to drafting the MOU..."></textarea>
+      </div>
+
+      <button type="submit" class="hero-btn-primary" style="width:100%; border:none; font-family:inherit; font-size:1rem; cursor:pointer; text-align:center;">
+        Submit MOU Details
+      </button>
+      <p style="font-size:0.8rem; color:var(--rmd-muted); text-align:center; margin-top:0.75rem;">We aim to respond within 5 working days. Your details will only be used to progress this MOU enquiry.</p>
+    </form>
+  </div>
+
+</div>
+
+<footer class="rmd-footer">
+  <div class="rmd-footer-inner">
+    <div>
+      <h4>RMD UK</h4>
+      <p>A nationwide community of student-led Basic Life Support chapters at UK Higher Education Institutions. Near-peer resuscitation education since 1995.</p>
+    </div>
+    <div>
+      <h4>Navigate</h4>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="about.html">About RMD</a></li>
+        <li><a href="faculty-directory.html">Faculty</a></li>
+        <li><a href="for-institutions.html">For Institutions</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>Contact &amp; Governance</h4>
+      <p style="font-size:0.85rem;">General enquiries: <em>[contact email to be added]</em></p>
+    </div>
+  </div>
+  <div class="rmd-footer-bottom">
+    <span>&copy; 2026 RMD UK. All rights reserved.</span>
+  </div>
+</footer>
+
+<script>
+  (function () {
+    const toggle = document.getElementById('navToggle');
+    const links  = document.getElementById('siteLinks');
+    if (!toggle || !links) return;
+    toggle.addEventListener('click', () => {
+      const isOpen = links.classList.toggle('is-open');
+      toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    });
+  })();
+</script>
+
+</body>
+</html>

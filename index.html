@@ -14,17 +14,27 @@
     <img src="assets/rmd-logo.png" alt="RMD logo" class="logo">
   </a>
   <span class="site-title">RMD UK</span>
-  <div class="site-links">
+  <button class="nav-toggle" type="button" id="navToggle" aria-label="Toggle menu" aria-expanded="false">
+    <span></span><span></span><span></span>
+  </button>
+  <div class="site-links" id="siteLinks">
     <a href="index.html">Home</a>
+    <a href="about.html">About</a>
     <div class="nav-dropdown" id="navMenu">
       <button class="nav-dropdown-toggle" type="button" id="navMenuToggle" aria-haspopup="true" aria-expanded="false">Chapters</button>
       <div class="nav-dropdown-menu" id="navMenuPanel">
         <a href="rmd-birmingham.html">RMD Birmingham</a>
-        <a class="is-disabled" href="#">RMD Bristol<span class="menu-status">Coming soon</span></a>
-        <a class="is-disabled" href="#">RMD Warwick<span class="menu-status">Coming soon</span></a>
-        <a class="is-disabled" href="#">RMD Brunel<span class="menu-status">Coming soon</span></a>
+        <a href="rmd-bristol.html">RMD Bristol</a>
+        <a href="rmd-warwick.html">RMD Warwick</a>
+        <a href="rmd-brunel.html">RMD Brunel</a>
+        <a class="is-disabled" href="#">RMD Plymouth<span class="menu-status">Coming soon</span></a>
+        <a href="sites.html" class="nav-dropdown-viewall">View all chapters &rarr;</a>
       </div>
     </div>
+    <a href="faculty-directory.html">Faculty</a>
+    <a href="resources.html">Resources</a>
+    <a href="news.html">News</a>
+    <a href="for-institutions.html" class="nav-cta">For Institutions</a>
   </div>
 </nav>
 
@@ -69,12 +79,45 @@
     <p>A network of near-peer basic life support teams at Higher Education Institutions across the UK.</p>
     <div class="chapter-grid">
       <a class="chapter-card" href="rmd-birmingham.html">RMD Birmingham</a>
-      <span class="chapter-card coming-soon">RMD Bristol<span class="chapter-status">Coming soon</span></span>
-      <span class="chapter-card coming-soon">RMD Warwick<span class="chapter-status">Coming soon</span></span>
-      <span class="chapter-card coming-soon">RMD Brunel<span class="chapter-status">Coming soon</span></span>
+      <a class="chapter-card" href="rmd-bristol.html">RMD Bristol</a>
+      <a class="chapter-card" href="rmd-warwick.html">RMD Warwick</a>
+      <a class="chapter-card" href="rmd-brunel.html">RMD Brunel</a>
+      <span class="chapter-card coming-soon">RMD Plymouth<span class="chapter-status">Coming soon</span></span>
     </div>
   </div>
 </div>
+
+<footer class="rmd-footer">
+  <div class="rmd-footer-inner">
+    <div>
+      <h4>RMD UK</h4>
+      <p>A nationwide community of student-led Basic Life Support chapters at UK Higher Education Institutions. Near-peer resuscitation education since 1995.</p>
+    </div>
+    <div>
+      <h4>Navigate</h4>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="about.html">About RMD</a></li>
+        <li><a href="faculty-directory.html">Faculty</a></li>
+        <li><a href="resources.html">Resources</a></li>
+        <li><a href="for-institutions.html">For Institutions</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>Our Network</h4>
+      <ul>
+        <li><a href="rmd-birmingham.html">RMD Birmingham</a></li>
+        <li><a href="rmd-bristol.html">RMD Bristol</a></li>
+        <li><a href="rmd-warwick.html">RMD Warwick</a></li>
+        <li><a href="rmd-brunel.html">RMD Brunel</a></li>
+        <li>RMD Plymouth <span style="opacity:0.6;">(coming soon)</span></li>
+      </ul>
+    </div>
+  </div>
+  <div class="rmd-footer-bottom">
+    <span>&copy; 2026 RMD UK. All rights reserved.</span>
+  </div>
+</footer>
 
 <script>
   // Candidate QR codes previously pointed here as index.html?id=... — the
@@ -138,6 +181,20 @@
     });
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') close();
+    });
+  })();
+</script>
+
+<script>
+  // Mobile hamburger toggle for the top-level link set (separate from the
+  // "Chapters" dropdown above, which keeps its own click-toggle behaviour).
+  (function () {
+    const toggle = document.getElementById('navToggle');
+    const links  = document.getElementById('siteLinks');
+    if (!toggle || !links) return;
+    toggle.addEventListener('click', () => {
+      const isOpen = links.classList.toggle('is-open');
+      toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
     });
   })();
 </script>
