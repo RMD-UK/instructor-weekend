@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Faculty Directory — RMD UK</title>
-  <meta name="description" content="Meet the faculty across the RMD UK network — student instructors, assessors, and senior faculty by chapter.">
+  <meta name="description" content="Meet the leads across the RMD UK network — postgraduate and student chairs by site.">
   <link rel="stylesheet" href="css/rmd.css">
   <style>
     .faculty-grid {
@@ -22,6 +22,7 @@
       transition: box-shadow 0.2s, transform 0.2s;
     }
     .faculty-card:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.10); transform: translateY(-3px); }
+    .faculty-card.placeholder { border-style: dashed; }
     .faculty-photo-wrap { position: relative; width: 100%; aspect-ratio: 1 / 1; overflow: hidden; background: var(--off-white); }
     .faculty-placeholder {
       width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
@@ -35,16 +36,13 @@
     }
     .role-lead    { background: #EBF3FD; color: var(--purple); }
     .role-pg      { background: #EBF3FD; color: var(--blue); }
-    .role-support { background: #EDFAF3; color: #1A7A4A; }
-    .role-assess  { background: #FFF8E7; color: #8B6800; }
-    .role-refresh { background: #F3E9F8; color: var(--magenta); }
-    .faculty-bio { font-size: 0.85rem; color: var(--mid-gray); line-height: 1.55; margin: 0; }
-    .faculty-chapter-tag { font-size: 0.72rem; color: var(--mid-gray); margin-top: 0.4rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    .role-student { background: #EDFAF3; color: #1A7A4A; }
+    .role-tba     { background: var(--light-gray); color: var(--mid-gray); }
+    .faculty-site-tag { font-size: 0.72rem; color: var(--mid-gray); margin-top: 0.4rem; text-transform: uppercase; letter-spacing: 0.05em; }
     .faculty-section-label { display: flex; align-items: center; gap: 1rem; margin: 3rem 0 0.25rem; }
     .faculty-section-label::after { content: ''; flex: 1; height: 2px; background: var(--light-gray); border-radius: 2px; }
     .faculty-section-label h2 { margin: 0; font-size: 1.35rem; color: var(--purple); white-space: nowrap; }
     .faculty-section-intro { font-size: 0.92rem; color: var(--mid-gray); margin: 0.4rem 0 0; }
-    .empty-state { padding: 2.5rem; text-align: center; color: var(--mid-gray); font-size: 0.95rem; border: 1px dashed var(--light-gray); border-radius: 10px; margin-top: 2rem; }
     @media (max-width: 600px) {
       .faculty-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 1rem; }
       .faculty-body { padding: 0.85rem 0.75rem 1rem; }
@@ -65,6 +63,17 @@
   <div class="site-links" id="siteLinks">
     <a href="index.html">Home</a>
     <a href="about.html">About</a>
+    <div class="nav-dropdown" id="navMenu">
+      <button class="nav-dropdown-toggle" type="button" id="navMenuToggle" aria-haspopup="true" aria-expanded="false">Sites</button>
+      <div class="nav-dropdown-menu" id="navMenuPanel">
+        <a href="rmd-birmingham.html">RMD Birmingham</a>
+        <a href="rmd-bristol.html">RMD Bristol</a>
+        <a href="rmd-warwick.html">RMD Warwick</a>
+        <a href="rmd-brunel.html">RMD Brunel</a>
+        <a class="is-disabled" href="#">RMD Plymouth<span class="menu-status">Coming soon</span></a>
+        <a href="sites.html" class="nav-dropdown-viewall">View all sites &rarr;</a>
+      </div>
+    </div>
     <a href="faculty-directory.html">Faculty</a>
     <a href="resources.html">Resources</a>
     <a href="news.html">News</a>
@@ -72,125 +81,119 @@
   </div>
 </nav>
 
-<div class="rmd-hero">
-  <h1>Meet the Faculty</h1>
-  <p>Student instructors, assessors, and senior faculty across the RMD UK network. Filter by chapter or by stage in the development pathway.</p>
-</div>
+<section class="page-hero">
+  <div class="container">
+    <div class="breadcrumb">
+      <a href="index.html">Home</a>
+      <span class="breadcrumb-sep">/</span>
+      <span>Faculty</span>
+    </div>
+    <h1>Network Leadership</h1>
+    <p>Postgraduate leads and student chairs across the RMD UK network. For full site rosters, visit each site page.</p>
+  </div>
+</section>
 
 <div class="content-wrap">
 
-  <div class="faculty-filter-bar" id="chapter-filters">
-    <span style="font-size:0.85rem; font-weight:600; color:var(--mid-gray); margin-right:0.5rem;">Chapter:</span>
-    <button class="filter-pill active" data-chapter="all">All</button>
-    <button class="filter-pill" data-chapter="birmingham">Birmingham</button>
-    <button class="filter-pill" data-chapter="bristol">Bristol</button>
-    <button class="filter-pill" data-chapter="warwick">Warwick</button>
-    <button class="filter-pill" data-chapter="brunel">Brunel</button>
-    <button class="filter-pill" data-chapter="plymouth">Plymouth</button>
-  </div>
-  <div class="faculty-filter-bar" id="group-filters" style="margin-top:0.75rem;">
-    <span style="font-size:0.85rem; font-weight:600; color:var(--mid-gray); margin-right:0.5rem;">Group:</span>
-    <button class="filter-pill active" data-group="all">All</button>
-    <button class="filter-pill" data-group="student">Student faculty</button>
-    <button class="filter-pill" data-group="senior">Senior faculty</button>
-  </div>
-
-  <!-- ─── SENIOR / POSTGRADUATE FACULTY ─────────────────────────── -->
+  <!-- POSTGRADUATE / SENIOR LEADS -->
   <div class="faculty-section-label">
-    <h2>Senior Faculty</h2>
+    <h2>Postgraduate Leads</h2>
   </div>
-  <p class="faculty-section-intro">Academic and clinical leads who oversee chapter programmes, research, and faculty development.</p>
+  <p class="faculty-section-intro">Academic and clinical leads who oversee site programmes, research, and faculty development.</p>
 
-  <div class="faculty-grid" id="grid-senior">
+  <div class="faculty-grid">
 
-    <div class="faculty-card" data-chapter="birmingham" data-group="senior">
+    <div class="faculty-card">
       <div class="faculty-photo-wrap"><div class="faculty-placeholder">&#x1F9D1;&#x200D;&#x1F3EB;</div></div>
       <div class="faculty-body">
         <p class="faculty-name">Jon Hulme</p>
         <span class="faculty-role role-lead">Course Director</span>
-        <p class="faculty-bio"><em>Bio coming soon.</em></p>
-        <p class="faculty-chapter-tag">RMD Birmingham</p>
+        <p class="faculty-site-tag">RMD Birmingham</p>
       </div>
     </div>
 
-    <div class="faculty-card" data-chapter="birmingham" data-group="senior">
+    <div class="faculty-card">
       <div class="faculty-photo-wrap"><div class="faculty-placeholder">&#x1F9D1;&#x200D;&#x1F3EB;</div></div>
       <div class="faculty-body">
         <p class="faculty-name">Joe Alderman</p>
-        <span class="faculty-role role-pg">Research</span>
-        <p class="faculty-bio"><em>Bio coming soon.</em></p>
-        <p class="faculty-chapter-tag">RMD Birmingham</p>
+        <span class="faculty-role role-pg">Research Lead</span>
+        <p class="faculty-site-tag">RMD Birmingham</p>
       </div>
     </div>
 
-    <!-- UPDATE: Add senior faculty for Bristol / Warwick / Brunel / Plymouth here, with matching data-chapter -->
+    <div class="faculty-card placeholder">
+      <div class="faculty-photo-wrap"><div class="faculty-placeholder">&#x1F465;</div></div>
+      <div class="faculty-body">
+        <p class="faculty-name">Lead to be added</p>
+        <span class="faculty-role role-tba">Postgraduate Lead</span>
+        <p class="faculty-site-tag">RMD Bristol</p>
+      </div>
+    </div>
+
+    <div class="faculty-card placeholder">
+      <div class="faculty-photo-wrap"><div class="faculty-placeholder">&#x1F465;</div></div>
+      <div class="faculty-body">
+        <p class="faculty-name">Lead to be added</p>
+        <span class="faculty-role role-tba">Postgraduate Lead</span>
+        <p class="faculty-site-tag">RMD Warwick</p>
+      </div>
+    </div>
+
+    <div class="faculty-card placeholder">
+      <div class="faculty-photo-wrap"><div class="faculty-placeholder">&#x1F465;</div></div>
+      <div class="faculty-body">
+        <p class="faculty-name">Lead to be added</p>
+        <span class="faculty-role role-tba">Postgraduate Lead</span>
+        <p class="faculty-site-tag">RMD Brunel</p>
+      </div>
+    </div>
 
   </div>
 
-  <!-- ─── STUDENT FACULTY ──────────────────────────────────────── -->
+  <!-- STUDENT CHAIRS -->
   <div class="faculty-section-label" style="margin-top:4rem;">
-    <h2>Student Faculty</h2>
+    <h2>Student Chairs</h2>
   </div>
-  <p class="faculty-section-intro">Undergraduate instructors, assessors, and committee leads who run the day-to-day chapter programmes. For the full Birmingham roster with current teams and roles, see the <a href="faculty.html">RMD Birmingham faculty page</a>.</p>
+  <p class="faculty-section-intro">Student faculty chairs who lead day-to-day delivery at each site. For the full Birmingham roster, see the <a href="faculty.html">RMD Birmingham faculty page</a>.</p>
 
-  <div class="faculty-grid" id="grid-student">
+  <div class="faculty-grid">
 
-    <div class="faculty-card" data-chapter="birmingham" data-group="student">
+    <div class="faculty-card">
       <div class="faculty-photo-wrap"><div class="faculty-placeholder">&#x1F9D1;&#x200D;&#x1F3EB;</div></div>
       <div class="faculty-body">
         <p class="faculty-name">Tanwen Bird</p>
-        <span class="faculty-role role-lead">Student Faculty Chair</span>
-        <p class="faculty-bio"><em>Bio coming soon.</em></p>
-        <p class="faculty-chapter-tag">RMD Birmingham</p>
+        <span class="faculty-role role-student">Student Faculty Chair</span>
+        <p class="faculty-site-tag">RMD Birmingham</p>
       </div>
     </div>
 
-    <!-- Full Birmingham student roster lives on faculty.html (live, data-driven).
-         This directory shows the chair as a representative card; see faculty.html
-         for the complete current team breakdown. -->
-
-    <!-- Other chapters: rosters not yet supplied -->
-    <div class="faculty-card" data-chapter="bristol" data-group="student" style="border-style:dashed;">
+    <div class="faculty-card placeholder">
       <div class="faculty-photo-wrap"><div class="faculty-placeholder">&#x1F465;</div></div>
       <div class="faculty-body">
-        <p class="faculty-name">Faculty roster to be added</p>
-        <span class="faculty-role role-support">Placeholder</span>
-        <p class="faculty-bio"><em>RMD Bristol faculty names and roles to be supplied.</em></p>
-        <p class="faculty-chapter-tag">RMD Bristol</p>
+        <p class="faculty-name">Chair to be added</p>
+        <span class="faculty-role role-tba">Student Chair</span>
+        <p class="faculty-site-tag">RMD Bristol</p>
       </div>
     </div>
 
-    <div class="faculty-card" data-chapter="warwick" data-group="student" style="border-style:dashed;">
+    <div class="faculty-card placeholder">
       <div class="faculty-photo-wrap"><div class="faculty-placeholder">&#x1F465;</div></div>
       <div class="faculty-body">
-        <p class="faculty-name">Faculty roster to be added</p>
-        <span class="faculty-role role-support">Placeholder</span>
-        <p class="faculty-bio"><em>RMD Warwick faculty names and roles to be supplied.</em></p>
-        <p class="faculty-chapter-tag">RMD Warwick</p>
+        <p class="faculty-name">Chair to be added</p>
+        <span class="faculty-role role-tba">Student Chair</span>
+        <p class="faculty-site-tag">RMD Warwick</p>
       </div>
     </div>
 
-    <div class="faculty-card" data-chapter="brunel" data-group="student" style="border-style:dashed;">
+    <div class="faculty-card placeholder">
       <div class="faculty-photo-wrap"><div class="faculty-placeholder">&#x1F465;</div></div>
       <div class="faculty-body">
-        <p class="faculty-name">Faculty roster to be added</p>
-        <span class="faculty-role role-support">Placeholder</span>
-        <p class="faculty-bio"><em>RMD Brunel faculty names and roles to be supplied.</em></p>
-        <p class="faculty-chapter-tag">RMD Brunel</p>
+        <p class="faculty-name">Chair to be added</p>
+        <span class="faculty-role role-tba">Student Chair</span>
+        <p class="faculty-site-tag">RMD Brunel</p>
       </div>
     </div>
 
-  </div>
-
-  <!-- Empty state shown when a filter combination has no results -->
-  <div class="empty-state" id="empty-state" style="display:none;">No faculty match this filter combination yet.</div>
-
-  <!-- Photo instructions note -->
-  <div style="margin-top:3rem; padding:1.25rem 1.75rem; background:var(--off-white); border-radius:10px; border:1px solid var(--light-gray);">
-    <p style="font-size:0.88rem; color:var(--mid-gray); margin:0;">
-      <strong style="color:var(--purple);">Adding photos:</strong>
-      Create an <code>images/faculty/</code> subfolder and name photos as <code>firstname-lastname.jpg</code> (all lowercase, hyphenated), then replace the placeholder <code>&lt;div&gt;</code> on each card with an <code>&lt;img&gt;</code> tag. Recommended size: 400&times;400px minimum, square crop. For the full, current Birmingham roster, see <a href="faculty.html">faculty.html</a>.
-    </p>
   </div>
 
 </div>
@@ -199,7 +202,7 @@
   <div class="rmd-footer-inner">
     <div>
       <h4>RMD UK</h4>
-      <p>A nationwide community of student-led Basic Life Support chapters at UK Higher Education Institutions. Near-peer resuscitation education since 1995.</p>
+      <p>A nationwide community of student-led Basic Life Support sites at UK Higher Education Institutions. Near-peer resuscitation education since 1995.</p>
     </div>
     <div>
       <h4>Navigate</h4>
@@ -227,59 +230,6 @@
 </footer>
 
 <script>
-  function applyFilters() {
-    const chapter = document.querySelector('#chapter-filters .filter-pill.active').dataset.chapter;
-    const group = document.querySelector('#group-filters .filter-pill.active').dataset.group;
-    const cards = document.querySelectorAll('.faculty-card');
-    let visibleCount = 0;
-
-    cards.forEach(card => {
-      const matchesChapter = (chapter === 'all') || (card.dataset.chapter === chapter);
-      const matchesGroup = (group === 'all') || (card.dataset.group === group);
-      const show = matchesChapter && matchesGroup;
-      card.style.display = show ? '' : 'none';
-      if (show) visibleCount++;
-    });
-
-    document.getElementById('empty-state').style.display = visibleCount === 0 ? 'block' : 'none';
-  }
-
-  function setupFilterGroup(containerId) {
-    const container = document.getElementById(containerId);
-    container.querySelectorAll('.filter-pill').forEach(btn => {
-      btn.addEventListener('click', () => {
-        container.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        applyFilters();
-      });
-    });
-  }
-
-  setupFilterGroup('chapter-filters');
-  setupFilterGroup('group-filters');
-
-  // Read ?group= and ?chapter= query params on load (e.g. faculty-directory.html?group=student)
-  const params = new URLSearchParams(window.location.search);
-  const initialGroup = params.get('group');
-  const initialChapter = params.get('chapter');
-
-  if (initialGroup) {
-    const btn = document.querySelector(`#group-filters .filter-pill[data-group="${initialGroup}"]`);
-    if (btn) {
-      document.querySelectorAll('#group-filters .filter-pill').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-    }
-  }
-  if (initialChapter) {
-    const btn = document.querySelector(`#chapter-filters .filter-pill[data-chapter="${initialChapter}"]`);
-    if (btn) {
-      document.querySelectorAll('#chapter-filters .filter-pill').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-    }
-  }
-  applyFilters();
-
-  // Mobile hamburger toggle for the nav link set.
   (function () {
     const toggle = document.getElementById('navToggle');
     const links  = document.getElementById('siteLinks');
@@ -288,6 +238,18 @@
       const isOpen = links.classList.toggle('is-open');
       toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
     });
+  })();
+
+  (function () {
+    const menu   = document.getElementById('navMenu');
+    const toggle = document.getElementById('navMenuToggle');
+    const panel  = document.getElementById('navMenuPanel');
+    if (!menu || !toggle || !panel) return;
+    function close() { menu.classList.remove('is-open'); toggle.setAttribute('aria-expanded', 'false'); }
+    function open() { menu.classList.add('is-open'); toggle.setAttribute('aria-expanded', 'true'); }
+    toggle.addEventListener('click', (e) => { e.stopPropagation(); menu.classList.contains('is-open') ? close() : open(); });
+    document.addEventListener('click', (e) => { if (!menu.contains(e.target)) close(); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
   })();
 </script>
 

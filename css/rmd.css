@@ -35,6 +35,8 @@
   --accent-light: #7EB8E8;
   --orange:       #F49001;
   --orange-dark:  #C26A00;
+  --rcuk-red:     #E2001A;
+  --rcuk-red-dark:#B0001A;
   --cyan:         #07748F;
   --cyan-bright:  #07A6D5;
   --magenta:      #BF0278;
@@ -812,9 +814,9 @@ body {
 
 .hero-badge {
   display: inline-block;
-  border: 1px solid rgba(244,144,1,0.5);
-  background: rgba(244,144,1,0.14);
-  color: #ffc77a;
+  border: 1px solid rgba(226,0,26,0.5);
+  background: rgba(226,0,26,0.14);
+  color: #ff8a95;
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.03em;
@@ -832,7 +834,7 @@ body {
   line-height: 1.08;
 }
 
-.rmd-hero-home h1 .hero-accent { color: var(--rmd-warn); }
+.rmd-hero-home h1 .hero-accent { color: var(--rcuk-red); }
 
 .hero-tagline-acronym {
   font-size: clamp(15px, 2.2vw, 18px);
@@ -843,7 +845,7 @@ body {
 }
 
 .hero-tagline-acronym .accent-letter {
-  color: var(--rmd-warn);
+  color: var(--rcuk-red);
   font-weight: 800;
 }
 
@@ -862,7 +864,7 @@ body {
 }
 
 .hero-btn-primary {
-  background: var(--rmd-warn);
+  background: var(--rcuk-red);
   color: white;
   font-weight: 700;
   font-size: 14px;
@@ -871,7 +873,7 @@ body {
   text-decoration: none;
   display: inline-block;
 }
-.hero-btn-primary:hover { background: #C26A00; }
+.hero-btn-primary:hover { background: var(--rcuk-red-dark); }
 
 /* ── Homepage image carousel (real CPR/BLS training photos) ── */
 .rmd-carousel-section {
