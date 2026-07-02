@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign In — RMD Instructor Weekend 2026</title>
+  <link rel="stylesheet" href="css/rmd.css">
+</head>
+<body>
+
+<div class="login-page">
+  <div class="login-card">
+    <img src="assets/rmd-logo.png" alt="RMD logo" class="login-logo">
+    <h1 class="login-title">RMD Instructor Weekend</h1>
+    <p class="login-subtitle">Birmingham · 9–11 October 2026</p>
+
+    <!-- Faculty / staff login -->
+    <div id="facultyLoginView">
+      <form class="login-form" onsubmit="handleFacultyLogin(event)">
+        <input class="form-input" type="email" id="loginEmail" placeholder="Email address" required autocomplete="email">
+        <input class="form-input" type="password" id="loginPassword" placeholder="Password" required autocomplete="current-password">
+        <button type="submit" class="btn-login">Sign in</button>
+      </form>
+      <p id="loginError" style="color:var(--rmd-warn);font-size:13px;margin-top:10px;display:none;"></p>
+
+      <hr class="login-divider">
+      <p class="qr-hint">Candidates: use the personal link from your email, or scan the QR code at registration.</p>
+
+      <hr class="login-divider">
+      <p class="qr-hint">RMD Birmingham member? <a href="mou-form.html" style="color:var(--rmd-blue);font-weight:600;">Submit your annual MOU →</a></p>
+    </div>
+
+    <!-- Candidate QR landing (shown when ?id=xxx in URL) -->
+    <div id="candidateView" class="hidden">
+      <div style="font-size:48px;margin:16px 0;">✅</div>
+      <h2 style="color:var(--rmd-navy);margin-bottom:8px;">Welcome!</h2>
+      <p id="candidateName" style="font-size:18px;font-weight:700;color:var(--rmd-blue);margin-bottom:4px;"></p>
+      <p id="candidateStream" style="font-size:13px;color:var(--rmd-muted);margin-bottom:20px;"></p>
+      <p style="font-size:13px;color:var(--rmd-muted);margin-bottom:16px;">Your arrival has been recorded.</p>
+      <button class="btn-login" onclick="goToTimetable()">View Timetable →</button>
+    </div>
+
+  </div>
+
+  <p style="color:rgba(255,255,255,0.4);font-size:12px;margin-top:20px;">
+    RMD · Resuscitation. Mentorship. Development. · University of Birmingham
+  </p>
+</div>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+<script>
+  const DIRECTOR_EMAILS = ["console_brews.6f@icloud.com"];
+
+  initFirebase();
+
+  // ── Candidate QR landing ───────────────────────────────────────────────────
+  const params      = new URLSearchParams(window.location.search);
+  const candidateId = params.get("id");
+
+  if (candidateId) {
+    document.getElementById("facultyLoginView").classList.add("hidden");
+    document.getElementById("candidateView").classList.remove("hidden");
+    loadCandidateProfile(candidateId);
+  }
+
+  async function loadCandidateProfile(id) {
+    try {
+      const doc  = await db.collection(COLLECTIONS.people).doc(id).get();
+      const data = doc.exists ? doc.data() : null;
+      document.getElementById("candidateName").textContent   = data ? data.name   : "Candidate";
+      document.getElementById("candidateStream").textContent = data ? data.stream : "";
+      await db.collection(COLLECTIONS.attendance).doc(id).set({
+        arrived: firebase.firestore.FieldValue.serverTimestamp()
+      }, { merge: true });
+    } catch (err) {
+      document.getElementById("candidateName").textContent = "Welcome!";
+    }
+  }
+
+  function goToTimetable() {
+    window.location.href = `timetable.html?id=${candidateId}`;
+  }
+
+  // ── Faculty / staff login ──────────────────────────────────────────────────
+  async function handleFacultyLogin(e) {
+    e.preventDefault();
+    const email  = document.getElementById("loginEmail").value.trim().toLowerCase();
+    const password = document.getElementById("loginPassword").value;
+    const errEl  = document.getElementById("loginError");
+    const btn    = e.target.querySelector("button[type=submit]");
+
+    errEl.style.display = "none";
+    btn.textContent = "Signing in…";
+    btn.disabled    = true;
+
+    try {
+      const cred = await auth.signInWithEmailAndPassword(email, password);
+      const role = await resolveRole(cred.user.uid, email);
+      routeByRole(role);
+    } catch (err) {
+      btn.textContent = "Sign in";
+      btn.disabled    = false;
+      if (err.code === "auth/wrong-password" || err.code === "auth/user-not-found" || err.code === "auth/invalid-credential") {
+        errEl.textContent = "Incorrect email or password.";
+      } else if (err.code === "auth/too-many-requests") {
+        errEl.textContent = "Too many attempts — try again in a few minutes.";
+      } else {
+        errEl.textContent = "Sign in failed. Check your connection and try again.";
+      }
+      errEl.style.display = "block";
+    }
+  }
+
+  async function resolveRole(uid, email) {
+    try {
+      const snap = await db.collection(COLLECTIONS.people).doc(uid).get();
+      if (snap.exists && snap.data().role) return snap.data().role;
+    } catch (e) { /* continue */ }
+    try {
+      const configSnap = await db.collection("config").doc("platform").get();
+      const firestoreDirectors = configSnap.exists ? (configSnap.data().directors || []) : [];
+      const allDirectors = [...DIRECTOR_EMAILS, ...firestoreDirectors.map(x => x.toLowerCase())];
+      if (allDirectors.includes(email)) return "director";
+    } catch (e) { /* continue */ }
+    if (DIRECTOR_EMAILS.includes(email)) return "director";
+    return "faculty";
+  }
+
+  function routeByRole(role) {
+    window.location.href = "timetable.html";
+  }
+</script>
+
+</body>
+</html>
