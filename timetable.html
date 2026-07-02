@@ -111,6 +111,36 @@
   <button class="day-tab" id="tab-sunday"   onclick="switchDay('sunday')">Sunday 11 Oct</button>
 </nav>
 
+<!-- ── Room banner ── -->
+<div id="roomBanner" style="display:none">
+  <!-- Main strip -->
+  <div style="background:var(--rmd-blue);color:#fff;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+    <div style="display:flex;align-items:center;gap:14px;">
+      <div>
+        <div style="font-size:10px;opacity:.65;text-transform:uppercase;letter-spacing:.5px;font-weight:700;">Your room</div>
+        <strong id="roomBannerID" style="font-size:22px;letter-spacing:1px;line-height:1.1"></strong>
+      </div>
+      <div id="roomBannerFaculty" style="font-size:12px;opacity:.75;border-left:1px solid rgba(255,255,255,.3);padding-left:14px;line-height:1.4"></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+      <select id="roomFilter" onchange="setRoomFilter(this.value)"
+              style="background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.3);color:#fff;padding:5px 8px;border-radius:5px;font-size:12px;font-family:var(--font);">
+        <option value="">Browse rooms…</option>
+      </select>
+      <button onclick="toggleGroupPanel()"
+              style="background:rgba(255,255,255,.15);border:none;color:#fff;padding:6px 12px;border-radius:6px;font-size:12px;cursor:pointer;font-family:var(--font);font-weight:600;">
+        👥 Group
+      </button>
+    </div>
+  </div>
+  <!-- ITC rotation strip (shown only for ITC role) -->
+  <div id="itcRotationBar" style="display:none;background:rgba(0,0,0,.15);padding:7px 16px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;"></div>
+  <!-- Group panel (expandable) -->
+  <div id="groupPanel" style="display:none;background:#eef3fb;border-bottom:2px solid #c2d5f0;padding:12px 16px;">
+    <div id="groupPanelContent"></div>
+  </div>
+</div>
+
 <!-- ── Noticeboard (candidates + faculty) ── -->
 <div class="noticeboard" id="noticeboard" style="margin-top:12px;">
   <div class="noticeboard-header">📢 Noticeboard</div>
@@ -459,6 +489,97 @@
   setInterval(() => { renderAll(); }, 5 * 60 * 1000);
 
   // ── Init ───────────────────────────────────────────────────────────────────
+  // ── Room banner & group lookup ────────────────────────────────────────────
+  let _userRoomId  = null;
+  let _allGroupData = {};
+
+  const ITC_BLOCKS = [
+    { key: "sat_group",    short: "Sat: Group Practice" },
+    { key: "sat_conv",     short: "Sat: Learning Conv." },
+    { key: "sun_teaching", short: "Sun: Teaching" },
+    { key: "sun_assess",   short: "Sun: Assessment" },
+  ];
+
+  async function loadUserRoom(email, role) {
+    try {
+      const snap = await db.collection(COLLECTIONS.groups).get();
+      const sel  = document.getElementById("roomFilter");
+      snap.forEach(doc => {
+        const d   = doc.data();
+        const rid = doc.id;
+        _allGroupData[rid] = d;
+        const opt = document.createElement("option");
+        opt.value = rid; opt.textContent = rid;
+        sel.appendChild(opt);
+        const all = [...(d.candidates||[]), ...(d.instructors||[])];
+        if (!_userRoomId && all.some(p => p.email === email)) _userRoomId = rid;
+      });
+
+      if (_userRoomId) {
+        const g   = _allGroupData[_userRoomId] || {};
+        const fac = g.faculty;
+        document.getElementById("roomBannerID").textContent = _userRoomId;
+        document.getElementById("roomBannerFaculty").innerHTML =
+          fac ? `<span style="opacity:.65">Faculty lead</span><br><strong>${fac.name}</strong>` : "";
+        document.getElementById("roomFilter").value = _userRoomId;
+        document.getElementById("roomBanner").style.display = "block";
+      }
+
+      if (role === ROLES.ITC || role === "itc") {
+        document.getElementById("roomBanner").style.display = "block";
+        await loadITCRotation(email);
+      }
+    } catch(e) { console.warn("Room lookup failed:", e); }
+  }
+
+  async function loadITCRotation(email) {
+    try {
+      const doc = await db.collection("config").doc("itc_schedule").get();
+      if (!doc.exists) return;
+      const assignments = (doc.data().assignments || {})[email] || {};
+      if (!Object.keys(assignments).length) return;
+      const bar = document.getElementById("itcRotationBar");
+      bar.style.display = "flex";
+      bar.innerHTML =
+        `<span style="font-size:11px;color:rgba(255,255,255,.7);font-weight:700;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap">ITC rotation:</span>` +
+        ITC_BLOCKS.map(b => {
+          const room = assignments[b.key] || "—";
+          return `<span style="background:rgba(255,255,255,.15);border-radius:4px;padding:3px 10px;font-size:12px;color:#fff;white-space:nowrap">
+                    <span style="opacity:.7">${b.short}</span>&ensp;<strong>${room}</strong>
+                  </span>`;
+        }).join("");
+    } catch(e) {}
+  }
+
+  function setRoomFilter(roomId) {
+    renderGroupPanel(roomId || _userRoomId);
+    document.getElementById("groupPanel").style.display = roomId ? "block" : "none";
+  }
+
+  function toggleGroupPanel() {
+    const panel = document.getElementById("groupPanel");
+    if (panel.style.display !== "none") { panel.style.display = "none"; return; }
+    renderGroupPanel(_userRoomId || document.getElementById("roomFilter").value);
+    panel.style.display = "block";
+  }
+
+  function renderGroupPanel(roomId) {
+    const el = document.getElementById("groupPanelContent");
+    if (!roomId || !_allGroupData[roomId]) { el.innerHTML = ""; return; }
+    const g    = _allGroupData[roomId];
+    const chip = (name, bg) => `<span style="display:inline-block;background:${bg};border-radius:4px;padding:3px 9px;font-size:12px;margin:2px;">${name}</span>`;
+    const fac    = g.faculty    ? chip(g.faculty.name, "#d8e8f8") : "";
+    const insts  = (g.instructors||[]).map(p => chip(p.name, "#fef3c7")).join("");
+    const cands  = (g.candidates||[]).map(p => chip(p.name, "#f0f4fa")).join("");
+    const lbl    = t => `<div style="font-size:10px;font-weight:700;color:#6b7a9a;text-transform:uppercase;letter-spacing:.4px;margin:6px 0 3px">${t}</div>`;
+    el.innerHTML =
+      `<div style="font-weight:800;font-size:15px;color:var(--rmd-navy);margin-bottom:8px">Room ${roomId}</div>` +
+      (fac   ? lbl("Faculty Lead") + fac   : "") +
+      (insts ? lbl("Full Instructors") + insts : "") +
+      (cands ? lbl("Candidates") + cands : "") +
+      (!fac && !insts && !cands ? `<span style="color:#aaa;font-size:13px">No assignments yet</span>` : "");
+  }
+
   document.addEventListener("DOMContentLoaded", () => {
     initFirebase();
 
@@ -480,6 +601,7 @@
       document.getElementById("roleSelectorBar").style.display = "flex";
       document.getElementById("roleSelect").value = devRole;
       setRole(devRole);
+      if (user.email) loadUserRoom(user.email, devRole);
       switchDay("saturday");
       updateLiveBar();
       setTimeout(() => {
