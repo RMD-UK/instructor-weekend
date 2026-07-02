@@ -105,5 +105,19 @@ service cloud.firestore {
       allow read, write: if request.auth != null;
     }
 
+    // ── Room groups ──────────────────────────────────────────────────────────
+    // Read: authenticated — all staff need to see their room assignment
+    //   (timetable.html room banner reads this for every signed-in user)
+    // Write: authenticated — room allocation admin page, director only in practice
+    match /groups/{docId} {
+      allow read, write: if request.auth != null;
+    }
+
+    // ── IW registrations ────────────────────────────────────────────────────
+    // Authenticated only — director-managed attendee list for Instructor Weekend
+    match /iw_registrations/{docId} {
+      allow read, write: if request.auth != null;
+    }
+
   }
 }
