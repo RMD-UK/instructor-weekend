@@ -171,6 +171,17 @@
   </div>
 </div>
 
+<!-- ── Director: Group Allocations panel ── -->
+<div class="director-panel hidden" id="directorGroupsPanel" style="margin-top:12px;">
+  <div class="panel-header">
+    👥 Group Allocations
+    <button class="btn btn-sm" onclick="togglePanel('directorGroupsPanel')">Close</button>
+  </div>
+  <div class="panel-body" id="directorGroupsPanelBody" style="padding:10px;">
+    <p style="color:#8893b0;font-size:13px;margin:0;">Loading groups…</p>
+  </div>
+</div>
+
 <!-- ── Gateway alert (director/faculty only) ── -->
 <div id="gatewayAlert" class="gateway-alert hidden" style="margin:8px 12px 0;max-width:800px;display:none;">
   ⚠️ Gateway assessment deadline: <strong>12:00 noon</strong> — all Instructor Candidates must pass BLS/AED before noon to continue
@@ -197,7 +208,8 @@
   <button class="btn btn-sm" onclick="window.location.href='assessment-gateway.html'">🚦 Gateway</button>
   <button class="btn btn-sm" onclick="window.location.href='assessment-development.html'">📝 Dev</button>
   <button class="btn btn-sm" onclick="window.location.href='assessment-dashboard.html'">📊 Dashboard</button>
-  <button class="btn btn-sm" onclick="window.location.href='admin-room-allocation.html'">🏫 Rooms</button>
+  <button class="btn btn-sm" onclick="openDirectorGroups()">👥 Groups</button>
+  <button class="btn btn-sm" onclick="window.location.href='admin-room-allocation.html'">🏫 Edit Rooms</button>
   <button class="btn btn-sm" onclick="window.location.href='cd-dashboard.html'" style="background:#4ab5f0;color:#160b52;">🎯 CD Dashboard</button>
   <button class="btn btn-sm" onclick="doSignOut()" style="margin-left:auto;background:rgba(255,255,255,0.15);">↩ Sign out</button>
 </div>
@@ -561,6 +573,43 @@
     if (panel.style.display !== "none") { panel.style.display = "none"; return; }
     renderGroupPanel(_userRoomId || document.getElementById("roomFilter").value);
     panel.style.display = "block";
+  }
+
+  function openDirectorGroups() {
+    togglePanel('directorGroupsPanel');
+    renderDirectorGroups();
+  }
+
+  function renderDirectorGroups() {
+    const body = document.getElementById("directorGroupsPanelBody");
+    const rooms = Object.keys(_allGroupData).sort();
+    if (!rooms.length) {
+      body.innerHTML = '<p style="color:#8893b0;font-size:13px;margin:0;">No room allocations saved yet. Use Edit Rooms to set up groups.</p>';
+      return;
+    }
+    const chip = (name, bg, color) =>
+      `<span style="display:inline-block;background:${bg};color:${color||'#333'};border-radius:4px;padding:2px 7px;font-size:11px;margin:2px;white-space:nowrap;">${name}</span>`;
+
+    body.innerHTML = `
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;">
+        ${rooms.map(rid => {
+          const g     = _allGroupData[rid] || {};
+          const fac   = g.faculty;
+          const insts = g.instructors || [];
+          const cands = g.candidates  || [];
+          const total = insts.length + cands.length;
+          return `<div style="background:#f7f9fc;border:1.5px solid #dde2ed;border-radius:8px;padding:10px 12px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+              <strong style="font-size:15px;color:var(--rmd-navy);letter-spacing:.5px;">${rid}</strong>
+              <span style="font-size:11px;color:#8893b0;">${total} assigned</span>
+            </div>
+            ${fac ? `<div style="font-size:11px;color:#6b7a9a;font-weight:700;text-transform:uppercase;letter-spacing:.3px;margin-bottom:2px;">Faculty Lead</div><div style="margin-bottom:6px;">${chip(fac.name,'#d8e8f8','#1a3a5c')}</div>` : ""}
+            ${insts.length ? `<div style="font-size:11px;color:#6b7a9a;font-weight:700;text-transform:uppercase;letter-spacing:.3px;margin-bottom:2px;">Full Instructors</div><div style="margin-bottom:6px;">${insts.map(p=>chip(p.name,'#fef3c7','#78350f')).join("")}</div>` : ""}
+            ${cands.length ? `<div style="font-size:11px;color:#6b7a9a;font-weight:700;text-transform:uppercase;letter-spacing:.3px;margin-bottom:2px;">Candidates</div><div>${cands.map(p=>chip(p.name,'#eef2ff','#3b3fb0')).join("")}</div>` : ""}
+            ${!fac && !insts.length && !cands.length ? `<span style="color:#c0c8d8;font-size:12px;">Not yet allocated</span>` : ""}
+          </div>`;
+        }).join("")}
+      </div>`;
   }
 
   function renderGroupPanel(roomId) {
