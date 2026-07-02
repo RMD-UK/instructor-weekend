@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IW Registrations — RMD 2026</title>
+  <link rel="stylesheet" href="css/rmd.css">
+  <style>
+    * { box-sizing: border-box; }
+    body { background: #f0f3f6; font-family: var(--font); margin: 0; padding: 0 0 60px; }
+
+    .top-bar {
+      background: var(--rmd-navy); color: white;
+      padding: 12px 16px; display: flex; align-items: center; gap: 10px;
+      position: sticky; top: 0; z-index: 100;
+    }
+    .top-bar img { height: 28px; }
+    .top-bar-title { font-size: 15px; font-weight: 700; flex: 1; }
+    .top-bar a, .top-bar button {
+      background: rgba(255,255,255,0.15); border: none; color: white;
+      padding: 6px 12px; border-radius: 6px; font-size: 13px; cursor: pointer;
+      text-decoration: none; white-space: nowrap; font-family: var(--font);
+    }
+    .top-bar a:hover, .top-bar button:hover { background: rgba(255,255,255,0.28); }
+
+    .content { padding: 14px; max-width: 1000px; margin: 0 auto; }
+
+    /* Summary pills */
+    .summary-strip { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+    .sum-pill {
+      background: white; border-radius: 8px; padding: 10px 16px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1); text-align: center; min-width: 90px;
+    }
+    .sum-pill .val { font-size: 24px; font-weight: 700; color: var(--rmd-navy); }
+    .sum-pill .lbl { font-size: 11px; color: var(--rmd-muted); font-weight: 600; text-transform: uppercase; }
+
+    /* Action bar */
+    .action-bar { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; align-items: center; }
+    .btn-action {
+      padding: 8px 16px; background: var(--rmd-blue); color: white;
+      border: none; border-radius: 6px; font-size: 13px; font-weight: 700;
+      font-family: var(--font); cursor: pointer;
+    }
+    .btn-action:hover { background: var(--rmd-navy); }
+    .btn-action.secondary { background: white; color: var(--rmd-navy); border: 2px solid #ccd6dd; }
+    .btn-action.secondary:hover { background: #f0f3f6; }
+    .btn-action.danger { background: #fce8e6; color: #b7410e; border: 1.5px solid #f5b8b0; }
+
+    /* Filter tabs */
+    .filter-row { display: flex; gap: 6px; margin-bottom: 14px; flex-wrap: wrap; }
+    .filter-btn {
+      padding: 6px 14px; border: 2px solid #ccd6dd; border-radius: 20px;
+      background: white; font-size: 13px; font-weight: 600; font-family: var(--font);
+      cursor: pointer; color: var(--rmd-muted); transition: all 0.12s;
+    }
+    .filter-btn:hover { border-color: var(--rmd-blue); color: var(--rmd-blue); }
+    .filter-btn.active { background: var(--rmd-navy); border-color: var(--rmd-navy); color: white; }
+
+    /* Attendee table */
+    .data-table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.1); font-size: 13px; }
+    .data-table th { background: var(--rmd-navy); color: white; padding: 10px 12px; text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .data-table td { padding: 10px 12px; border-bottom: 1px solid #f0f3f6; vertical-align: middle; }
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table tr:hover td { background: #f8f9fa; }
+    .data-table tr.status-declined td { opacity: 0.55; }
+
+    /* Status badges */
+    .badge-confirmed { background: #e6f4ea; color: #1a6e31; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; }
+    .badge-declined  { background: #fce8e6; color: #b7410e; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; }
+    .badge-pending   { background: #f0f3f6; color: #637282; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; }
+
+    /* Role badges */
+    .badge-candidate  { background: #e8f0fe; color: #1a56a8; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; }
+    .badge-assessor   { background: #f3e8ff; color: #6d28d9; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; }
+    .badge-faculty    { background: #ddeeff; color: #0067A4; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; }
+    .badge-manual     { background: #fff3cd; color: #856404; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; }
+
+    /* Status buttons */
+    .btn-confirm {
+      padding: 5px 12px; background: #e6f4ea; color: #1a6e31;
+      border: 1.5px solid #a8d5b5; border-radius: 5px; font-size: 11px; font-weight: 700;
+      font-family: var(--font); cursor: pointer; margin-right: 4px;
+    }
+    .btn-confirm:hover, .btn-confirm.active { background: #1a6e31; color: white; border-color: #145727; }
+    .btn-decline {
+      padding: 5px 12px; background: #fce8e6; color: #b7410e;
+      border: 1.5px solid #f5b8b0; border-radius: 5px; font-size: 11px; font-weight: 700;
+      font-family: var(--font); cursor: pointer; margin-right: 4px;
+    }
+    .btn-decline:hover, .btn-decline.active { background: #b7410e; color: white; border-color: #8b2a08; }
+    .btn-reset {
+      padding: 5px 8px; background: white; color: #637282;
+      border: 1px solid #ccd6dd; border-radius: 5px; font-size: 11px;
+      font-family: var(--font); cursor: pointer;
+    }
+    .btn-remove {
+      padding: 5px 8px; background: none; color: #ccd6dd;
+      border: none; border-radius: 5px; font-size: 14px; line-height: 1;
+      font-family: var(--font); cursor: pointer;
+    }
+    .btn-remove:hover { color: #b7410e; }
+
+    /* Add person / paste panels */
+    .panel {
+      background: white; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+      margin-bottom: 14px; overflow: hidden;
+    }
+    .panel-header {
+      padding: 12px 16px; background: #e8ecf4; border-bottom: 1px solid #d5daea;
+      font-weight: 700; font-size: 14px; color: var(--rmd-navy);
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .panel-body { padding: 14px 16px; }
+
+    .field { margin-bottom: 12px; }
+    .field label { display: block; font-size: 12px; font-weight: 700; color: var(--rmd-navy); margin-bottom: 4px; }
+    .field input, .field select, .field textarea {
+      width: 100%; padding: 9px 11px; border: 2px solid #ccd6dd; border-radius: 6px;
+      font-size: 14px; font-family: var(--font); color: var(--rmd-navy); background: white;
+    }
+    .field input:focus, .field select:focus, .field textarea:focus {
+      outline: none; border-color: var(--rmd-blue);
+    }
+    .field textarea { min-height: 100px; resize: vertical; font-size: 13px; }
+
+    .field-row { display: grid; grid-template-columns: 1fr 1fr auto; gap: 10px; align-items: end; }
+    @media (max-width: 560px) { .field-row { grid-template-columns: 1fr; } }
+
+    .info-box {
+      background: #e8f0fe; border-left: 4px solid var(--rmd-blue);
+      border-radius: 0 6px 6px 0; padding: 10px 14px;
+      font-size: 13px; color: var(--rmd-navy); margin-bottom: 12px;
+    }
+    .warn-box {
+      background: #fff3cd; border-left: 4px solid #c17a00;
+      border-radius: 0 6px 6px 0; padding: 10px 14px;
+      font-size: 13px; color: #533500; margin-bottom: 12px;
+    }
+
+    .section-heading { color: var(--rmd-navy); margin: 0 0 10px; font-size: 14px; font-weight: 700; }
+    .empty-state { text-align: center; padding: 30px; color: var(--rmd-muted); font-size: 14px; }
+    .loading     { text-align: center; padding: 30px; color: var(--rmd-muted); }
+
+    /* Import preview */
+    .import-preview { margin-top: 12px; max-height: 220px; overflow-y: auto; }
+    .preview-row {
+      display: flex; align-items: center; gap: 8px; padding: 5px 0;
+      border-bottom: 1px solid #f0f3f6; font-size: 13px;
+    }
+    .preview-row:last-child { border-bottom: none; }
+    .preview-name { flex: 1; font-weight: 600; color: var(--rmd-navy); }
+    .preview-email { color: var(--rmd-muted); font-size: 12px; flex: 1; }
+
+    /* Auth overlay */
+    #authOverlay {
+      position: fixed; inset: 0; background: rgba(0,20,40,0.7);
+      display: flex; align-items: center; justify-content: center; z-index: 999;
+    }
+    #authOverlay div {
+      background: white; border-radius: 12px; padding: 32px 40px;
+      text-align: center; color: var(--rmd-navy); font-size: 15px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Auth overlay -->
+<div id="authOverlay">
+  <div>
+    <div style="font-size:32px;margin-bottom:12px;">🔐</div>
+    <div id="authMsg">Checking access…</div>
+  </div>
+</div>
+
+<!-- Top bar -->
+<div class="top-bar">
+  <a href="timetable.html" title="Back to programme" style="background:none;padding:0;">
+    <img src="assets/rmd-logo.png" alt="RMD" style="cursor:pointer;opacity:1;transition:opacity 0.15s;" onmouseover="this.style.opacity=0.75" onmouseout="this.style.opacity=1">
+  </a>
+  <div class="top-bar-title">IW Registrations — Attendee Management</div>
+  <a href="admin-faculty-responses.html">📋 Faculty Responses</a>
+  <button onclick="loadAll()">↻ Refresh</button>
+</div>
+
+<div class="content" style="margin-top:14px;">
+
+  <!-- Summary pills -->
+  <div class="summary-strip" id="summaryStrip">
+    <div class="sum-pill"><div class="val" id="sum-total">–</div><div class="lbl">Total</div></div>
+    <div class="sum-pill"><div class="val" id="sum-confirmed" style="color:#1a6e31;">–</div><div class="lbl">Confirmed</div></div>
+    <div class="sum-pill"><div class="val" id="sum-pending" style="color:#856404;">–</div><div class="lbl">Pending</div></div>
+    <div class="sum-pill"><div class="val" id="sum-declined" style="color:#b7410e;">–</div><div class="lbl">Declined</div></div>
+    <div class="sum-pill"><div class="val" id="sum-candidates">–</div><div class="lbl">Instr. Candidates</div></div>
+    <div class="sum-pill"><div class="val" id="sum-assessors">–</div><div class="lbl">Assessor Cands</div></div>
+    <div class="sum-pill"><div class="val" id="sum-roster" style="color:var(--rmd-muted);">–</div><div class="lbl">From roster</div></div>
+    <div class="sum-pill"><div class="val" id="sum-manual" style="color:#856404;">–</div><div class="lbl">Added manually</div></div>
+  </div>
+
+  <!-- Action bar -->
+  <div class="action-bar">
+    <button class="btn-action" onclick="togglePanel('addPanel')">+ Add person</button>
+    <button class="btn-action secondary" onclick="togglePanel('pastePanel')">📋 Paste import</button>
+    <button class="btn-action secondary" onclick="togglePanel('rosterPanel')">⬇ Import from roster</button>
+    <button class="btn-action secondary" onclick="copyConfirmedEmails()">📧 Copy confirmed emails</button>
+    <button class="btn-action secondary" onclick="exportCSV()">⬇ Export CSV</button>
+  </div>
+
+  <!-- Add person panel -->
+  <div class="panel" id="addPanel" style="display:none;">
+    <div class="panel-header">Add a person manually
+      <button onclick="togglePanel('addPanel')" style="background:none;border:none;font-size:18px;cursor:pointer;color:var(--rmd-muted);">×</button>
+    </div>
+    <div class="panel-body">
+      <div class="field-row">
+        <div class="field">
+          <label>Full name <span style="color:#b7410e;">*</span></label>
+          <input type="text" id="addName" placeholder="e.g. Jane Smith">
+        </div>
+        <div class="field">
+          <label>Email address <span style="color:#b7410e;">*</span></label>
+          <input type="email" id="addEmail" placeholder="jane@example.com">
+        </div>
+        <div class="field">
+          <label>Role</label>
+          <select id="addRole">
+            <option value="Instructor Candidate">Instructor Candidate</option>
+            <option value="Assessor Candidate">Assessor Candidate</option>
+            <option value="Faculty">Faculty</option>
+            <option value="ITC">ITC</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+      </div>
+      <div class="field" style="max-width:400px;">
+        <label>Notes (optional)</label>
+        <input type="text" id="addNotes" placeholder="e.g. arriving late Saturday">
+      </div>
+      <button class="btn-action" onclick="addPerson()">Add to list</button>
+      <span id="addFeedback" style="font-size:12px;color:var(--rmd-muted);margin-left:10px;"></span>
+    </div>
+  </div>
+
+  <!-- Paste import panel -->
+  <div class="panel" id="pastePanel" style="display:none;">
+    <div class="panel-header">Paste import — names and emails
+      <button onclick="togglePanel('pastePanel')" style="background:none;border:none;font-size:18px;cursor:pointer;color:var(--rmd-muted);">×</button>
+    </div>
+    <div class="panel-body">
+      <div class="info-box">
+        Paste a list with one person per line. Accepted formats:<br>
+        <code>Jane Smith, jane@email.com</code>&nbsp; or &nbsp;<code>Jane Smith &lt;jane@email.com&gt;</code>&nbsp; or &nbsp;<code>jane@email.com</code>
+      </div>
+      <div class="field">
+        <label>Role for all imported people</label>
+        <select id="pasteRole" style="max-width:300px;">
+          <option value="Instructor Candidate">Instructor Candidate</option>
+          <option value="Assessor Candidate">Assessor Candidate</option>
+          <option value="Faculty">Faculty</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Paste list here</label>
+        <textarea id="pasteInput" placeholder="Jane Smith, jane@example.com&#10;John Doe &lt;john@example.com&gt;&#10;mary@example.com"></textarea>
+      </div>
+      <button class="btn-action secondary" onclick="parsePaste()">Preview →</button>
+      <div id="pastePreview" class="import-preview" style="display:none;"></div>
+      <div id="pasteActions" style="display:none;margin-top:12px;">
+        <button class="btn-action" onclick="importPaste()">Import all</button>
+        <span id="pasteFeedback" style="font-size:12px;color:var(--rmd-muted);margin-left:10px;"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Import from roster panel -->
+  <div class="panel" id="rosterPanel" style="display:none;">
+    <div class="panel-header">Import candidates from MOU roster
+      <button onclick="togglePanel('rosterPanel')" style="background:none;border:none;font-size:18px;cursor:pointer;color:var(--rmd-muted);">×</button>
+    </div>
+    <div class="panel-body">
+      <div class="warn-box">
+        This will add all <strong>Instructor Candidates</strong> and <strong>Assessor Candidates</strong> from the MOU roster to the IW registrations list (as Pending). People already on the list will not be duplicated.
+      </div>
+      <div id="rosterPreview" class="loading">Loading roster…</div>
+      <div id="rosterActions" style="display:none;margin-top:12px;">
+        <button class="btn-action" onclick="importFromRoster()">Import listed people</button>
+        <span id="rosterFeedback" style="font-size:12px;color:var(--rmd-muted);margin-left:10px;"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filter tabs -->
+  <div class="filter-row">
+    <button class="filter-btn active" onclick="setFilter('all',this)">All</button>
+    <button class="filter-btn" onclick="setFilter('confirmed',this)">✓ Confirmed</button>
+    <button class="filter-btn" onclick="setFilter('pending',this)">Pending</button>
+    <button class="filter-btn" onclick="setFilter('declined',this)">✗ Declined</button>
+    <button class="filter-btn" onclick="setFilter('instructor',this)">Instr. Candidates</button>
+    <button class="filter-btn" onclick="setFilter('assessor',this)">Assessor Candidates</button>
+    <button class="filter-btn" onclick="setFilter('manual',this)">Manually added</button>
+  </div>
+
+  <!-- Attendee table -->
+  <div id="tableContainer"><div class="loading">Loading…</div></div>
+
+</div>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+<script>
+
+const DIRECTOR_EMAILS  = ["console_brews.6f@icloud.com"];
+const IW_COLL          = "iw_registrations";
+
+let allRegistrations   = [];   // [{id, name, email, role, status, source, notes, addedAt}]
+let rosterCandidates   = [];   // from mou_roster (for import panel)
+let currentFilter      = "all";
+let pasteData          = [];   // parsed paste rows
+
+// ── Auth ─────────────────────────────────────────────────────────────────────
+async function resolveRole(uid, email) {
+  try {
+    const snap = await db.collection(COLLECTIONS.people).doc(uid).get();
+    if (snap.exists && snap.data().role) return snap.data().role;
+  } catch(e) {}
+  const el = (email || "").toLowerCase();
+  if (DIRECTOR_EMAILS.includes(el)) return ROLES.DIRECTOR;
+  try {
+    const cfg = await db.collection("config").doc("platform").get();
+    const extra = cfg.exists ? (cfg.data().directors || []) : [];
+    if ([...DIRECTOR_EMAILS, ...extra.map(x => x.toLowerCase())].includes(el)) return ROLES.DIRECTOR;
+  } catch(e) {}
+  return null;
+}
+
+initFirebase();
+
+auth.onAuthStateChanged(async user => {
+  if (!user) { window.location.href = "signin.html"; return; }
+  const role = await resolveRole(user.uid, user.email || "");
+  if (role !== ROLES.DIRECTOR) {
+    document.getElementById("authMsg").textContent = "Course Directors only.";
+    setTimeout(() => { window.location.href = "timetable.html"; }, 2000);
+    return;
+  }
+  document.getElementById("authOverlay").style.display = "none";
+  await loadAll();
+});
+
+// ── Load ──────────────────────────────────────────────────────────────────────
+async function loadAll() {
+  document.getElementById("tableContainer").innerHTML = '<div class="loading">Loading…</div>';
+  try {
+    const snap = await db.collection(IW_COLL).orderBy("addedAt", "asc").get();
+    allRegistrations = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  } catch(e) {
+    // If no index yet, fall back to unordered
+    try {
+      const snap = await db.collection(IW_COLL).get();
+      allRegistrations = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+        .sort((a,b) => (a.name||"").localeCompare(b.name||""));
+    } catch(e2) {
+      document.getElementById("tableContainer").innerHTML =
+        `<div class="empty-state">Could not load registrations.<br><small>${e2.message}</small></div>`;
+      return;
+    }
+  }
+  updateSummary();
+  renderTable();
+}
+
+// ── Summary ───────────────────────────────────────────────────────────────────
+function updateSummary() {
+  const r = allRegistrations;
+  document.getElementById("sum-total").textContent      = r.length;
+  document.getElementById("sum-confirmed").textContent  = r.filter(x => x.status === "confirmed").length;
+  document.getElementById("sum-pending").textContent    = r.filter(x => !x.status || x.status === "pending").length;
+  document.getElementById("sum-declined").textContent   = r.filter(x => x.status === "declined").length;
+  document.getElementById("sum-candidates").textContent = r.filter(x => x.role === "Instructor Candidate").length;
+  document.getElementById("sum-assessors").textContent  = r.filter(x => x.role === "Assessor Candidate").length;
+  document.getElementById("sum-roster").textContent     = r.filter(x => x.source === "roster").length;
+  document.getElementById("sum-manual").textContent     = r.filter(x => x.source === "manual" || x.source === "paste").length;
+}
+
+// ── Table ────────────────────────────────────────────────────────────────────
+function setFilter(f, btn) {
+  currentFilter = f;
+  document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  renderTable();
+}
+
+function getFiltered() {
+  switch (currentFilter) {
+    case "confirmed":   return allRegistrations.filter(r => r.status === "confirmed");
+    case "pending":     return allRegistrations.filter(r => !r.status || r.status === "pending");
+    case "declined":    return allRegistrations.filter(r => r.status === "declined");
+    case "instructor":  return allRegistrations.filter(r => r.role === "Instructor Candidate");
+    case "assessor":    return allRegistrations.filter(r => r.role === "Assessor Candidate");
+    case "manual":      return allRegistrations.filter(r => r.source === "manual" || r.source === "paste");
+    default:            return allRegistrations;
+  }
+}
+
+function roleBadge(role) {
+  if (role === "Instructor Candidate") return `<span class="badge-candidate">Instr. Cand.</span>`;
+  if (role === "Assessor Candidate")   return `<span class="badge-assessor">Assess. Cand.</span>`;
+  if (role === "Faculty")              return `<span class="badge-faculty">Faculty</span>`;
+  if (role === "ITC")                  return `<span class="badge-faculty" style="background:#e8f0fe;color:#3d52a0;">ITC</span>`;
+  return `<span class="badge-manual">${role||"Other"}</span>`;
+}
+
+function statusBadge(status) {
+  if (status === "confirmed") return `<span class="badge-confirmed">✓ Confirmed</span>`;
+  if (status === "declined")  return `<span class="badge-declined">✗ Declined</span>`;
+  return `<span class="badge-pending">Pending</span>`;
+}
+
+function renderTable() {
+  const filtered = getFiltered();
+  if (!filtered.length) {
+    document.getElementById("tableContainer").innerHTML =
+      `<div class="empty-state">No registrations in this view.<br>Use "Add person", "Paste import", or "Import from roster" above.</div>`;
+    return;
+  }
+
+  const rows = filtered.map(r => {
+    const isConf = r.status === "confirmed";
+    const isDecl = r.status === "declined";
+    return `<tr class="${isDecl?"status-declined":""}">
+      <td style="font-weight:700;color:var(--rmd-navy);">${r.name||"–"}</td>
+      <td style="color:var(--rmd-muted);font-size:12px;">${r.email||"–"}</td>
+      <td>${roleBadge(r.role)}</td>
+      <td>${statusBadge(r.status)}</td>
+      <td style="color:var(--rmd-muted);font-size:12px;">${r.notes||""}</td>
+      <td style="white-space:nowrap;">
+        <button class="btn-confirm${isConf?" active":""}"
+          onclick="setStatus('${r.id}','confirmed')">✓</button>
+        <button class="btn-decline${isDecl?" active":""}"
+          onclick="setStatus('${r.id}','declined')">✗</button>
+        ${r.status ? `<button class="btn-reset" onclick="setStatus('${r.id}','pending')" title="Reset to pending">↺</button>` : ""}
+        <button class="btn-remove" onclick="removeEntry('${r.id}','${(r.name||"").replace(/'/g,"\\'")}')">×</button>
+      </td>
+    </tr>`;
+  }).join("");
+
+  document.getElementById("tableContainer").innerHTML = `
+    <table class="data-table">
+      <thead><tr>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Role</th>
+        <th>Status</th>
+        <th>Notes</th>
+        <th>Actions</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <div style="font-size:12px;color:var(--rmd-muted);margin-top:8px;padding:0 4px;">
+      Showing ${filtered.length} of ${allRegistrations.length} registrations
+    </div>`;
+}
+
+// ── Status update ─────────────────────────────────────────────────────────────
+async function setStatus(docId, status) {
+  try {
+    await db.collection(IW_COLL).doc(docId).update({
+      status,
+      statusUpdatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    const r = allRegistrations.find(x => x.id === docId);
+    if (r) r.status = status;
+    updateSummary();
+    renderTable();
+  } catch(err) {
+    alert("Failed to update: " + err.message);
+  }
+}
+
+// ── Remove entry ──────────────────────────────────────────────────────────────
+async function removeEntry(docId, name) {
+  if (!confirm(`Remove ${name} from the IW registrations list?\n\nThis will NOT delete them from the main roster.`)) return;
+  try {
+    await db.collection(IW_COLL).doc(docId).delete();
+    allRegistrations = allRegistrations.filter(r => r.id !== docId);
+    updateSummary();
+    renderTable();
+  } catch(err) {
+    alert("Failed to remove: " + err.message);
+  }
+}
+
+// ── Add person ────────────────────────────────────────────────────────────────
+async function addPerson() {
+  const name  = document.getElementById("addName").value.trim();
+  const email = document.getElementById("addEmail").value.trim().toLowerCase();
+  const role  = document.getElementById("addRole").value;
+  const notes = document.getElementById("addNotes").value.trim();
+
+  if (!name || !email) { alert("Name and email are required."); return; }
+  if (!email.includes("@")) { alert("Please enter a valid email address."); return; }
+  if (allRegistrations.some(r => r.email === email)) {
+    alert(`${email} is already on the list.`); return;
+  }
+
+  const fb = document.getElementById("addFeedback");
+  fb.textContent = "Saving…";
+
+  try {
+    const doc = await db.collection(IW_COLL).add({
+      name, email, role, notes,
+      source: "manual",
+      status: "pending",
+      addedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    allRegistrations.push({ id: doc.id, name, email, role, notes, source: "manual", status: "pending" });
+    allRegistrations.sort((a,b) => (a.name||"").localeCompare(b.name||""));
+    updateSummary();
+    renderTable();
+    document.getElementById("addName").value  = "";
+    document.getElementById("addEmail").value = "";
+    document.getElementById("addNotes").value = "";
+    fb.textContent = `✓ ${name} added`;
+    setTimeout(() => { fb.textContent = ""; }, 3000);
+  } catch(err) {
+    fb.textContent = "Error: " + err.message;
+  }
+}
+
+// ── Paste import ──────────────────────────────────────────────────────────────
+function parsePaste() {
+  const raw  = document.getElementById("pasteInput").value;
+  const role = document.getElementById("pasteRole").value;
+  const lines = raw.split("\n").map(l => l.trim()).filter(Boolean);
+
+  pasteData = [];
+  lines.forEach(line => {
+    // "Name <email>" format
+    const angleMatch = line.match(/^(.+?)\s*<([^>]+)>\s*$/);
+    if (angleMatch) {
+      pasteData.push({ name: angleMatch[1].trim(), email: angleMatch[2].trim().toLowerCase(), role });
+      return;
+    }
+    // "Name, email" or "Name\temail"
+    const parts = line.split(/,|\t/).map(s => s.trim());
+    if (parts.length >= 2 && parts[1].includes("@")) {
+      pasteData.push({ name: parts[0], email: parts[1].toLowerCase(), role });
+      return;
+    }
+    // Email only
+    if (line.includes("@")) {
+      pasteData.push({ name: line.split("@")[0], email: line.toLowerCase(), role });
+      return;
+    }
+    // Name only (no email)
+    pasteData.push({ name: line, email: "", role });
+  });
+
+  const preview = document.getElementById("pastePreview");
+  preview.style.display = "block";
+
+  if (!pasteData.length) {
+    preview.innerHTML = '<div class="empty-state">Could not parse any rows. Check format.</div>';
+    document.getElementById("pasteActions").style.display = "none";
+    return;
+  }
+
+  const existing = new Set(allRegistrations.map(r => r.email));
+  preview.innerHTML = pasteData.map(p => {
+    const dup = p.email && existing.has(p.email);
+    return `<div class="preview-row">
+      <span class="preview-name">${p.name||"–"}</span>
+      <span class="preview-email">${p.email||"<em>no email</em>"}</span>
+      <span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;
+        ${dup ? "background:#fce8e6;color:#b7410e;" : "background:#e6f4ea;color:#1a6e31;"}">
+        ${dup ? "Already on list" : "Will add"}
+      </span>
+    </div>`;
+  }).join("");
+
+  document.getElementById("pasteActions").style.display = "block";
+}
+
+async function importPaste() {
+  const role   = document.getElementById("pasteRole").value;
+  const toAdd  = pasteData.filter(p => p.email && !allRegistrations.some(r => r.email === p.email));
+  const fb     = document.getElementById("pasteFeedback");
+
+  if (!toAdd.length) { fb.textContent = "Nothing new to import."; return; }
+  fb.textContent = `Importing ${toAdd.length} people…`;
+
+  try {
+    const batch = db.batch();
+    const ts    = firebase.firestore.FieldValue.serverTimestamp();
+    const newDocs = [];
+
+    toAdd.forEach(p => {
+      const ref = db.collection(IW_COLL).doc();
+      batch.set(ref, { name: p.name, email: p.email, role: p.role || role, notes: "", source: "paste", status: "pending", addedAt: ts });
+      newDocs.push({ id: ref.id, name: p.name, email: p.email, role: p.role || role, notes: "", source: "paste", status: "pending" });
+    });
+    await batch.commit();
+
+    allRegistrations.push(...newDocs);
+    allRegistrations.sort((a,b) => (a.name||"").localeCompare(b.name||""));
+    updateSummary();
+    renderTable();
+    document.getElementById("pasteInput").value = "";
+    document.getElementById("pastePreview").style.display = "none";
+    document.getElementById("pasteActions").style.display = "none";
+    fb.textContent = `✓ ${toAdd.length} people imported`;
+    setTimeout(() => { fb.textContent = ""; }, 4000);
+  } catch(err) {
+    fb.textContent = "Error: " + err.message;
+  }
+}
+
+// ── Import from roster ────────────────────────────────────────────────────────
+async function loadRosterPreview() {
+  const preview = document.getElementById("rosterPreview");
+  const actions = document.getElementById("rosterActions");
+  preview.innerHTML = '<div class="loading">Loading roster…</div>';
+  actions.style.display = "none";
+
+  try {
+    const snap = await db.collection(COLLECTIONS.mouRoster).get();
+    const existing = new Set(allRegistrations.map(r => r.email));
+    rosterCandidates = [];
+
+    snap.forEach(doc => {
+      const d = doc.data();
+      if (d.role === ROLES.INSTRUCTOR || d.role === ROLES.ASSESSOR || d.role === "assessor") {
+        const email = (d.email || doc.id).toLowerCase();
+        const roleLabel = d.role === ROLES.INSTRUCTOR ? "Instructor Candidate" : "Assessor Candidate";
+        rosterCandidates.push({ name: d.name || doc.id, email, role: roleLabel, alreadyAdded: existing.has(email) });
+      }
+    });
+
+    if (!rosterCandidates.length) {
+      preview.innerHTML = '<div class="empty-state">No instructor or assessor candidates found in roster.</div>';
+      return;
+    }
+
+    const toAdd = rosterCandidates.filter(r => !r.alreadyAdded);
+    const alreadyIn = rosterCandidates.filter(r => r.alreadyAdded);
+
+    preview.innerHTML = `
+      <div style="font-size:13px;color:var(--rmd-muted);margin-bottom:8px;">
+        Found <strong style="color:var(--rmd-navy);">${rosterCandidates.length}</strong> candidates in roster:
+        <strong style="color:#1a6e31;">${toAdd.length} new</strong> to add,
+        <strong style="color:#637282;">${alreadyIn.length} already on list</strong>
+      </div>
+      <div class="import-preview">
+        ${toAdd.map(p => `<div class="preview-row">
+          <span class="preview-name">${p.name}</span>
+          <span class="preview-email">${p.email}</span>
+          <span class="badge-candidate">${p.role}</span>
+        </div>`).join("")}
+        ${alreadyIn.map(p => `<div class="preview-row" style="opacity:0.45;">
+          <span class="preview-name">${p.name}</span>
+          <span class="preview-email">${p.email}</span>
+          <span style="font-size:11px;color:#637282;">Already on list</span>
+        </div>`).join("")}
+      </div>`;
+    actions.style.display = toAdd.length ? "block" : "none";
+    document.getElementById("rosterFeedback").textContent = "";
+  } catch(err) {
+    preview.innerHTML = `<div class="empty-state">Failed to load roster: ${err.message}</div>`;
+  }
+}
+
+async function importFromRoster() {
+  const existing = new Set(allRegistrations.map(r => r.email));
+  const toAdd    = rosterCandidates.filter(r => !existing.has(r.email));
+  const fb       = document.getElementById("rosterFeedback");
+
+  if (!toAdd.length) { fb.textContent = "Nothing new to import."; return; }
+  fb.textContent = `Importing ${toAdd.length} candidates…`;
+
+  try {
+    const batch = db.batch();
+    const ts    = firebase.firestore.FieldValue.serverTimestamp();
+    const newDocs = [];
+
+    toAdd.forEach(p => {
+      const ref = db.collection(IW_COLL).doc();
+      batch.set(ref, { name: p.name, email: p.email, role: p.role, notes: "", source: "roster", status: "pending", addedAt: ts });
+      newDocs.push({ id: ref.id, name: p.name, email: p.email, role: p.role, notes: "", source: "roster", status: "pending" });
+    });
+    await batch.commit();
+
+    allRegistrations.push(...newDocs);
+    allRegistrations.sort((a,b) => (a.name||"").localeCompare(b.name||""));
+    updateSummary();
+    renderTable();
+    fb.textContent = `✓ ${toAdd.length} candidates imported`;
+    setTimeout(() => { fb.textContent = ""; }, 4000);
+    document.getElementById("rosterPanel").style.display = "none";
+  } catch(err) {
+    fb.textContent = "Error: " + err.message;
+  }
+}
+
+// ── Panel toggling ────────────────────────────────────────────────────────────
+function togglePanel(id) {
+  const el      = document.getElementById(id);
+  const visible = el.style.display !== "none";
+  // Close all panels first
+  ["addPanel","pastePanel","rosterPanel"].forEach(p => {
+    document.getElementById(p).style.display = "none";
+  });
+  if (!visible) {
+    el.style.display = "block";
+    if (id === "rosterPanel") loadRosterPreview();
+  }
+}
+
+// ── Utilities ─────────────────────────────────────────────────────────────────
+function copyConfirmedEmails() {
+  const confirmed = allRegistrations.filter(r => r.status === "confirmed");
+  if (!confirmed.length) { alert("No confirmed attendees yet."); return; }
+  const emails = confirmed.map(r => r.email).filter(Boolean).join(", ");
+  navigator.clipboard.writeText(emails).then(() =>
+    alert(`${confirmed.length} confirmed email(s) copied to clipboard.`));
+}
+
+function exportCSV() {
+  const headers = ["Name","Email","Role","Status","Source","Notes","Added"];
+  const rows = allRegistrations.map(r => [
+    r.name, r.email, r.role, r.status || "pending", r.source, r.notes,
+    r.addedAt ? new Date(r.addedAt.seconds*1000).toISOString() : ""
+  ].map(v => `"${(v||"").toString().replace(/"/g,'""')}"`));
+
+  const csv  = [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
+  const blob = new Blob([csv], { type: "text/csv" });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement("a");
+  a.href = url; a.download = "rmd-iw-registrations-2026.csv"; a.click();
+}
+
+</script>
+</body>
+</html>

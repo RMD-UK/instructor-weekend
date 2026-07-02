@@ -106,6 +106,30 @@
     .badge-erc-ok  { background: #e6f4ea; color: #1a6e31; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 700; }
     .badge-erc-fix { background: #fce8e6; color: #b7410e; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 700; }
 
+    /* Attendance status */
+    .badge-confirmed { background: #e6f4ea; color: #1a6e31; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; }
+    .badge-declined  { background: #fce8e6; color: #b7410e; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; }
+    .badge-pending   { background: #f0f3f6; color: #637282; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; }
+
+    .btn-confirm {
+      padding: 6px 14px; background: #e6f4ea; color: #1a6e31;
+      border: 1.5px solid #a8d5b5; border-radius: 6px; font-size: 12px; font-weight: 700;
+      font-family: var(--font); cursor: pointer;
+    }
+    .btn-confirm:hover, .btn-confirm.active { background: #1a6e31; color: white; border-color: #145727; }
+    .btn-decline {
+      padding: 6px 14px; background: #fce8e6; color: #b7410e;
+      border: 1.5px solid #f5b8b0; border-radius: 6px; font-size: 12px; font-weight: 700;
+      font-family: var(--font); cursor: pointer;
+    }
+    .btn-decline:hover, .btn-decline.active { background: #b7410e; color: white; border-color: #8b2a08; }
+    .btn-reset-status {
+      padding: 6px 10px; background: white; color: #637282;
+      border: 1px solid #ccd6dd; border-radius: 6px; font-size: 12px;
+      font-family: var(--font); cursor: pointer;
+    }
+    .btn-reset-status:hover { background: #f0f3f6; }
+
     /* Director badges & buttons */
     .badge-director   { background: #7b2d00; color: white; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
     .badge-faculty    { background: #ddeeff; color: #0067A4; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
@@ -140,6 +164,7 @@
 <div class="top-bar">
   <a href="timetable.html" title="Back to programme" style="display:flex;align-items:center;"><img src="assets/rmd-logo.png" alt="RMD" style="cursor:pointer;opacity:1;transition:opacity 0.15s;" onmouseover="this.style.opacity=0.75" onmouseout="this.style.opacity=1"></a>
   <div class="top-bar-title">Faculty Responses</div>
+  <a href="admin-iw-registrations.html" style="background:rgba(255,255,255,0.15);border:none;color:white;padding:6px 12px;border-radius:6px;font-size:13px;cursor:pointer;text-decoration:none;white-space:nowrap;">👥 IW Registrations →</a>
   <button onclick="loadAll()" style="background:rgba(255,255,255,0.15);border:none;color:white;padding:6px 12px;border-radius:6px;font-size:13px;cursor:pointer;">↻ Refresh</button>
 </div>
 
@@ -174,6 +199,12 @@
     <div class="sum-pill" id="pill-itc"        onclick="switchTab('itc')">
       <div class="val" id="sum-itc">–</div><div class="lbl">ITCs</div>
     </div>
+    <div class="sum-pill" id="pill-confirmed"  onclick="switchTab('confirmed')">
+      <div class="val" id="sum-confirmed" style="color:#1a6e31;">–</div><div class="lbl">Confirmed</div>
+    </div>
+    <div class="sum-pill" id="pill-declined"   onclick="switchTab('declined')">
+      <div class="val" id="sum-declined" style="color:#b7410e;">–</div><div class="lbl">Declined</div>
+    </div>
   </div>
 
   <!-- Tabs -->
@@ -187,6 +218,8 @@
     <button class="tab-btn"             onclick="switchTab('dietary')"    id="tab-dietary">Dietary</button>
     <button class="tab-btn"             onclick="switchTab('erc')"        id="tab-erc">ERC issues</button>
     <button class="tab-btn"             onclick="switchTab('itc')"        id="tab-itc">ITCs</button>
+    <button class="tab-btn"             onclick="switchTab('confirmed')"  id="tab-confirmed">✓ Confirmed</button>
+    <button class="tab-btn"             onclick="switchTab('declined')"   id="tab-declined">✗ Declined</button>
     <button class="tab-btn"             onclick="switchTab('export')"     id="tab-export">Export</button>
   </div>
 
@@ -319,6 +352,8 @@ function updateSummary() {
   document.getElementById("sum-dietary").textContent    = r.filter(x => x.diet && x.diet !== "None" && x.diet !== "").length;
   document.getElementById("sum-erc-fix").textContent    = r.filter(x => x.ercCorrectlyListed === "no").length;
   document.getElementById("sum-itc").textContent        = r.filter(x => x.role === "ITC").length;
+  document.getElementById("sum-confirmed").textContent  = r.filter(x => x.attendanceStatus === "confirmed").length;
+  document.getElementById("sum-declined").textContent   = r.filter(x => x.attendanceStatus === "declined").length;
 }
 
 function switchTab(tab) {
@@ -353,6 +388,8 @@ function renderTab(tab) {
   else if (tab === "dietary")    renderDietary();
   else if (tab === "erc")        renderERC();
   else if (tab === "itc")        renderITC();
+  else if (tab === "confirmed")  renderAttendanceFilter("confirmed", "Confirmed to attend");
+  else if (tab === "declined")   renderAttendanceFilter("declined",  "Unable to attend / Declined");
   else if (tab === "export")     renderExport();
 }
 
@@ -371,6 +408,8 @@ function getFiltered() {
     case "dietary":    return allResponses.filter(r => r.diet && r.diet !== "None" && r.diet !== "");
     case "erc":        return allResponses.filter(r => r.ercCorrectlyListed === "no");
     case "itc":        return allResponses.filter(r => r.role === "ITC");
+    case "confirmed":  return allResponses.filter(r => r.attendanceStatus === "confirmed");
+    case "declined":   return allResponses.filter(r => r.attendanceStatus === "declined");
     default:           return allResponses;
   }
 }
@@ -400,11 +439,19 @@ function renderAll() {
     const dirBadge = isDirector(r.email)
       ? `<span class="badge-director">Director</span>`
       : "";
+    const statusBadge = r.attendanceStatus === "confirmed"
+      ? `<span class="badge-confirmed">✓ Confirmed</span>`
+      : r.attendanceStatus === "declined"
+        ? `<span class="badge-declined">✗ Declined</span>`
+        : `<span class="badge-pending">Pending</span>`;
+    const isConf = r.attendanceStatus === "confirmed";
+    const isDecl = r.attendanceStatus === "declined";
     return `
       <div class="response-card">
         <div class="rc-header" onclick="toggleCard(${i})">
           <div class="rc-name">${fullName(r) || r.email}</div>
           ${dirBadge}
+          ${statusBadge}
           <span class="rc-role">${r.role||"–"}</span>
           <span class="rc-time">${fmtDate(r)}</span>
         </div>
@@ -433,8 +480,14 @@ function renderAll() {
           ${r.accessibilityNeeds?`<div style="font-size:13px;margin-top:6px;padding:10px;background:#f5f7fa;border-radius:6px;"><strong>Accessibility:</strong> ${r.accessibilityNeeds}</div>`:""}
           ${r.travelNotes?`<div style="font-size:13px;margin-top:6px;padding:10px;background:#f5f7fa;border-radius:6px;"><strong>Travel:</strong> ${r.travelNotes}</div>`:""}
           ${r.otherNotes?`<div style="font-size:13px;margin-top:6px;padding:10px;background:#f5f7fa;border-radius:6px;"><strong>Other:</strong> ${r.otherNotes}</div>`:""}
-          <div style="margin-top:12px;padding-top:12px;border-top:1px solid #f0f3f6;text-align:right;">
-            <button onclick="deleteResponse('${r.id}','${fullName(r)||r.email}')" style="padding:7px 14px;background:#fce8e6;color:#b7410e;border:1px solid #f5b8b0;border-radius:6px;font-size:12px;font-weight:700;font-family:var(--font);cursor:pointer;">🗑 Delete response</button>
+          <div style="margin-top:12px;padding-top:12px;border-top:1px solid #f0f3f6;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;">
+            <div style="display:flex;gap:6px;align-items:center;">
+              <span style="font-size:12px;color:var(--rmd-muted);margin-right:4px;">Attendance:</span>
+              <button class="btn-confirm${isConf?" active":""}" onclick="setAttendanceStatus('${r.id}','confirmed',${i})">✓ Confirm</button>
+              <button class="btn-decline${isDecl?" active":""}" onclick="setAttendanceStatus('${r.id}','declined',${i})">✗ Decline</button>
+              ${r.attendanceStatus ? `<button class="btn-reset-status" onclick="setAttendanceStatus('${r.id}','pending',${i})" title="Reset to pending">↺</button>` : ""}
+            </div>
+            <button onclick="deleteResponse('${r.id}','${fullName(r)||r.email}')" style="padding:7px 14px;background:#fce8e6;color:#b7410e;border:1px solid #f5b8b0;border-radius:6px;font-size:12px;font-weight:700;font-family:var(--font);cursor:pointer;">🗑 Delete</button>
           </div>
         </div>
       </div>`;
@@ -620,6 +673,63 @@ function renderITC() {
     </div>`;
 }
 
+async function setAttendanceStatus(docId, status, cardIndex) {
+  try {
+    await db.collection("faculty_responses").doc(docId).update({ attendanceStatus: status });
+    const r = allResponses.find(x => x.id === docId);
+    if (r) r.attendanceStatus = status === "pending" ? null : status;
+    updateSummary();
+    renderTab(currentTab);
+  } catch(err) {
+    alert("Failed to update status: " + err.message);
+  }
+}
+
+function renderAttendanceFilter(status, heading) {
+  const filtered = allResponses.filter(r => r.attendanceStatus === status);
+  setFilterLabel(`${filtered.length} person(s)`);
+
+  if (!filtered.length) {
+    document.getElementById("tabContent").innerHTML =
+      `<div class="empty-state">No responses ${status === "confirmed" ? "confirmed yet" : "marked as declined"}.</div>`;
+    return;
+  }
+
+  const colourMap = { confirmed: "#1a6e31", declined: "#b7410e" };
+  const bgMap     = { confirmed: "#e6f4ea", declined: "#fce8e6" };
+  const rows = filtered.map(r => {
+    const days = ["fri","sat","sun"].map((d,i) => {
+      const key = ["friday","saturday","sunday"][i];
+      return r.days && r.days[key] ? `<span class="day-badge day-yes">${d}</span>` : "";
+    }).join(" ");
+    return `<tr>
+      <td style="font-weight:700;color:var(--rmd-navy);">${fullName(r)||"–"}</td>
+      <td style="color:var(--rmd-muted);font-size:12px;">${r.email||"–"}</td>
+      <td>${r.role||"–"}</td>
+      <td><div class="day-badges">${days}</div></td>
+      <td>${r.ercQualification||"–"}</td>
+      <td>
+        <button class="btn-confirm${status==="confirmed"?" active":""}"
+          onclick="setAttendanceStatus('${r.id}','confirmed')" style="margin-right:4px;">✓</button>
+        <button class="btn-decline${status==="declined"?" active":""}"
+          onclick="setAttendanceStatus('${r.id}','declined')">✗</button>
+        <button class="btn-reset-status" onclick="setAttendanceStatus('${r.id}','pending')" title="Reset">↺</button>
+      </td>
+    </tr>`;
+  }).join("");
+
+  document.getElementById("tabContent").innerHTML = `
+    <div class="section-block">
+      <div class="section-heading" style="color:${colourMap[status]};">${heading} (${filtered.length})</div>
+      <table class="data-table">
+        <thead><tr>
+          <th>Name</th><th>Email</th><th>Role</th><th>Days</th><th>ERC qualification</th><th>Change</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
+}
+
 function renderExport() {
   setFilterLabel("All responses");
   document.getElementById("tabContent").innerHTML = `
@@ -637,6 +747,7 @@ function renderExport() {
 
 function exportCSV() {
   const headers = ["First Name","Last Name","Email","Self-declared Role","Platform Role",
+    "Attendance Status",
     "Days-Fri","Days-Sat","Days-Sun","Meal-Fri","Meal-Sat",
     "Accom-Fri","Accom-Sat","Diet","Diet Detail",
     "ERC Qualification","ERC Correctly Listed","ERC Liaison Confirmed",
@@ -645,6 +756,7 @@ function exportCSV() {
   const rows = allResponses.map(r => [
     r.firstName, r.lastName, r.email, r.role,
     isDirector(r.email) ? "Director" : "Faculty",
+    r.attendanceStatus || "pending",
     r.days&&r.days.friday?"Yes":"No", r.days&&r.days.saturday?"Yes":"No", r.days&&r.days.sunday?"Yes":"No",
     r.meals&&r.meals.friday||"", r.meals&&r.meals.saturday||"",
     r.accommodation&&r.accommodation.friday||"", r.accommodation&&r.accommodation.saturday||"",
