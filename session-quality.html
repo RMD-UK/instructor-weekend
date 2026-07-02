@@ -143,8 +143,13 @@
   <a href="timetable.html"><img src="assets/rmd-logo.png" alt="RMD"></a>
   <div class="top-bar-title">
     Session Quality Feedback
-    <span class="top-bar-sub">Post-session reflection for faculty</span>
+    <span class="top-bar-sub" id="topBarSub">Post-session reflection for faculty</span>
   </div>
+  <button onclick="auth && auth.signOut().then(() => window.location.href='index.html')"
+    title="Sign out" style="
+    background:rgba(255,255,255,0.15);color:white;border:none;
+    border-radius:4px;padding:4px 10px;font-size:12px;cursor:pointer;
+    font-family:var(--font);">Sign out</button>
 </div>
 
 <!-- Session picker -->
@@ -281,9 +286,26 @@ initFirebase();
 window.addEventListener("load", () => {
   populateSessionSelect();
 
-  auth.onAuthStateChanged(user => {
+  auth.onAuthStateChanged(async user => {
     if (!user) { window.location.href = "index.html"; return; }
     currentUser = user;
+
+    // Load role — restrict to faculty/full-instructor/director
+    try {
+      const snap = await db.collection(COLLECTIONS.people).doc(user.uid).get();
+      if (snap.exists) {
+        const data = snap.data();
+        const allowed = ["faculty", "full-instructor", "director"];
+        if (data.role && !allowed.includes(data.role)) {
+          window.location.href = "timetable.html";
+          return;
+        }
+        if (data.name) {
+          document.getElementById("topBarSub").textContent = data.name;
+        }
+      }
+    } catch (e) { /* allow through if Firestore unavailable */ }
+
     if (currentSession) {
       document.getElementById("sessionSelect").value = currentSession;
       onSessionChange();

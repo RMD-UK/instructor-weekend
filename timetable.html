@@ -5,19 +5,32 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>RMD Instructor Weekend 2026 — Timetable</title>
   <link rel="stylesheet" href="css/rmd.css">
+  <style>
+    .feedback-btn {
+      display: inline-block;
+      margin-top: 8px;
+      padding: 6px 12px;
+      background: var(--rmd-blue);
+      color: white;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 700;
+      font-family: var(--font);
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    .feedback-btn:hover { background: var(--rmd-navy); }
+  </style>
 </head>
 <body>
 
-<!-- ── Role selector (demo / dev mode — remove for production) ── -->
-<div class="role-selector" id="roleSelectorBar">
-  <label>👤 View as:</label>
-  <select id="roleSelect" onchange="setRole(this.value)">
-    <option value="director">Course Director (Jon)</option>
-    <option value="faculty">Faculty</option>
-    <option value="instructor">Instructor Candidate</option>
-    <option value="assessor">Assessor Candidate</option>
-  </select>
-  <span class="text-muted text-sm">(Demo mode — role selector will be removed in production)</span>
+<!-- ── Auth loading overlay ── -->
+<div id="authLoading" style="
+  position:fixed;inset:0;background:var(--rmd-navy);
+  display:flex;align-items:center;justify-content:center;
+  z-index:999;color:white;font-family:var(--font);flex-direction:column;gap:12px;">
+  <img src="assets/rmd-logo.png" style="height:48px;border-radius:50%;background:white;padding:4px;">
+  <div style="font-size:14px;opacity:0.8;">Signing in…</div>
 </div>
 
 <!-- ── Header ── -->
@@ -27,7 +40,11 @@
     RMD Instructor Weekend 2026
     <span class="subtitle">Birmingham Medical School</span>
   </div>
-  <span class="role-badge" id="roleBadge">Director</span>
+  <span class="role-badge" id="roleBadge"></span>
+  <button onclick="doSignOut()" title="Sign out" style="
+    background:rgba(255,255,255,0.15);color:white;border:none;
+    border-radius:4px;padding:4px 10px;font-size:12px;cursor:pointer;
+    font-family:var(--font);margin-left:6px;">Sign out</button>
 </header>
 
 <!-- ── Live bar ── -->
@@ -107,20 +124,26 @@
   <button class="btn btn-sm" onclick="window.location.href='assessment-dashboard.html'">📊 Dashboard</button>
   <button class="btn btn-sm" onclick="window.location.href='session-quality.html'">📋 Session quality</button>
   <button class="btn btn-sm" onclick="window.location.href='cd-dashboard.html'" style="background:#4ab5f0;color:#160b52;">🎯 CD Dashboard</button>
+  <button class="btn btn-sm" onclick="doSignOut()" style="margin-left:auto;background:rgba(255,255,255,0.15);">↩ Sign out</button>
 </div>
 
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="js/firebase-config.js"></script>
 <script src="js/programme-data.js"></script>
 <script>
   // ── State ──────────────────────────────────────────────────────────────────
-  let currentRole = "director";
+  let currentRole = "instructor"; // set by auth on load
   let currentDay  = "saturday";
 
   const ROLE_LABELS = {
-    director:   "Director",
-    faculty:    "Faculty",
-    instructor: "Instructor Candidate",
-    assessor:   "Assessor Candidate"
+    director:         "Course Director",
+    faculty:          "Faculty",
+    "full-instructor":"Full Instructor",
+    instructor:       "Instructor Candidate",
+    assessor:         "Assessor Candidate",
+    itc:              "ITC"
   };
 
   // ── Role management ────────────────────────────────────────────────────────
@@ -209,15 +232,23 @@
     // Notes
     const notes = s.notes ? `<p class="session-notes">${s.notes}</p>` : "";
 
-    // Detail section (notes + resources) — only if there's something to show
-    const hasDetail = notes || resources;
+    // Candidate feedback button — faculty/director only, non-break, non-faculty-only, instructor present
+    const showFeedback = ["faculty","full-instructor","director"].includes(currentRole)
+      && !isBreak && !isFacultyOnly && s.roles.includes("instructor");
+    const feedbackBtn = showFeedback
+      ? `<a class="feedback-btn" href="session-feedback.html?session=${s.id}" onclick="event.stopPropagation()">📝 Rate candidates</a>`
+      : "";
+
+    // Detail section (notes + resources + feedback button) — only if there's something to show
+    const hasDetail = notes || resources || feedbackBtn;
     const detailSection = hasDetail ? `
       <div class="session-detail" id="detail-${s.id}">
         ${notes}
         ${resources ? `<div class="resource-links">${resources}</div>` : ""}
+        ${feedbackBtn}
       </div>` : "";
 
-    // Timer button (director only)
+    // Timer button (director only, non-break)
     const timerBtn = currentRole === "director" && !isBreak
       ? `<button class="session-timer-btn" onclick="event.stopPropagation();launchTimer('${s.id}','${s.title.replace(/'/g,"\\'")}',${s.duration})">⏱ Timer</button>`
       : "";
@@ -309,8 +340,14 @@
     const target = document.getElementById("msgTarget").value;
     if (!text) return;
 
-    // TODO: write to Firebase messages collection
-    // db.collection(COLLECTIONS.messages).add({ text, target, ts: firebase.firestore.FieldValue.serverTimestamp(), author: "director" });
+    // Write to Firebase messages collection
+    if (typeof db !== "undefined") {
+      db.collection(COLLECTIONS.messages).add({
+        text, target,
+        ts: firebase.firestore.FieldValue.serverTimestamp(),
+        author: "director"
+      }).catch(e => console.warn("Message send failed:", e));
+    }
 
     // Demo: show in noticeboard immediately
     const body = document.getElementById("noticeboardBody");
@@ -326,21 +363,39 @@
     document.getElementById("noticeboard").classList.remove("hidden");
   }
 
+  // ── Sign out ───────────────────────────────────────────────────────────────
+  function doSignOut() {
+    auth.signOut().then(() => { window.location.href = "index.html"; });
+  }
+
   // ── Auto-refresh ───────────────────────────────────────────────────────────
-  // Refresh live bar every 30s; full re-render every 5 minutes
   setInterval(updateLiveBar, 30 * 1000);
   setInterval(() => { renderAll(); }, 5 * 60 * 1000);
 
   // ── Init ───────────────────────────────────────────────────────────────────
   document.addEventListener("DOMContentLoaded", () => {
-    setRole("director");
-    switchDay("saturday");
-    updateLiveBar();
-    // Scroll to current session
-    setTimeout(() => {
-      const current = document.querySelector(".session-row.current");
-      if (current) current.scrollIntoView({ behavior: "smooth", block: "center" });
-    }, 300);
+    initFirebase();
+
+    auth.onAuthStateChanged(async user => {
+      if (!user) { window.location.href = "index.html"; return; }
+
+      // Load role from people collection
+      let role = "instructor";
+      try {
+        const snap = await db.collection(COLLECTIONS.people).doc(user.uid).get();
+        if (snap.exists) role = snap.data().role || "instructor";
+      } catch (e) { console.warn("Could not load role:", e.message); }
+
+      // Hide loading overlay and render
+      document.getElementById("authLoading").style.display = "none";
+      setRole(role);
+      switchDay("saturday");
+      updateLiveBar();
+      setTimeout(() => {
+        const current = document.querySelector(".session-row.current");
+        if (current) current.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 300);
+    });
   });
 </script>
 </body>

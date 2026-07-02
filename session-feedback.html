@@ -254,11 +254,17 @@
   <div class="top-bar-time" id="topBarTime">--:--</div>
 </div>
 
-<!-- ── Session picker ── -->
-<div class="session-picker">
-  <select id="sessionSelect" onchange="onSessionChange()">
-    <option value="">— Choose session —</option>
-  </select>
+<!-- ── Session header (pre-selected from timetable) ── -->
+<div id="sessionHeader" style="
+  background:white; padding:12px 14px;
+  border-bottom:2px solid var(--rmd-blue);
+  display:flex; align-items:center; gap:10px;
+">
+  <div style="flex:1;">
+    <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:var(--rmd-muted);margin-bottom:2px;">Current session</div>
+    <div id="sessionHeaderTitle" style="font-size:15px;font-weight:700;color:var(--rmd-navy);"></div>
+  </div>
+  <a href="timetable.html" style="font-size:12px;color:var(--rmd-blue);text-decoration:none;white-space:nowrap;">← Timetable</a>
 </div>
 
 <!-- ── Status bar ── -->
@@ -335,7 +341,16 @@ initFirebase();
 window.addEventListener("load", () => {
   updateClock();
   setInterval(updateClock, 15000);
-  populateSessionSelect();
+
+  // If no session param, redirect back to timetable
+  if (!preSession) { window.location.href = "timetable.html"; return; }
+
+  // Populate locked session header
+  const allSessions = getFeedbackSessions();
+  const sessionObj  = allSessions.find(s => s.id === preSession);
+  if (!sessionObj) { window.location.href = "timetable.html"; return; }
+  document.getElementById("sessionHeaderTitle").textContent =
+    `${sessionObj.start} — ${sessionObj.title}`;
 
   auth.onAuthStateChanged(async user => {
     if (!user) { window.location.href = "index.html"; return; }
@@ -348,11 +363,7 @@ window.addEventListener("load", () => {
     } catch (e) { console.warn("Could not load user doc:", e.message); }
 
     await loadCandidates();
-
-    if (currentSession) {
-      document.getElementById("sessionSelect").value = currentSession;
-      onSessionChange();
-    }
+    onSessionChange();
   });
 });
 
@@ -371,13 +382,9 @@ function populateSessionSelect() {
 }
 
 function onSessionChange() {
-  currentSession = document.getElementById("sessionSelect").value;
+  // currentSession is set from URL param — no dropdown to read
   if (!currentSession) {
-    document.getElementById("emptyState").classList.remove("hidden");
-    document.getElementById("candidateWrap").innerHTML = `<div class="empty-state" id="emptyState"><h3>Choose a session to begin</h3><p>Select the session you are currently observing from the list above.</p></div>`;
-    document.getElementById("submitBtn").disabled = true;
-    document.getElementById("submitBtn").textContent = "Select a session first";
-    updateStatusBar();
+    window.location.href = "timetable.html";
     return;
   }
   document.getElementById("submitBtn").disabled  = false;
