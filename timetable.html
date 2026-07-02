@@ -59,6 +59,20 @@
   </div>
 </div>
 
+<!-- ── Role selector (dev fallback — hidden automatically once people collection is populated) ── -->
+<div class="role-selector" id="roleSelectorBar" style="display:none;">
+  <label>👤 View as:</label>
+  <select id="roleSelect" onchange="setRole(this.value)">
+    <option value="director">Course Director</option>
+    <option value="faculty">Faculty</option>
+    <option value="full-instructor">Full Instructor</option>
+    <option value="instructor">Instructor Candidate</option>
+    <option value="assessor">Assessor Candidate</option>
+    <option value="itc">ITC</option>
+  </select>
+  <span class="text-muted text-sm">Dev mode — role selector hidden once accounts are set up</span>
+</div>
+
 <!-- ── Auth loading overlay ── -->
 <div id="authLoading" style="
   position:fixed;inset:0;background:var(--rmd-navy);
@@ -451,15 +465,20 @@
       if (!user) { window.location.href = "index.html"; return; }
 
       // Load role from people collection
-      let role = "instructor";
+      let role = null;
       try {
         const snap = await db.collection(COLLECTIONS.people).doc(user.uid).get();
-        if (snap.exists) role = snap.data().role || "instructor";
+        if (snap.exists) role = snap.data().role || null;
       } catch (e) { console.warn("Could not load role:", e.message); }
 
-      // Hide loading overlay and render
+      // Hide loading overlay
       document.getElementById("authLoading").style.display = "none";
-      setRole(role);
+
+      // Always show role selector; use Firestore role as default if found, else director
+      const devRole = role || "director";
+      document.getElementById("roleSelectorBar").style.display = "flex";
+      document.getElementById("roleSelect").value = devRole;
+      setRole(devRole);
       switchDay("saturday");
       updateLiveBar();
       setTimeout(() => {
