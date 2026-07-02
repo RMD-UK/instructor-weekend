@@ -22,10 +22,7 @@
 
 <!-- ── Header ── -->
 <header class="rmd-header">
-  <a href="index.html" style="display:flex;align-items:center;text-decoration:none;" id="logoLink">
-    <img src="assets/rmd-logo.png" alt="RMD logo" class="logo"
-         onerror="document.getElementById('logoLink').innerHTML='<span style=\'background:rgba(255,255,255,0.15);color:white;font-size:13px;font-weight:900;border:2px solid rgba(255,255,255,0.6);padding:3px 8px;border-radius:4px;letter-spacing:1px;\'>RMD</span>'">
-  </a>
+  <img src="assets/rmd-logo.png" alt="RMD logo" class="logo">
   <div class="title">
     RMD Instructor Weekend 2026
     <span class="subtitle">Birmingham Medical School</span>
@@ -48,15 +45,6 @@
   <button class="day-tab" id="tab-sunday"   onclick="switchDay('sunday')">Sunday 11 Oct</button>
 </nav>
 
-<!-- ── Group card ── -->
-<div id="groupCard" style="display:none;margin:10px 12px 0;max-width:800px;background:white;border-radius:8px;border:2px solid #dce3ea;overflow:hidden;">
-  <div style="background:#44247C;color:white;padding:7px 12px;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:space-between;">
-    <span>📍 Your Group</span>
-    <a id="groupEditLink" href="admin-groups.html" style="color:rgba(255,255,255,0.7);font-size:11px;text-decoration:none;display:none;">Edit groups →</a>
-  </div>
-  <div id="groupCardBody" style="padding:10px 12px;font-size:13px;color:#44247C;"></div>
-</div>
-
 <!-- ── Noticeboard (candidates + faculty) ── -->
 <div class="noticeboard" id="noticeboard" style="margin-top:12px;">
   <div class="noticeboard-header">📢 Noticeboard</div>
@@ -76,15 +64,10 @@
       <select id="msgTarget" style="flex:1;padding:6px;border:1px solid #ccd6dd;border-radius:4px;font-family:var(--font);">
         <option value="all">→ All rooms + candidates</option>
         <option value="faculty">→ Faculty only</option>
-        <option value="room-cm01">→ CM01 only</option>
-        <option value="room-cm02">→ CM02 only</option>
-        <option value="room-cm03">→ CM03 only</option>
-        <option value="room-cm04">→ CM04 only</option>
-        <option value="room-cm13">→ CM13 only</option>
-        <option value="room-cm14">→ CM14 only</option>
-        <option value="room-cm15">→ CM15 only</option>
-        <option value="room-cm16">→ CM16 only</option>
-        <option value="room-teaching">→ All teaching rooms</option>
+        <option value="room-wf15">→ WF15 screen only</option>
+        <option value="room-wf19">→ WF19 screen only</option>
+        <option value="room-ath">→ ATH screen only</option>
+        <option value="room-teaching">→ Teaching rooms</option>
       </select>
     </div>
     <div class="msg-compose">
@@ -101,28 +84,12 @@
   ⚠️ Gateway assessment deadline: <strong>11:45</strong> — check dashboard for outstanding assessments
 </div>
 
-<!-- ── Programme switcher (faculty + director only) ── -->
-<div id="programmeSwitcher" style="display:none;padding:8px 14px;background:#f0f3f6;border-bottom:1px solid #dce3ea;">
-  <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-    <span style="font-size:12px;font-weight:700;color:#637282;text-transform:uppercase;letter-spacing:0.4px;">Programme:</span>
-    <button id="prog-instructor" onclick="setProgramme('instructor')" style="padding:5px 14px;border-radius:16px;border:2px solid #44247C;background:#44247C;color:white;font-size:12px;font-weight:700;font-family:var(--font);cursor:pointer;">Instructor Weekend</button>
-    <button id="prog-assessor"   onclick="setProgramme('assessor')"   style="padding:5px 14px;border-radius:16px;border:2px solid #dce3ea;background:white;color:#637282;font-size:12px;font-weight:700;font-family:var(--font);cursor:pointer;">Assessor Course</button>
-  </div>
-</div>
-
 <!-- ── Timetable ── -->
 <main class="timetable">
   <div class="day-section" id="day-friday"></div>
   <div class="day-section active" id="day-saturday"></div>
   <div class="day-section" id="day-sunday"></div>
 </main>
-
-<!-- ── Faculty floating toolbar ── -->
-<div id="facultyToolbar" style="display:none;position:fixed;bottom:0;left:0;right:0;background:#44247C;padding:10px 16px;gap:10px;align-items:center;z-index:200;box-shadow:0 -2px 10px rgba(0,0,0,0.3);overflow-x:auto;">
-  <span style="color:white;font-size:13px;font-weight:700;flex-shrink:0;">Assessments</span>
-  <button class="btn btn-sm" onclick="window.location.href='assessment-gateway.html?role=faculty'">🚦 BLS Gateway</button>
-  <button class="btn btn-sm" onclick="window.location.href='assessment-development.html?role=faculty'">📝 Development</button>
-</div>
 
 <!-- ── Director floating toolbar ── -->
 <div id="directorToolbar" class="hidden" style="
@@ -133,27 +100,21 @@
 ">
   <span style="color:white;font-size:13px;font-weight:700;">Director</span>
   <button class="btn btn-sm" onclick="togglePanel('directorMessagePanel')">📣 Message</button>
-  <button class="btn btn-sm" onclick="window.location.href='room-screen.html?room=director'">🖥 Room screens</button>
-  <button class="btn btn-sm" onclick="window.location.href='assessment-gateway.html?role=director'">🚦 Gateway</button>
-  <button class="btn btn-sm" onclick="window.location.href='assessment-development.html?role=director'">📝 Dev</button>
-  <button class="btn btn-sm" onclick="window.location.href='assessment-dashboard.html?role=director'">📊 Dashboard</button>
-  <button class="btn btn-sm" onclick="window.location.href='admin-faculty-responses.html'">📋 Responses</button>
-  <button class="btn btn-sm" onclick="window.location.href='admin-mou-dashboard.html'">📜 MOU</button>
-  <button class="btn btn-sm" onclick="window.location.href='admin-import-legacy.html'">⬆ Import</button>
-  <button class="btn btn-sm" onclick="window.location.href='admin-groups.html'">👥 Groups</button>
+  <button class="btn btn-sm" onclick="window.location.href='attendance.html'">✅ Registration</button>
+  <button class="btn btn-sm" onclick="window.location.href='room-screen.html?room=director'">🖥 Rooms</button>
+  <button class="btn btn-sm" onclick="window.location.href='assessment-gateway.html'">🚦 Gateway</button>
+  <button class="btn btn-sm" onclick="window.location.href='assessment-development.html'">📝 Dev</button>
+  <button class="btn btn-sm" onclick="window.location.href='assessment-dashboard.html'">📊 Dashboard</button>
+  <button class="btn btn-sm" onclick="window.location.href='session-quality.html'">📋 Session quality</button>
+  <button class="btn btn-sm" onclick="window.location.href='cd-dashboard.html'" style="background:#4ab5f0;color:#160b52;">🎯 CD Dashboard</button>
 </div>
 
 <script src="js/firebase-config.js"></script>
 <script src="js/programme-data.js"></script>
 <script>
   // ── State ──────────────────────────────────────────────────────────────────
-  let currentRole      = "director";
-  let currentDay       = "saturday";
-  let currentProgramme = "instructor"; // "instructor" | "assessor"
-
-  // Set by Firebase auth lookup — real room/role from Firestore people record
-  let currentUserRoom  = null;  // e.g. "CM01"
-  let currentUserEmail = null;
+  let currentRole = "director";
+  let currentDay  = "saturday";
 
   const ROLE_LABELS = {
     director:   "Director",
@@ -162,59 +123,19 @@
     assessor:   "Assessor Candidate"
   };
 
-  // Candidates are locked to their stream; faculty/director can switch
-  const LOCKED_ROLES = { instructor: "instructor", assessor: "assessor" };
-
-  function activeProgrammeData() {
-    return currentProgramme === "assessor" ? ASSESSOR_PROGRAMME : PROGRAMME;
-  }
-
-  // ── Programme switching ────────────────────────────────────────────────────
-  function updateProgrammeButtons() {
-    const prog = currentProgramme;
-    document.getElementById("prog-instructor").style.cssText =
-      prog === "instructor"
-        ? "padding:5px 14px;border-radius:16px;border:2px solid #44247C;background:#44247C;color:white;font-size:12px;font-weight:700;font-family:var(--font);cursor:pointer;"
-        : "padding:5px 14px;border-radius:16px;border:2px solid #dce3ea;background:white;color:#637282;font-size:12px;font-weight:700;font-family:var(--font);cursor:pointer;";
-    document.getElementById("prog-assessor").style.cssText =
-      prog === "assessor"
-        ? "padding:5px 14px;border-radius:16px;border:2px solid #44247C;background:#44247C;color:white;font-size:12px;font-weight:700;font-family:var(--font);cursor:pointer;"
-        : "padding:5px 14px;border-radius:16px;border:2px solid #dce3ea;background:white;color:#637282;font-size:12px;font-weight:700;font-family:var(--font);cursor:pointer;";
-  }
-
-  function setProgramme(prog) {
-    currentProgramme = prog;
-    updateProgrammeButtons();
-    renderAll();
-  }
-
   // ── Role management ────────────────────────────────────────────────────────
   function setRole(role) {
     currentRole = role;
     document.getElementById("roleBadge").textContent = ROLE_LABELS[role] || role;
 
-    // Candidates are locked to their programme stream
-    if (LOCKED_ROLES[role]) {
-      currentProgramme = LOCKED_ROLES[role];
-      document.getElementById("programmeSwitcher").style.display = "none";
-    } else {
-      // Faculty and director can switch programmes
-      document.getElementById("programmeSwitcher").style.display =
-        (role === "faculty" || role === "director") ? "block" : "none";
-    }
-
     // Director toolbar
-    document.getElementById("directorToolbar").classList.toggle("hidden", role !== "director");
+    const tb = document.getElementById("directorToolbar");
+    tb.classList.toggle("hidden", role !== "director");
 
-    // Faculty toolbar
-    document.getElementById("facultyToolbar").style.display = (role === "faculty") ? "flex" : "none";
-
-    // Noticeboard
+    // Noticeboard visibility
     document.getElementById("noticeboard").classList.toggle("hidden", role === "director");
 
-    // Group card
-    loadGroupCard(role);
-
+    // Regenerate timetable for new role
     renderAll();
   }
 
@@ -226,65 +147,69 @@
     document.getElementById("day-" + day).classList.add("active");
     document.getElementById("tab-" + day).classList.add("active");
     updateLiveBar();
-    scrollToCurrent();
   }
 
-  // ── Render ─────────────────────────────────────────────────────────────────
+  // ── Render timetable ───────────────────────────────────────────────────────
   function renderAll() {
     ["friday", "saturday", "sunday"].forEach(day => renderDay(day));
     updateLiveBar();
     updateGatewayAlert();
-    updateProgrammeButtons(); // keep button states in sync (no re-render loop)
-    scrollToCurrent();
   }
 
   function renderDay(day) {
     const container = document.getElementById("day-" + day);
-    const prog = activeProgrammeData();
-    const daySessions = prog[day] ? prog[day].sessions : [];
-    const sessions = daySessions
-      .filter(s => s.roles.includes("all") || s.roles.includes(currentRole))
-      .sort((a, b) => timeToMinutes(a.start) - timeToMinutes(b.start));
+    const sessions = sessionsForRole(day, currentRole);
+
+    // Sort by start time
+    sessions.sort((a, b) => timeToMinutes(a.start) - timeToMinutes(b.start));
 
     if (sessions.length === 0) {
       container.innerHTML = `<p class="text-muted text-sm" style="padding:24px;text-align:center;">No sessions for your role on this day.</p>`;
       return;
     }
+
     container.innerHTML = sessions.map(s => renderSession(s)).join("");
   }
 
   function renderSession(s) {
-    const current       = isSessionCurrent(s);
-    const past          = isSessionPast(s);
-    const isBreak       = s.tags.includes("break");
+    const end     = sessionEndTime(s);
+    const current = isSessionCurrent(s);
+    const past    = isSessionPast(s);
+    const isBreak = s.tags.includes("break");
     const isFacultyOnly = s.tags.includes("faculty-only");
-    const isGateway     = s.tags.includes("gateway-deadline");
-    const isITC         = s.tags.includes("itc-observation");
+    const isGateway = s.tags.includes("gateway-deadline");
+    const isITC    = s.tags.includes("itc-observation");
     const isPlaceholder = s.tags.includes("placeholder");
+    const isAssessor = s.tags.includes("assessor-stream");
 
     let rowClass = "session-row";
-    if (current)      rowClass += " current";
-    else if (past)    rowClass += " past";
-    if (isBreak)      rowClass += " break-row";
+    if (current) rowClass += " current";
+    else if (past) rowClass += " past";
+    if (isBreak)  rowClass += " break-row";
     if (isFacultyOnly) rowClass += " faculty-only";
 
+    // Tags
     let tags = "";
-    if (s.location)    tags += `<span class="meta-tag tag-location">📍 ${s.location}</span>`;
-    if (s.lead)        tags += `<span class="meta-tag tag-lead">👤 ${s.lead}</span>`;
+    if (s.location) tags += `<span class="meta-tag tag-location">📍 ${s.location}</span>`;
+    if (s.lead)     tags += `<span class="meta-tag tag-lead">👤 ${s.lead}</span>`;
     if (isGateway && !isBreak) tags += `<span class="meta-tag tag-gateway">⏱ Gateway deadline: 11:45</span>`;
-    if (isITC)         tags += `<span class="meta-tag tag-itc">🔍 ITC observation</span>`;
+    if (isITC)      tags += `<span class="meta-tag tag-itc">🔍 ITC observation</span>`;
     if (isPlaceholder) tags += `<span class="meta-tag" style="background:#fff3cd;color:#856404;">⚠ To be confirmed</span>`;
 
+    // Resources
     let resources = "";
     if (s.resources && s.resources.length) {
       resources = s.resources.map(r => {
-        const href   = r.url || r.path || "#";
+        const href = r.url || r.path || "#";
         const target = r.url ? 'target="_blank"' : '';
         return `<a class="resource-btn" href="${href}" ${target}><span class="icon">${r.icon || "📄"}</span>${r.title}</a>`;
       }).join("");
     }
 
-    const notes     = s.notes ? `<p class="session-notes">${s.notes}</p>` : "";
+    // Notes
+    const notes = s.notes ? `<p class="session-notes">${s.notes}</p>` : "";
+
+    // Detail section (notes + resources) — only if there's something to show
     const hasDetail = notes || resources;
     const detailSection = hasDetail ? `
       <div class="session-detail" id="detail-${s.id}">
@@ -292,6 +217,7 @@
         ${resources ? `<div class="resource-links">${resources}</div>` : ""}
       </div>` : "";
 
+    // Timer button (director only)
     const timerBtn = currentRole === "director" && !isBreak
       ? `<button class="session-timer-btn" onclick="event.stopPropagation();launchTimer('${s.id}','${s.title.replace(/'/g,"\\'")}',${s.duration})">⏱ Timer</button>`
       : "";
@@ -317,17 +243,7 @@
     </div>`;
   }
 
-  // ── Scroll to current session ──────────────────────────────────────────────
-  function scrollToCurrent() {
-    setTimeout(() => {
-      const current = document.querySelector(".day-section.active .session-row.current");
-      if (current) {
-        current.scrollIntoView({ behavior: "smooth", block: "center" });
-      }
-    }, 150);
-  }
-
-  // ── Toggle detail ──────────────────────────────────────────────────────────
+  // ── Toggle session detail ──────────────────────────────────────────────────
   function toggleDetail(id) {
     const detail  = document.getElementById("detail-" + id);
     const chevron = document.getElementById("chevron-" + id);
@@ -336,51 +252,54 @@
     if (chevron) chevron.style.transform = open ? "rotate(90deg)" : "";
   }
 
-  // ── Live bar ───────────────────────────────────────────────────────────────
+  // ── Live bar update ────────────────────────────────────────────────────────
   function updateLiveBar() {
     const now = new Date();
-    document.getElementById("currentTime").textContent =
-      now.getHours().toString().padStart(2,"0") + ":" + now.getMinutes().toString().padStart(2,"0");
+    const h = now.getHours().toString().padStart(2,"0");
+    const m = now.getMinutes().toString().padStart(2,"0");
+    document.getElementById("currentTime").textContent = `${h}:${m}`;
 
-    const prog = activeProgrammeData();
-    const daySessions = prog[currentDay] ? prog[currentDay].sessions : [];
-    const sessions = daySessions
-      .filter(s => s.roles.includes("all") || s.roles.includes(currentRole))
+    const sessions = sessionsForRole(currentDay, currentRole)
       .sort((a,b) => timeToMinutes(a.start) - timeToMinutes(b.start));
 
-    const live      = sessions.find(s => isSessionCurrent(s));
+    const live = sessions.find(s => isSessionCurrent(s));
     const liveLabel = document.getElementById("liveSessionLabel");
     const nextInfo  = document.getElementById("nextSessionInfo");
 
     if (live) {
       liveLabel.textContent = `▶ ${live.title}`;
-      const remaining = (timeToMinutes(live.start) + live.duration) - (now.getHours()*60 + now.getMinutes());
+      const end = timeToMinutes(live.start) + live.duration;
+      const remaining = end - (now.getHours()*60 + now.getMinutes());
       nextInfo.textContent = `${remaining} min remaining`;
     } else {
       liveLabel.textContent = "";
-      const nowMins = now.getHours()*60 + now.getMinutes();
-      const next = sessions.find(s => timeToMinutes(s.start) > nowMins);
+      const next = sessions.find(s => timeToMinutes(s.start) > (now.getHours()*60+now.getMinutes()));
       nextInfo.textContent = next ? `Next: ${next.start} — ${next.title}` : "";
     }
   }
 
-  // ── Gateway alert ──────────────────────────────────────────────────────────
+  // ── Gateway alert (director + faculty) ────────────────────────────────────
   function updateGatewayAlert() {
     const alert = document.getElementById("gatewayAlert");
     if (!alert) return;
-    const nowMins     = new Date().getHours()*60 + new Date().getMinutes();
-    const isInstructor = currentProgramme === "instructor";
-    const isRelevant  = ["director","faculty"].includes(currentRole) && isInstructor;
-    const isWindow    = nowMins >= (10*60+45) && nowMins < (11*60+45);
-    alert.style.display = (currentDay === "saturday" && isRelevant && isWindow) ? "flex" : "none";
+    const now = new Date();
+    const nowMins = now.getHours()*60 + now.getMinutes();
+    const showRoles = ["director","faculty"];
+    const gatewayMins = 10*60+45; // 10:45 start of group practice
+    const deadlineMins = 11*60+45; // 11:45
+    const isSatOnView = currentDay === "saturday";
+    const isRelevantRole = showRoles.includes(currentRole);
+    const isWindow = nowMins >= gatewayMins && nowMins < deadlineMins;
+    alert.style.display = (isSatOnView && isRelevantRole && isWindow) ? "flex" : "none";
   }
 
-  // ── Timer ──────────────────────────────────────────────────────────────────
+  // ── Timer launcher (director) ──────────────────────────────────────────────
   function launchTimer(sessionId, title, durationMins) {
-    window.open(`room-screen.html?timer=${durationMins}&label=${encodeURIComponent(title)}&sessionId=${sessionId}`, "rmd-room-timer", "width=800,height=600");
+    const url = `room-screen.html?timer=${durationMins}&label=${encodeURIComponent(title)}&sessionId=${sessionId}`;
+    window.open(url, "rmd-room-timer", "width=800,height=600");
   }
 
-  // ── Messaging ──────────────────────────────────────────────────────────────
+  // ── Message panel ──────────────────────────────────────────────────────────
   function togglePanel(id) {
     document.getElementById(id).classList.toggle("hidden");
   }
@@ -389,214 +308,39 @@
     const text   = document.getElementById("msgText").value.trim();
     const target = document.getElementById("msgTarget").value;
     if (!text) return;
+
+    // TODO: write to Firebase messages collection
+    // db.collection(COLLECTIONS.messages).add({ text, target, ts: firebase.firestore.FieldValue.serverTimestamp(), author: "director" });
+
+    // Demo: show in noticeboard immediately
     const body = document.getElementById("noticeboardBody");
     const now  = new Date();
-    const time = now.getHours().toString().padStart(2,"0") + ":" + now.getMinutes().toString().padStart(2,"0");
+    const time = `${now.getHours().toString().padStart(2,"0")}:${now.getMinutes().toString().padStart(2,"0")}`;
     const item = document.createElement("div");
     item.className = "message-item";
     item.innerHTML = `<div>${text}</div><div class="message-time">${time} · to: ${target}</div>`;
     body.querySelector(".no-messages") && body.querySelector(".no-messages").remove();
     body.prepend(item);
+
     document.getElementById("msgText").value = "";
     document.getElementById("noticeboard").classList.remove("hidden");
   }
 
-  // ── Group card ─────────────────────────────────────────────────────────────
-  const ITC_SLOTS = [
-    { id: "sat-20", label: "Learning Conversation", time: "Sat 16:00" },
-    { id: "sun-4",  label: "Group Practice: Teaching",     time: "Sun 10:30" },
-    { id: "sun-10", label: "Continuous Assessment",         time: "Sun 13:30" }
-  ];
-
-  // groupsData cache — populated once per page load
-  let _groupsCache    = null;
-  let _itcSchedCache  = null;
-
-  async function fetchGroupsData() {
-    if (_groupsCache) return { groupsData: _groupsCache, itcSchedule: _itcSchedCache };
-
-    const DEMO_GROUPS = {
-      CM01: { it: "Dr Smith",   candidates: ["Alice Ahmed", "Ben Clark"] },
-      CM02: { it: "Dr Jones",   candidates: ["Carol Davies", "David Evans"] },
-      CM03: { it: "Dr Patel",   candidates: ["Emma Fisher", "Frank Green"] },
-      CM04: { it: "Dr Wilson",  candidates: ["Grace Harris", "Harry Ito"] },
-      CM13: { it: "Dr Taylor",  candidates: ["Isla James", "Jack King"] },
-      CM14: { it: "Dr Brown",   candidates: ["Karen Lee", "Liam Moore"] },
-      CM15: { it: "Dr Miller",  candidates: ["Mia Nelson", "Noah Owen"] },
-      CM16: { it: "Dr Davis",   candidates: ["Olivia Park", "Peter Quinn"] }
-    };
-    const DEMO_ITC = { "sat-20": "CM01", "sun-4": "CM03", "sun-10": "CM05" };
-
-    let groupsData  = DEMO_GROUPS;
-    let itcSchedule = DEMO_ITC;
-
-    if (typeof db !== "undefined" && db) {
-      try {
-        const snap = await db.collection("groups").get();
-        const loaded = {}, loadedItc = {};
-        snap.forEach(doc => {
-          if (doc.id === "itc_schedule") Object.assign(loadedItc, doc.data());
-          else loaded[doc.id] = doc.data();
-        });
-        if (Object.keys(loaded).length)   groupsData  = loaded;
-        if (Object.keys(loadedItc).length) itcSchedule = loadedItc;
-      } catch(e) { /* fall through to demo data */ }
-    }
-
-    _groupsCache   = groupsData;
-    _itcSchedCache = itcSchedule;
-    return { groupsData, itcSchedule };
-  }
-
-  // room: pass the real room from Firestore people lookup, or null for demo
-  async function loadGroupCard(role, room) {
-    const card     = document.getElementById("groupCard");
-    const body     = document.getElementById("groupCardBody");
-    const editLink = document.getElementById("groupEditLink");
-
-    if (role === "director") {
-      editLink.style.display = "inline";
-      card.style.display = "none";
-      return;
-    }
-
-    const { groupsData, itcSchedule } = await fetchGroupsData();
-
-    // Resolve room: use real Firestore room if available, else demo CM01
-    const resolvedRoom = room || (currentUserRoom) || "CM01";
-    const isDemo       = !room && !currentUserRoom;
-
-    card.style.display = "block";
-
-    if (role === "faculty") {
-      const g = groupsData[resolvedRoom] || {};
-      body.innerHTML = `
-        ${isDemo ? `<p style="font-size:11px;color:#a0adb7;margin:0 0 8px;">Demo — sign in to see your real room.</p>` : ""}
-        <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start;">
-          <div>
-            <span style="font-size:11px;font-weight:700;color:#637282;text-transform:uppercase;letter-spacing:0.3px;">Your room</span>
-            <div style="font-size:20px;font-weight:900;color:#44247C;">${resolvedRoom}</div>
-          </div>
-          <div style="flex:1;min-width:180px;">
-            <span style="font-size:11px;font-weight:700;color:#637282;text-transform:uppercase;letter-spacing:0.3px;">Your candidates</span>
-            <div style="margin-top:4px;">${
-              (g.candidates || []).length
-                ? g.candidates.map(c => `<span style="display:inline-block;background:#e8f0f7;border-radius:10px;padding:3px 9px;font-size:12px;margin:2px;">${c}</span>`).join("")
-                : '<span style="color:#a0adb7;font-size:12px;">No candidates assigned yet</span>'
-            }</div>
-          </div>
-        </div>`;
-
-    } else if (role === "instructor") {
-      const g = groupsData[resolvedRoom] || {};
-      body.innerHTML = `
-        ${isDemo ? `<p style="font-size:11px;color:#a0adb7;margin:0 0 8px;">Demo — sign in to see your real room.</p>` : ""}
-        <div style="display:flex;gap:16px;flex-wrap:wrap;">
-          <div>
-            <span style="font-size:11px;font-weight:700;color:#637282;text-transform:uppercase;letter-spacing:0.3px;">Your room</span>
-            <div style="font-size:20px;font-weight:900;color:#44247C;">${resolvedRoom}</div>
-          </div>
-          <div>
-            <span style="font-size:11px;font-weight:700;color:#637282;text-transform:uppercase;letter-spacing:0.3px;">Instructor Trainer</span>
-            <div style="margin-top:4px;font-weight:700;">${g.it || '<span style="color:#a0adb7;">Not yet assigned</span>'}</div>
-          </div>
-        </div>`;
-
-    } else if (role === "itc") {
-      const rows = ITC_SLOTS.map(slot => {
-        const r = itcSchedule[slot.id] || "";
-        const g = r ? (groupsData[r] || {}) : {};
-        return `
-          <tr>
-            <td style="padding:5px 8px;font-size:12px;color:#637282;">${slot.time}</td>
-            <td style="padding:5px 8px;font-size:12px;">${slot.label}</td>
-            <td style="padding:5px 8px;font-size:13px;font-weight:700;color:#44247C;">${r || '<span style="color:#a0adb7;">—</span>'}</td>
-            <td style="padding:5px 8px;font-size:12px;">${g.it || '<span style="color:#a0adb7;">—</span>'}</td>
-          </tr>`;
-      }).join("");
-      body.innerHTML = `
-        ${isDemo ? `<p style="font-size:11px;color:#a0adb7;margin:0 0 8px;">Demo — sign in to see your personalised rotation.</p>` : ""}
-        <div style="font-size:12px;color:#637282;margin-bottom:8px;">Your rotation for group practice sessions:</div>
-        <table style="width:100%;border-collapse:collapse;font-size:13px;">
-          <thead>
-            <tr style="background:#f0f3f6;">
-              <th style="padding:5px 8px;text-align:left;font-size:11px;color:#637282;font-weight:700;">Time</th>
-              <th style="padding:5px 8px;text-align:left;font-size:11px;color:#637282;font-weight:700;">Session</th>
-              <th style="padding:5px 8px;text-align:left;font-size:11px;color:#637282;font-weight:700;">Room</th>
-              <th style="padding:5px 8px;text-align:left;font-size:11px;color:#637282;font-weight:700;">IT</th>
-            </tr>
-          </thead>
-          <tbody>${rows}</tbody>
-        </table>
-        <p style="font-size:11px;color:#a0adb7;margin:8px 0 0;">All other sessions: main plenary with everyone.</p>`;
-    }
-  }
-
   // ── Auto-refresh ───────────────────────────────────────────────────────────
+  // Refresh live bar every 30s; full re-render every 5 minutes
   setInterval(updateLiveBar, 30 * 1000);
   setInterval(() => { renderAll(); }, 5 * 60 * 1000);
 
-  // ── Firebase people lookup ─────────────────────────────────────────────────
-  async function lookupCurrentUser(user) {
-    if (!db) return;
-    try {
-      const snap = await db.collection("people")
-        .where("email", "==", user.email)
-        .limit(1)
-        .get();
-      if (snap.empty) return;
-      const person = snap.docs[0].data();
-      currentUserEmail = user.email;
-      currentUserRoom  = person.room || null;
-      // If person has a role in Firestore and it differs, honour it
-      const firestoreRole = person.role || null;
-      if (firestoreRole && firestoreRole !== currentRole) {
-        currentRole = firestoreRole;
-        document.getElementById("roleSelect").value = currentRole;
-        setRole(currentRole);
-      } else {
-        // Re-render group card with real room now that we have it
-        loadGroupCard(currentRole, currentUserRoom);
-      }
-    } catch(e) {
-      console.warn("Could not load people record:", e);
-    }
-  }
-
   // ── Init ───────────────────────────────────────────────────────────────────
   document.addEventListener("DOMContentLoaded", () => {
-    const p      = new URLSearchParams(window.location.search);
-    const role   = p.get("role")   || "director";
-    const stream = p.get("stream") || null;
-
-    // If stream is specified (candidate QR login), lock to that programme
-    if (stream === "assessor") currentProgramme = "assessor";
-
-    document.getElementById("roleSelect").value = role;
-    setRole(role);
-
-    // Auto-select Saturday (main course day) or today if it matches
-    const today = new Date().getDay(); // 0=Sun,5=Fri,6=Sat
-    const dayMap = { 5: "friday", 6: "saturday", 0: "sunday" };
-    switchDay(dayMap[today] || "saturday");
-
+    setRole("director");
+    switchDay("saturday");
     updateLiveBar();
-
-    // Firebase auth — look up people record for real room assignment
-    // Non-blocking: page works fine without it; auth just upgrades the group card
-    const firebaseReady = initFirebase();
-    if (firebaseReady) {
-      let authHandled = false;
-      const authTimeout = setTimeout(() => {
-        if (!authHandled) authHandled = true; // give up, stay in demo
-      }, 5000);
-      auth.onAuthStateChanged(user => {
-        if (authHandled) return;
-        authHandled = true;
-        clearTimeout(authTimeout);
-        if (user) lookupCurrentUser(user);
-      });
-    }
+    // Scroll to current session
+    setTimeout(() => {
+      const current = document.querySelector(".session-row.current");
+      if (current) current.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 300);
   });
 </script>
 </body>

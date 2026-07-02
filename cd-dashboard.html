@@ -1,0 +1,1292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CD Dashboard — RMD 2026</title>
+  <link rel="stylesheet" href="css/rmd.css">
+  <style>
+    * { box-sizing: border-box; }
+    body { background: #f0f3f6; font-family: var(--font); margin: 0; padding: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+
+    /* ── Alert strip ── */
+    .alert-strip {
+      background: #b7410e;
+      color: white;
+      padding: 8px 16px;
+      font-size: 13px;
+      font-weight: 700;
+      display: none;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+    .alert-strip.visible { display: flex; }
+    .alert-strip .alert-text { flex: 1; }
+    .alert-count { background: white; color: #b7410e; border-radius: 999px; padding: 1px 8px; font-size: 12px; }
+    .alert-dismiss { opacity: 0.7; font-size: 18px; line-height: 1; }
+
+    /* ── Header ── */
+    .dash-header {
+      background: var(--rmd-navy);
+      color: white;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+    .dash-header img { height: 28px; border-radius: 50%; background: white; }
+    .dash-title { flex: 1; font-size: 15px; font-weight: 700; }
+    .dash-title span { font-size: 11px; font-weight: 400; opacity: 0.65; display: block; }
+    .dash-time { font-size: 13px; opacity: 0.75; font-variant-numeric: tabular-nums; }
+    .dash-signout { font-size: 12px; opacity: 0.6; cursor: pointer; text-decoration: underline; }
+
+    /* ── Layout ── */
+    .dash-body {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      width: 180px;
+      background: #1e2d40;
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      overflow-y: auto;
+    }
+    .sidebar-nav { padding: 10px 0; flex: 1; }
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 11px 14px;
+      color: rgba(255,255,255,0.65);
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      border-left: 3px solid transparent;
+      transition: all 0.12s;
+      white-space: nowrap;
+    }
+    .nav-item:hover { background: rgba(255,255,255,0.06); color: white; }
+    .nav-item.active { color: white; border-left-color: #4ab5f0; background: rgba(74,181,240,0.1); }
+    .nav-item .nav-badge {
+      background: #b7410e;
+      color: white;
+      border-radius: 999px;
+      padding: 0 6px;
+      font-size: 10px;
+      line-height: 1.6;
+      font-weight: 700;
+    }
+    .nav-icon { font-size: 15px; width: 18px; text-align: center; }
+
+    /* ── Main panel ── */
+    .main-panel {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+    }
+
+    /* ── Section ── */
+    .section { display: none; }
+    .section.active { display: block; }
+
+    /* ── Cards ── */
+    .card {
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.09);
+      margin-bottom: 14px;
+      overflow: hidden;
+    }
+    .card-header {
+      background: var(--rmd-navy);
+      color: white;
+      padding: 10px 16px;
+      font-size: 14px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .card-header .card-actions { display: flex; gap: 6px; }
+    .card-body { padding: 14px 16px; }
+
+    /* ── Overview cards ── */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .stat-card {
+      background: white;
+      border-radius: 8px;
+      padding: 14px 12px;
+      text-align: center;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.09);
+    }
+    .stat-num { font-size: 28px; font-weight: 700; color: var(--rmd-navy); line-height: 1; }
+    .stat-lbl { font-size: 11px; color: var(--rmd-muted); margin-top: 4px; }
+    .stat-card.green .stat-num { color: #1a6e31; }
+    .stat-card.amber .stat-num { color: #c17a00; }
+    .stat-card.red-stat .stat-num  { color: #b7410e; }
+
+    /* ── Traffic light summary ── */
+    .tl-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 0;
+      border-bottom: 1px solid #f0f3f6;
+    }
+    .tl-row:last-child { border-bottom: none; }
+    .tl-name { flex: 1; font-size: 14px; font-weight: 600; color: var(--rmd-navy); }
+    .tl-sub  { font-size: 11px; color: var(--rmd-muted); font-weight: 400; }
+    .tl-dot {
+      width: 18px; height: 18px; border-radius: 50%;
+      display: inline-block; flex-shrink: 0;
+    }
+    .tl-dot.green  { background: #1a6e31; }
+    .tl-dot.amber  { background: #c17a00; }
+    .tl-dot.red    { background: #b7410e; }
+    .tl-dot.grey   { background: #ccd6dd; }
+    .tl-sessions { display: flex; gap: 4px; flex-wrap: wrap; }
+    .tl-badge {
+      font-size: 10px; padding: 2px 6px; border-radius: 4px;
+      font-weight: 700; cursor: pointer;
+    }
+    .tl-badge.green  { background: #e6f4ea; color: #1a6e31; }
+    .tl-badge.amber  { background: #fff3cd; color: #c17a00; }
+    .tl-badge.red    { background: #fde8e4; color: #b7410e; border: 1px solid #f4bfb6; }
+    .tl-badge.none   { background: #f0f3f6; color: #aab8c2; }
+
+    /* ── Flag chip ── */
+    .flag-chip {
+      font-size: 10px; padding: 2px 7px; border-radius: 999px;
+      font-weight: 700;
+    }
+    .flag-chip.strong { background: #e6f4ea; color: #1a6e31; }
+    .flag-chip.weak   { background: #fde8e4; color: #b7410e; }
+    .flag-chip.alert  { background: #b7410e; color: white; }
+
+    /* ── Candidate table ── */
+    .cand-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .cand-table th {
+      background: #f5f7fa; color: var(--rmd-navy); font-weight: 700;
+      padding: 8px 10px; text-align: left; border-bottom: 2px solid #dce3ea;
+      font-size: 12px;
+    }
+    .cand-table td {
+      padding: 9px 10px; border-bottom: 1px solid #f0f3f6;
+      vertical-align: middle;
+    }
+    .cand-table tr:last-child td { border-bottom: none; }
+    .cand-table tr:hover td { background: #fafbfc; }
+
+    /* ── Decision dropdown ── */
+    .decision-select {
+      padding: 4px 8px; border-radius: 4px;
+      border: 1px solid #ccd6dd; font-size: 12px;
+      font-family: var(--font); color: var(--rmd-navy);
+      background: white; cursor: pointer;
+    }
+    .decision-select.pass   { border-color: #1a6e31; color: #1a6e31; background: #e6f4ea; }
+    .decision-select.fail   { border-color: #b7410e; color: #b7410e; background: #fde8e4; }
+    .decision-select.defer  { border-color: #c17a00; color: #c17a00; background: #fff3cd; }
+
+    /* ── Programme timeline ── */
+    .prog-row {
+      display: flex; gap: 10px; align-items: flex-start;
+      padding: 8px 0; border-bottom: 1px solid #f0f3f6;
+    }
+    .prog-row:last-child { border-bottom: none; }
+    .prog-time { font-size: 12px; color: var(--rmd-muted); width: 44px; flex-shrink: 0; font-weight: 700; }
+    .prog-title { font-size: 13px; font-weight: 600; color: var(--rmd-navy); }
+    .prog-loc { font-size: 11px; color: var(--rmd-muted); }
+    .prog-now {
+      display: inline-block; background: var(--rmd-warn); color: white;
+      border-radius: 3px; padding: 1px 5px; font-size: 10px; font-weight: 700; margin-left: 6px;
+    }
+
+    /* ── ITC observation ── */
+    .itc-row {
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 0; border-bottom: 1px solid #f0f3f6;
+    }
+    .itc-row:last-child { border-bottom: none; }
+    .itc-name { font-size: 14px; font-weight: 600; color: var(--rmd-navy); flex: 1; }
+    .itc-room { font-size: 12px; color: var(--rmd-muted); }
+    .itc-check { display: flex; gap: 4px; }
+    .itc-cb { width: 24px; height: 24px; border-radius: 4px; border: 2px solid #dce3ea; background: white; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 12px; transition: all 0.12s; }
+    .itc-cb.done { background: #1a6e31; border-color: #145727; color: white; }
+
+    /* ── Faculty meeting slides (presentation mode) ── */
+    .meeting-slide {
+      background: var(--rmd-navy);
+      color: white;
+      border-radius: 10px;
+      padding: 30px;
+      min-height: 200px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      margin-bottom: 10px;
+      position: relative;
+    }
+    .slide-num { font-size: 11px; opacity: 0.5; position: absolute; top: 12px; right: 14px; }
+    .slide-title { font-size: 22px; font-weight: 700; margin-bottom: 10px; }
+    .slide-body  { font-size: 15px; opacity: 0.85; line-height: 1.6; }
+    .slide-controls { display: flex; gap: 8px; justify-content: center; margin-top: 4px; }
+    .slide-nav { padding: 8px 20px; border-radius: 6px; border: none; font-family: var(--font); font-size: 14px; font-weight: 700; cursor: pointer; }
+    .slide-nav.prev { background: #dce3ea; color: var(--rmd-navy); }
+    .slide-nav.next { background: var(--rmd-blue); color: white; }
+    .slide-nav:disabled { opacity: 0.35; cursor: default; }
+    .pres-mode-btn { background: #4ab5f0; color: var(--rmd-navy); border: none; border-radius: 5px; padding: 6px 12px; font-size: 12px; font-weight: 700; font-family: var(--font); cursor: pointer; }
+
+    /* ── Report section ── */
+    .report-field { margin-bottom: 14px; }
+    .report-label { font-size: 12px; font-weight: 700; color: var(--rmd-navy); margin-bottom: 5px; }
+    .report-textarea {
+      width: 100%; min-height: 80px; padding: 9px 11px;
+      border: 2px solid #dce3ea; border-radius: 6px;
+      font-size: 13px; font-family: var(--font); resize: vertical; line-height: 1.5;
+    }
+    .report-textarea:focus { outline: none; border-color: var(--rmd-blue); }
+    .btn-export {
+      background: var(--rmd-navy); color: white; border: none;
+      padding: 10px 20px; border-radius: 6px; font-family: var(--font);
+      font-size: 14px; font-weight: 700; cursor: pointer;
+    }
+    .btn-export:hover { background: var(--rmd-blue); }
+
+    /* ── Utility ── */
+    .section-title {
+      font-size: 17px; font-weight: 700; color: var(--rmd-navy);
+      margin: 0 0 12px; border-bottom: 2px solid #dce3ea; padding-bottom: 8px;
+    }
+    .text-muted { color: var(--rmd-muted); }
+    .text-sm    { font-size: 12px; }
+    .mt-8  { margin-top: 8px; }
+    .mt-12 { margin-top: 12px; }
+    .empty-msg { text-align: center; color: var(--rmd-muted); font-size: 13px; padding: 24px 0; }
+    .btn-sm {
+      padding: 5px 11px; border-radius: 5px; border: none;
+      font-family: var(--font); font-size: 12px; font-weight: 700;
+      cursor: pointer; background: #dce3ea; color: var(--rmd-navy);
+    }
+    .btn-sm:hover { background: #ccd6dd; }
+    .btn-primary { background: var(--rmd-blue); color: white; }
+    .btn-primary:hover { background: var(--rmd-navy); }
+    .loading { color: var(--rmd-muted); font-size: 13px; padding: 20px 0; text-align: center; }
+    .tag { display: inline-block; background: #e8edf2; color: var(--rmd-muted); font-size: 10px; padding: 2px 6px; border-radius: 3px; font-weight: 600; margin-left: 4px; }
+    .tag.strong { background: #e6f4ea; color: #1a6e31; }
+    .tag.weak   { background: #fde8e4; color: #b7410e; }
+
+    /* ── Feedback comment detail ── */
+    .comment-detail {
+      background: #fde8e4; border-left: 3px solid #b7410e; border-radius: 0 6px 6px 0;
+      padding: 8px 10px; font-size: 12px; color: #6b2010; margin-top: 6px; line-height: 1.5;
+    }
+    .day-tabs { display: flex; gap: 4px; margin-bottom: 12px; }
+    .day-tab-btn {
+      padding: 6px 14px; border-radius: 5px; border: 2px solid #dce3ea;
+      background: white; font-family: var(--font); font-size: 12px; font-weight: 700;
+      color: var(--rmd-navy); cursor: pointer;
+    }
+    .day-tab-btn.active { background: var(--rmd-navy); color: white; border-color: var(--rmd-navy); }
+
+    /* ── Fullscreen presentation overlay ── */
+    #presOverlay {
+      display: none;
+      position: fixed; inset: 0;
+      background: var(--rmd-navy);
+      z-index: 9999;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 40px;
+    }
+    #presOverlay.visible { display: flex; }
+    .pres-slide-big { text-align: center; max-width: 800px; width: 100%; }
+    .pres-num  { color: rgba(255,255,255,0.4); font-size: 14px; margin-bottom: 20px; }
+    .pres-head { color: white; font-size: 36px; font-weight: 700; margin-bottom: 20px; }
+    .pres-body { color: rgba(255,255,255,0.8); font-size: 20px; line-height: 1.7; }
+    .pres-nav { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); display: flex; gap: 16px; }
+    .pres-close { position: fixed; top: 20px; right: 20px; color: rgba(255,255,255,0.5); cursor: pointer; font-size: 28px; }
+
+    @media (max-width: 600px) {
+      .sidebar { width: 52px; }
+      .nav-item span { display: none; }
+      .nav-item { justify-content: center; }
+      .nav-icon { width: auto; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Alert strip ── -->
+<div class="alert-strip" id="alertStrip" onclick="switchSection('feedback')">
+  <span>🔴</span>
+  <span class="alert-text" id="alertText">Loading alerts…</span>
+  <span class="alert-count" id="alertCount">0</span>
+  <span class="alert-dismiss" onclick="event.stopPropagation(); dismissAlerts()">×</span>
+</div>
+
+<!-- ── Header ── -->
+<div class="dash-header">
+  <a href="timetable.html"><img src="assets/rmd-logo.png" alt="RMD"></a>
+  <div class="dash-title">
+    Course Director Dashboard
+    <span id="dashSubtitle">RMD Instructor Weekend 2026 — Birmingham</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:14px;">
+    <span class="dash-time" id="dashTime">--:--</span>
+    <a href="timetable.html" class="dash-signout">← Timetable</a>
+    <a href="#" onclick="signOut()" class="dash-signout">Sign out</a>
+  </div>
+</div>
+
+<!-- ── Body: sidebar + main ── -->
+<div class="dash-body">
+
+  <!-- Sidebar -->
+  <nav class="sidebar">
+    <div class="sidebar-nav">
+      <div class="nav-item active" onclick="switchSection('overview')" id="nav-overview">
+        <span class="nav-icon">📊</span><span>Overview</span>
+      </div>
+      <div class="nav-item" onclick="switchSection('programme')" id="nav-programme">
+        <span class="nav-icon">📅</span><span>Programme</span>
+      </div>
+      <div class="nav-item" onclick="switchSection('candidates')" id="nav-candidates">
+        <span class="nav-icon">👥</span><span>Candidates</span>
+      </div>
+      <div class="nav-item" onclick="switchSection('itcs')" id="nav-itcs">
+        <span class="nav-icon">🔄</span><span>ITCs</span>
+      </div>
+      <div class="nav-item" onclick="switchSection('meetings')" id="nav-meetings">
+        <span class="nav-icon">📋</span><span>Meetings</span>
+      </div>
+      <div class="nav-item" onclick="switchSection('feedback')" id="nav-feedback">
+        <span class="nav-icon">🚦</span><span>Feedback</span>
+        <span class="nav-badge hidden" id="navBadge">0</span>
+      </div>
+      <div class="nav-item" onclick="switchSection('report')" id="nav-report">
+        <span class="nav-icon">📄</span><span>Report</span>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main content -->
+  <div class="main-panel" id="mainPanel">
+
+    <!-- ── OVERVIEW ── -->
+    <section class="section active" id="section-overview">
+      <div class="section-title">Overview</div>
+
+      <div class="stats-row" id="statsRow">
+        <div class="stat-card"><div class="stat-num" id="statCandidates">–</div><div class="stat-lbl">Candidates</div></div>
+        <div class="stat-card"><div class="stat-num" id="statFaculty">–</div><div class="stat-lbl">Faculty</div></div>
+        <div class="stat-card green"><div class="stat-num" id="statGreen">–</div><div class="stat-lbl">Green</div></div>
+        <div class="stat-card amber"><div class="stat-num" id="statAmber">–</div><div class="stat-lbl">Amber</div></div>
+        <div class="stat-card red-stat"><div class="stat-num" id="statRed">–</div><div class="stat-lbl">Red flags</div></div>
+        <div class="stat-card"><div class="stat-num" id="statArrived">–</div><div class="stat-lbl">Arrived</div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">🔴 Active Concerns
+          <span class="text-sm" style="font-weight:400;opacity:0.8;">Red-rated candidates this session</span>
+        </div>
+        <div class="card-body" id="activeConcernsBody">
+          <div class="loading">Loading…</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">⭐ Notable Flags</div>
+        <div class="card-body" id="notableFlagsBody">
+          <div class="loading">Loading…</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">📣 Broadcast Message
+          <div class="card-actions">
+            <button class="btn-sm btn-primary" onclick="sendBroadcast()">Send</button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div style="display:flex;gap:8px;margin-bottom:8px;">
+            <select id="msgTarget" style="padding:7px 10px;border:2px solid #dce3ea;border-radius:6px;font-family:var(--font);font-size:13px;flex:1;">
+              <option value="all">All rooms + candidates</option>
+              <option value="faculty">Faculty only</option>
+              <option value="room-wf15">WF15 screen only</option>
+              <option value="room-wf19">WF19 screen only</option>
+              <option value="room-ath">ATH screen only</option>
+            </select>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <input id="msgText" type="text" placeholder="Type message…" maxlength="160"
+              style="flex:1;padding:8px 10px;border:2px solid #dce3ea;border-radius:6px;font-family:var(--font);font-size:13px;"
+              onkeydown="if(event.key==='Enter') sendBroadcast()">
+            <button class="btn-sm btn-primary" onclick="sendBroadcast()">Send</button>
+          </div>
+          <div id="msgFeedback" style="font-size:12px;color:var(--rmd-muted);margin-top:5px;"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── PROGRAMME ── -->
+    <section class="section" id="section-programme">
+      <div class="section-title">Programme</div>
+      <div class="day-tabs">
+        <button class="day-tab-btn" onclick="showProgDay('friday',this)">Friday 9 Oct</button>
+        <button class="day-tab-btn active" onclick="showProgDay('saturday',this)">Saturday 10 Oct</button>
+        <button class="day-tab-btn" onclick="showProgDay('sunday',this)">Sunday 11 Oct</button>
+      </div>
+      <div class="card">
+        <div class="card-body" id="progBody"><div class="loading">Loading…</div></div>
+      </div>
+    </section>
+
+    <!-- ── CANDIDATES ── -->
+    <section class="section" id="section-candidates">
+      <div class="section-title">Candidates</div>
+      <div class="card">
+        <div class="card-header">All Candidates
+          <div class="card-actions">
+            <input id="candSearch" type="text" placeholder="Search…"
+              style="padding:5px 8px;border:1px solid rgba(255,255,255,0.3);border-radius:4px;font-family:var(--font);font-size:12px;background:rgba(255,255,255,0.1);color:white;width:120px;"
+              oninput="filterCandidates(this.value)">
+          </div>
+        </div>
+        <div class="card-body" style="padding:0;">
+          <table class="cand-table">
+            <thead><tr>
+              <th>Name</th>
+              <th>Stream</th>
+              <th>Group</th>
+              <th>Status</th>
+              <th>Decision</th>
+            </tr></thead>
+            <tbody id="candTableBody"><tr><td colspan="5" class="loading">Loading…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── ITCs ── -->
+    <section class="section" id="section-itcs">
+      <div class="section-title">Instructor Trainer Candidates</div>
+      <div class="card">
+        <div class="card-header">ITC Room Rotation Tracker</div>
+        <div class="card-body" id="itcBody"><div class="loading">Loading…</div></div>
+      </div>
+      <div class="card">
+        <div class="card-header">ITC Observations</div>
+        <div class="card-body" id="itcObsBody">
+          <div class="empty-msg">Observation records will appear here as ITCs are assessed.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── FACULTY MEETINGS ── -->
+    <section class="section" id="section-meetings">
+      <div class="section-title">Faculty Meetings</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <div class="day-tabs" style="margin-bottom:0;">
+          <button class="day-tab-btn" onclick="showMeetingDay('friday',this)">Friday</button>
+          <button class="day-tab-btn active" onclick="showMeetingDay('saturday',this)">Saturday</button>
+          <button class="day-tab-btn" onclick="showMeetingDay('sunday',this)">Sunday</button>
+        </div>
+        <button class="pres-mode-btn" onclick="enterPresMode()">▶ Presentation mode</button>
+      </div>
+
+      <div id="meetingSlides"></div>
+
+      <div class="card mt-12">
+        <div class="card-header">Meeting Notes</div>
+        <div class="card-body">
+          <textarea class="report-textarea" id="meetingNotes" placeholder="Record key discussion points, decisions, and actions here…" style="min-height:120px;" oninput="saveMeetingNotes()"></textarea>
+          <div class="text-sm text-muted mt-8" id="notesSavedMsg">Notes save automatically.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── FEEDBACK ── -->
+    <section class="section" id="section-feedback">
+      <div class="section-title">Session Feedback — Traffic Lights</div>
+      <div class="day-tabs">
+        <button class="day-tab-btn" onclick="showFeedbackDay('friday',this)">Friday</button>
+        <button class="day-tab-btn active" onclick="showFeedbackDay('saturday',this)">Saturday 10 Oct</button>
+        <button class="day-tab-btn" onclick="showFeedbackDay('sunday',this)">Sunday 11 Oct</button>
+      </div>
+      <div class="card">
+        <div class="card-header">Candidate Summary</div>
+        <div class="card-body" id="feedbackBody"><div class="loading">Loading feedback…</div></div>
+      </div>
+      <div class="card" id="redDetailsCard" style="display:none;">
+        <div class="card-header" style="background:#b7410e;">🔴 Red Rating Details</div>
+        <div class="card-body" id="redDetailsBody"></div>
+      </div>
+    </section>
+
+    <!-- ── REPORT ── -->
+    <section class="section" id="section-report">
+      <div class="section-title">Course Report</div>
+      <div class="card">
+        <div class="card-header">Final Report — RMD Instructor Weekend 2026</div>
+        <div class="card-body">
+
+          <div class="report-field">
+            <div class="report-label">Course Overview</div>
+            <textarea class="report-textarea" id="rep-overview"
+              placeholder="Dates, venue, total attendance, general comments on the course…"></textarea>
+          </div>
+
+          <div class="report-field">
+            <div class="report-label">Candidate Outcomes</div>
+            <textarea class="report-textarea" id="rep-outcomes"
+              placeholder="Summary of pass / defer / fail decisions and rationale…"></textarea>
+          </div>
+
+          <div class="report-field">
+            <div class="report-label">Faculty Performance</div>
+            <textarea class="report-textarea" id="rep-faculty"
+              placeholder="Comments on faculty engagement, teaching quality, development needs…"></textarea>
+          </div>
+
+          <div class="report-field">
+            <div class="report-label">ITC Assessment</div>
+            <textarea class="report-textarea" id="rep-itc"
+              placeholder="ITC observation summary, rooms covered, recommendation…"></textarea>
+          </div>
+
+          <div class="report-field">
+            <div class="report-label">Course Logistics</div>
+            <textarea class="report-textarea" id="rep-logistics"
+              placeholder="Venue, equipment, catering — what worked, what needs improvement…"></textarea>
+          </div>
+
+          <div class="report-field">
+            <div class="report-label">Actions for Next Course</div>
+            <textarea class="report-textarea" id="rep-actions"
+              placeholder="Specific actions, responsible persons, deadlines…"></textarea>
+          </div>
+
+          <div style="display:flex;gap:10px;align-items:center;margin-top:8px;">
+            <button class="btn-export" onclick="exportReport()">📄 Export report</button>
+            <button class="btn-sm btn-primary" onclick="saveReport()">Save draft</button>
+            <span class="text-sm text-muted" id="reportSaveMsg"></span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<!-- ── Presentation mode overlay ── -->
+<div id="presOverlay">
+  <div class="pres-close" onclick="exitPresMode()">×</div>
+  <div class="pres-slide-big">
+    <div class="pres-num" id="presSlideNum"></div>
+    <div class="pres-head" id="presSlideHead"></div>
+    <div class="pres-body" id="presSlideBody"></div>
+  </div>
+  <div class="pres-nav">
+    <button class="slide-nav prev" id="presPrev" onclick="moveSlide(-1)">← Previous</button>
+    <button class="slide-nav next" id="presNext" onclick="moveSlide(1)">Next →</button>
+  </div>
+</div>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/programme-data.js"></script>
+<script>
+// ─────────────────────────────────────────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────────────────────────────────────────
+let currentUser  = null;
+let allPeople    = [];    // all people docs
+let feedbackData = [];    // session_feedback docs
+let decisions    = {};    // { candidateId: decision }
+let currentSection = "overview";
+let currentProgDay    = "saturday";
+let currentFeedbackDay = "saturday";
+let currentMeetingDay  = "saturday";
+let alertsDismissed = false;
+let presSlides = [];
+let presIndex  = 0;
+let notesSaveTimer;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// BOOT
+// ─────────────────────────────────────────────────────────────────────────────
+initFirebase();
+
+window.addEventListener("load", () => {
+  updateClock();
+  setInterval(updateClock, 15000);
+
+  auth.onAuthStateChanged(async user => {
+    if (!user) { window.location.href = "index.html"; return; }
+    currentUser = user;
+
+    // Check director access
+    const snap = await db.collection(COLLECTIONS.people).doc(user.uid).get().catch(() => null);
+    const role = snap?.exists ? snap.data().role : null;
+    if (role && role !== "director") {
+      window.location.href = `timetable.html?role=${role}`;
+      return;
+    }
+
+    await Promise.all([loadPeople(), loadFeedback(), loadDecisions()]);
+    renderOverview();
+    renderProgramme("saturday");
+    renderFeedback("saturday");
+    renderMeetingSlides("saturday");
+    loadMeetingNotes();
+    loadReport();
+    watchAlerts();
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DATA LOADERS
+// ─────────────────────────────────────────────────────────────────────────────
+async function loadPeople() {
+  try {
+    const snap = await db.collection(COLLECTIONS.people).get();
+    allPeople = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  } catch (e) {
+    // Demo fallback
+    allPeople = [
+      { id: "c1", name: "Alice Tan",    role: "instructor", stream: "Instructor Candidate", group: "Group 1" },
+      { id: "c2", name: "Ben Osei",     role: "instructor", stream: "Instructor Candidate", group: "Group 1" },
+      { id: "c3", name: "Cara Patel",   role: "assessor",   stream: "Assessor Candidate",   group: "Group 2" },
+      { id: "c4", name: "Dan Williams", role: "instructor", stream: "Instructor Candidate", group: "Group 2" },
+      { id: "i1", name: "Dr Emma Singh",role: "itc",        stream: "ITC",                  group: "" },
+      { id: "f1", name: "Dr James Liu", role: "faculty",    stream: "Faculty",              group: "Group 1" },
+      { id: "f2", name: "Dr Yemi Addo", role: "full-instructor", stream: "Full Instructor", group: "Group 2" }
+    ];
+  }
+}
+
+async function loadFeedback() {
+  try {
+    const snap = await db.collection("session_feedback").orderBy("savedAt","desc").get();
+    feedbackData = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  } catch (e) {
+    feedbackData = []; // no feedback yet or no index
+  }
+}
+
+async function loadDecisions() {
+  try {
+    const snap = await db.collection("decisions").get();
+    snap.docs.forEach(d => { decisions[d.id] = d.data().decision; });
+  } catch (e) { decisions = {}; }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// OVERVIEW
+// ─────────────────────────────────────────────────────────────────────────────
+function renderOverview() {
+  const candidates = allPeople.filter(p => [ROLES.INSTRUCTOR, ROLES.ASSESSOR].includes(p.role));
+  const faculty    = allPeople.filter(p => [ROLES.FACULTY, ROLES.FULL_INSTRUCTOR, ROLES.ITC].includes(p.role));
+
+  const ratings = feedbackData.map(f => f.rating);
+  const green   = ratings.filter(r => r === "green").length;
+  const amber   = ratings.filter(r => r === "amber").length;
+  const red     = feedbackData.filter(f => f.rating === "red");
+
+  document.getElementById("statCandidates").textContent = candidates.length || "–";
+  document.getElementById("statFaculty").textContent    = faculty.length    || "–";
+  document.getElementById("statGreen").textContent      = green;
+  document.getElementById("statAmber").textContent      = amber;
+  document.getElementById("statRed").textContent        = red.length;
+
+  // Arrived — from attendance collection (best effort)
+  db.collection(COLLECTIONS.attendance).get()
+    .then(s => document.getElementById("statArrived").textContent = s.size)
+    .catch(() => document.getElementById("statArrived").textContent = "–");
+
+  // Active concerns (red flags)
+  const concernsEl = document.getElementById("activeConcernsBody");
+  if (red.length === 0) {
+    concernsEl.innerHTML = `<div class="empty-msg">No red ratings recorded yet.</div>`;
+  } else {
+    // Group latest red per candidate
+    const latestRed = {};
+    red.forEach(f => {
+      if (!latestRed[f.candidateId] || f.savedAt > latestRed[f.candidateId].savedAt)
+        latestRed[f.candidateId] = f;
+    });
+    concernsEl.innerHTML = Object.values(latestRed).map(f => `
+      <div class="tl-row">
+        <div style="display:flex;align-items:center;gap:8px;flex:1;">
+          <span class="tl-dot red"></span>
+          <div>
+            <div style="font-size:14px;font-weight:700;color:var(--rmd-navy);">${esc(f.candidateName)}</div>
+            <div style="font-size:11px;color:var(--rmd-muted);">Session: ${esc(f.sessionId)} · Reported by faculty</div>
+            ${f.comment ? `<div class="comment-detail">${esc(f.comment)}</div>` : ""}
+          </div>
+        </div>
+        <select class="decision-select ${decisionClass(decisions[f.candidateId])}"
+          onchange="saveDecision('${f.candidateId}', this.value, this)">
+          <option value="">– Decision –</option>
+          <option value="pass"  ${decisions[f.candidateId]==="pass"  ?"selected":""}>Pass</option>
+          <option value="defer" ${decisions[f.candidateId]==="defer" ?"selected":""}>Defer</option>
+          <option value="fail"  ${decisions[f.candidateId]==="fail"  ?"selected":""}>Fail</option>
+        </select>
+      </div>`).join("");
+  }
+
+  // Notable flags
+  const strong = feedbackData.filter(f => f.strong);
+  const weak   = feedbackData.filter(f => f.weak);
+  const notableEl = document.getElementById("notableFlagsBody");
+  if (!strong.length && !weak.length) {
+    notableEl.innerHTML = `<div class="empty-msg">No notable flags recorded yet.</div>`;
+  } else {
+    const items = [
+      ...strong.map(f => ({ ...f, flagType: "strong" })),
+      ...weak.map(f => ({ ...f, flagType: "weak" }))
+    ];
+    notableEl.innerHTML = items.map(f => `
+      <div class="tl-row">
+        <div class="tl-name">${esc(f.candidateName)} <span class="tag ${f.flagType}">${f.flagType === "strong" ? "⭐ Notably strong" : "⚠ Notably weak"}</span></div>
+        <div class="text-sm text-muted">${esc(f.sessionId)}</div>
+      </div>`).join("");
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PROGRAMME
+// ─────────────────────────────────────────────────────────────────────────────
+function renderProgramme(day) {
+  currentProgDay = day;
+  const body = document.getElementById("progBody");
+  const sessions = PROGRAMME[day]?.sessions || [];
+  if (!sessions.length) { body.innerHTML = `<div class="empty-msg">No sessions for this day.</div>`; return; }
+
+  const now = new Date();
+  const nowMins = now.getHours() * 60 + now.getMinutes();
+
+  body.innerHTML = sessions.map(s => {
+    const [h, m]  = s.start.split(":").map(Number);
+    const startMin = h * 60 + m;
+    const endMin   = startMin + (s.duration || 60);
+    const isNow    = nowMins >= startMin && nowMins < endMin;
+    const endStr   = `${String(Math.floor(endMin/60)).padStart(2,"0")}:${String(endMin%60).padStart(2,"0")}`;
+    return `
+      <div class="prog-row">
+        <div class="prog-time">${esc(s.start)}</div>
+        <div>
+          <div class="prog-title">${esc(s.title)}${isNow ? `<span class="prog-now">NOW</span>` : ""}</div>
+          <div class="prog-loc">${esc(s.location || "TBC")} · ends ${endStr} · ${s.roles.join(", ")}</div>
+          ${s.notes ? `<div class="text-sm text-muted mt-8">${esc(s.notes)}</div>` : ""}
+        </div>
+      </div>`;
+  }).join("");
+}
+
+function showProgDay(day, btn) {
+  document.querySelectorAll(".day-tabs .day-tab-btn").forEach(b => {
+    if (b.closest("#section-programme")) b.classList.remove("active");
+  });
+  btn.classList.add("active");
+  renderProgramme(day);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CANDIDATES
+// ─────────────────────────────────────────────────────────────────────────────
+function renderCandidates(filter) {
+  const candidates = allPeople.filter(p => [ROLES.INSTRUCTOR, ROLES.ASSESSOR].includes(p.role));
+  const filtered   = filter
+    ? candidates.filter(c => c.name.toLowerCase().includes(filter.toLowerCase()))
+    : candidates;
+
+  const tbody = document.getElementById("candTableBody");
+  if (!filtered.length) { tbody.innerHTML = `<tr><td colspan="5" class="empty-msg">No candidates found.</td></tr>`; return; }
+
+  // Latest rating per candidate
+  const latestRating = {};
+  feedbackData.forEach(f => {
+    const existing = latestRating[f.candidateId];
+    if (!existing || (f.savedAt && (!existing.savedAt || f.savedAt.seconds > existing.savedAt.seconds)))
+      latestRating[f.candidateId] = f;
+  });
+
+  tbody.innerHTML = filtered.map(c => {
+    const latest  = latestRating[c.id];
+    const rating  = latest?.rating || "none";
+    const dec     = decisions[c.id] || "";
+    return `<tr>
+      <td><strong>${esc(c.name)}</strong></td>
+      <td>${esc(c.stream || ROLE_LABELS[c.role] || c.role)}</td>
+      <td>${esc(c.group || "–")}</td>
+      <td><span class="tl-badge ${rating}">${rating === "none" ? "Not yet rated" : rating.charAt(0).toUpperCase() + rating.slice(1)}</span></td>
+      <td>
+        <select class="decision-select ${decisionClass(dec)}"
+          onchange="saveDecision('${c.id}', this.value, this)">
+          <option value="">– –</option>
+          <option value="pass"  ${dec==="pass"  ?"selected":""}>Pass</option>
+          <option value="defer" ${dec==="defer" ?"selected":""}>Defer</option>
+          <option value="fail"  ${dec==="fail"  ?"selected":""}>Fail</option>
+        </select>
+      </td>
+    </tr>`;
+  }).join("");
+}
+
+function filterCandidates(val) { renderCandidates(val); }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ITCs
+// ─────────────────────────────────────────────────────────────────────────────
+function renderITCs() {
+  const itcs = allPeople.filter(p => p.role === ROLES.ITC);
+  const rooms = ["WF15", "WF19", "ATH", "Skills Lab"];
+  const body = document.getElementById("itcBody");
+
+  if (!itcs.length) {
+    body.innerHTML = `<div class="empty-msg">No ITCs found in people records.</div>`;
+    return;
+  }
+
+  body.innerHTML = itcs.map(itc => `
+    <div class="itc-row">
+      <div>
+        <div class="itc-name">${esc(itc.name)}</div>
+        <div class="itc-room">Current room: ${esc(itc.currentRoom || "Not assigned")}</div>
+      </div>
+      <div class="itc-check">
+        ${rooms.map(room => {
+          const key = `${itc.id}_${room}`;
+          const done = !!localStorage.getItem("itc_obs_" + key);
+          return `<div class="itc-cb ${done ? "done" : ""}" title="${room}" onclick="toggleItcObs('${itc.id}','${room}',this)">${done ? "✓" : room.substring(0,3)}</div>`;
+        }).join("")}
+      </div>
+    </div>`).join("");
+}
+
+function toggleItcObs(itcId, room, el) {
+  const key = `itc_obs_${itcId}_${room}`;
+  const done = !el.classList.contains("done");
+  el.classList.toggle("done", done);
+  el.textContent = done ? "✓" : room.substring(0,3);
+  if (done) { localStorage.setItem(key, "1"); }
+  else       { localStorage.removeItem(key); }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// FACULTY MEETINGS
+// ─────────────────────────────────────────────────────────────────────────────
+function buildMeetingSlides(day) {
+  const candidates = allPeople.filter(p => [ROLES.INSTRUCTOR, ROLES.ASSESSOR].includes(p.role));
+  const latestRating = {};
+  feedbackData.forEach(f => {
+    const existing = latestRating[f.candidateId];
+    if (!existing || (f.savedAt && f.savedAt.seconds > (existing.savedAt?.seconds || 0)))
+      latestRating[f.candidateId] = f;
+  });
+
+  const redCands   = candidates.filter(c => latestRating[c.id]?.rating === "red");
+  const amberCands = candidates.filter(c => latestRating[c.id]?.rating === "amber");
+
+  const dayLabel = { friday: "Friday Evening", saturday: "Saturday Evening", sunday: "Sunday Debrief" }[day] || "";
+
+  const slideSet = [
+    {
+      title: `Faculty Meeting — ${dayLabel}`,
+      body:  `RMD Instructor Weekend 2026\nBirmingham Medical School\n\nCourse Director: RMD Birmingham`
+    },
+    {
+      title: "Programme Update",
+      body:  day === "friday"
+        ? "Weekend programme confirmed.\nAll rooms allocated.\nGateway assessment at 11:45 Saturday."
+        : day === "saturday"
+        ? "Saturday sessions complete.\nGateway assessment results reviewed.\nSunday programme confirmed."
+        : "Course complete.\nOutcome decisions to be finalised.\nThank you to all faculty."
+    },
+    {
+      title: "Candidate Overview",
+      body: `${candidates.length} candidates enrolled.\n${redCands.length} with red flags.\n${amberCands.length} with amber ratings.`
+    },
+    ...redCands.map(c => ({
+      title: `Concern — ${c.name}`,
+      body: latestRating[c.id]?.comment
+        ? `Session observation:\n"${latestRating[c.id].comment}"\n\nFor discussion.`
+        : `Red rating recorded.\nComment not provided.\n\nFor discussion.`
+    })),
+    {
+      title: "Faculty Voice",
+      body: "Any concerns about delivery?\nRoom logistics feedback?\nResources and equipment."
+    },
+    {
+      title: "Actions & Close",
+      body: "Actions from this meeting:\n\n[To be recorded in meeting notes below]"
+    }
+  ];
+
+  return slideSet;
+}
+
+function renderMeetingSlides(day) {
+  currentMeetingDay = day;
+  presSlides = buildMeetingSlides(day);
+  presIndex  = 0;
+
+  const container = document.getElementById("meetingSlides");
+  container.innerHTML = presSlides.map((s, i) => `
+    <div class="meeting-slide" id="slide-${i}" style="${i > 0 ? 'display:none' : ''}">
+      <div class="slide-num">${i + 1} / ${presSlides.length}</div>
+      <div class="slide-title">${esc(s.title)}</div>
+      <div class="slide-body" style="white-space:pre-line;">${esc(s.body)}</div>
+    </div>`).join("") +
+    `<div class="slide-controls">
+      <button class="slide-nav prev" id="slidePrev" onclick="inlineSlide(-1)" ${presIndex === 0 ? "disabled" : ""}>← Previous</button>
+      <span style="font-size:13px;color:var(--rmd-muted);align-self:center;" id="slideCounter">1 / ${presSlides.length}</span>
+      <button class="slide-nav next" id="slideNext" onclick="inlineSlide(1)">Next →</button>
+    </div>`;
+}
+
+let inlineIndex = 0;
+function inlineSlide(dir) {
+  document.getElementById("slide-" + inlineIndex).style.display = "none";
+  inlineIndex = Math.max(0, Math.min(presSlides.length - 1, inlineIndex + dir));
+  document.getElementById("slide-" + inlineIndex).style.display = "flex";
+  document.getElementById("slideCounter").textContent = `${inlineIndex + 1} / ${presSlides.length}`;
+  document.getElementById("slidePrev").disabled = inlineIndex === 0;
+  document.getElementById("slideNext").disabled = inlineIndex === presSlides.length - 1;
+}
+
+function showMeetingDay(day, btn) {
+  document.querySelectorAll("#section-meetings .day-tab-btn").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  inlineIndex = 0;
+  renderMeetingSlides(day);
+}
+
+// Presentation mode (fullscreen)
+function enterPresMode() {
+  presIndex = inlineIndex;
+  updatePresSlide();
+  document.getElementById("presOverlay").classList.add("visible");
+}
+
+function exitPresMode() {
+  document.getElementById("presOverlay").classList.remove("visible");
+}
+
+function updatePresSlide() {
+  const s = presSlides[presIndex];
+  if (!s) return;
+  document.getElementById("presSlideNum").textContent  = `${presIndex + 1} / ${presSlides.length}`;
+  document.getElementById("presSlideHead").textContent = s.title;
+  document.getElementById("presSlideBody").textContent = s.body;
+  document.getElementById("presPrev").disabled = presIndex === 0;
+  document.getElementById("presNext").disabled = presIndex === presSlides.length - 1;
+}
+
+function moveSlide(dir) {
+  presIndex = Math.max(0, Math.min(presSlides.length - 1, presIndex + dir));
+  updatePresSlide();
+  // Sync inline view
+  inlineSlide(0); // refresh counter
+  inlineIndex = presIndex;
+  document.querySelectorAll("[id^='slide-']").forEach(el => el.style.display = "none");
+  const sl = document.getElementById("slide-" + inlineIndex);
+  if (sl) sl.style.display = "flex";
+}
+
+// Keyboard navigation in pres mode
+document.addEventListener("keydown", e => {
+  if (!document.getElementById("presOverlay").classList.contains("visible")) return;
+  if (e.key === "ArrowRight" || e.key === "ArrowDown") moveSlide(1);
+  if (e.key === "ArrowLeft"  || e.key === "ArrowUp")   moveSlide(-1);
+  if (e.key === "Escape") exitPresMode();
+});
+
+// Meeting notes autosave
+function saveMeetingNotes() {
+  clearTimeout(notesSaveTimer);
+  notesSaveTimer = setTimeout(async () => {
+    const text = document.getElementById("meetingNotes").value;
+    try {
+      await db.collection("meeting_notes").doc(currentMeetingDay).set({
+        text, updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      }, { merge: true });
+      document.getElementById("notesSavedMsg").textContent = "Saved ✓";
+    } catch { document.getElementById("notesSavedMsg").textContent = "Save failed — check connection"; }
+  }, 1500);
+}
+
+async function loadMeetingNotes() {
+  try {
+    const snap = await db.collection("meeting_notes").doc(currentMeetingDay).get();
+    if (snap.exists) document.getElementById("meetingNotes").value = snap.data().text || "";
+  } catch { /* no notes yet */ }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// FEEDBACK
+// ─────────────────────────────────────────────────────────────────────────────
+function renderFeedback(day) {
+  currentFeedbackDay = day;
+  const body = document.getElementById("feedbackBody");
+  const candidates = allPeople.filter(p => [ROLES.INSTRUCTOR, ROLES.ASSESSOR].includes(p.role));
+
+  // Get sessions for this day that have feedback
+  const daySessions = (PROGRAMME[day]?.sessions || [])
+    .filter(s => !s.tags.includes("faculty-only") && !s.tags.includes("break") && s.roles.includes("all") || (s.roles||[]).includes("instructor"))
+    .map(s => s.id);
+
+  // Group feedback by candidate
+  const byCand = {};
+  feedbackData
+    .filter(f => daySessions.includes(f.sessionId))
+    .forEach(f => {
+      if (!byCand[f.candidateId]) byCand[f.candidateId] = [];
+      byCand[f.candidateId].push(f);
+    });
+
+  if (!candidates.length) {
+    body.innerHTML = `<div class="empty-msg">No candidates loaded.</div>`;
+    return;
+  }
+
+  const reds = [];
+  body.innerHTML = candidates.map(c => {
+    const fb = byCand[c.id] || [];
+    const latest = fb.sort((a,b) => (b.savedAt?.seconds||0) - (a.savedAt?.seconds||0))[0];
+    const rating = latest?.rating || "none";
+    if (rating === "red") reds.push({ candidate: c, feedback: latest });
+
+    return `
+      <div class="tl-row">
+        <div class="tl-name">
+          ${esc(c.name)}
+          <div class="tl-sub">${esc(c.stream || ROLE_LABELS[c.role] || "")}</div>
+        </div>
+        <div class="tl-sessions">
+          ${fb.length ? fb.map(f => `<span class="tl-badge ${f.rating}" title="${esc(f.sessionId)}">${f.rating.charAt(0).toUpperCase()}</span>`).join("") : `<span class="tl-badge none">–</span>`}
+        </div>
+        <span class="tl-dot ${rating}"></span>
+      </div>`;
+  }).join("");
+
+  // Red details card
+  const redCard = document.getElementById("redDetailsCard");
+  const redBody = document.getElementById("redDetailsBody");
+  if (reds.length) {
+    redCard.style.display = "block";
+    redBody.innerHTML = reds.map(({ candidate, feedback }) => `
+      <div class="tl-row">
+        <div>
+          <div style="font-size:14px;font-weight:700;color:var(--rmd-navy);">${esc(candidate.name)}</div>
+          <div class="text-sm text-muted">${esc(feedback.sessionId)} · Group ${esc(candidate.group || "–")}</div>
+          ${feedback.comment ? `<div class="comment-detail">${esc(feedback.comment)}</div>` : `<div class="text-sm text-muted mt-8">No comment provided.</div>`}
+        </div>
+        <select class="decision-select ${decisionClass(decisions[candidate.id])}"
+          onchange="saveDecision('${candidate.id}', this.value, this)">
+          <option value="">– Decision –</option>
+          <option value="pass"  ${decisions[candidate.id]==="pass"  ?"selected":""}>Pass</option>
+          <option value="defer" ${decisions[candidate.id]==="defer" ?"selected":""}>Defer</option>
+          <option value="fail"  ${decisions[candidate.id]==="fail"  ?"selected":""}>Fail</option>
+        </select>
+      </div>`).join("");
+  } else {
+    redCard.style.display = "none";
+  }
+}
+
+function showFeedbackDay(day, btn) {
+  document.querySelectorAll("#section-feedback .day-tab-btn").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  renderFeedback(day);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ALERTS (live listener)
+// ─────────────────────────────────────────────────────────────────────────────
+function watchAlerts() {
+  db.collection("session_feedback")
+    .where("cdAlert", "==", true)
+    .onSnapshot(snap => {
+      const count = snap.size;
+      const strip = document.getElementById("alertStrip");
+      const badge = document.getElementById("navBadge");
+
+      if (count > 0 && !alertsDismissed) {
+        const names = [...new Set(snap.docs.map(d => d.data().candidateName || "Unknown"))].join(", ");
+        document.getElementById("alertText").textContent = `Red flag${count > 1 ? "s" : ""}: ${names}`;
+        document.getElementById("alertCount").textContent = count;
+        strip.classList.add("visible");
+        badge.textContent = count;
+        badge.classList.remove("hidden");
+        // Refresh overview
+        loadFeedback().then(renderOverview);
+      } else if (!alertsDismissed) {
+        strip.classList.remove("visible");
+        badge.classList.add("hidden");
+      }
+    }, err => console.warn("Alert listener:", err.message));
+}
+
+function dismissAlerts() {
+  alertsDismissed = true;
+  document.getElementById("alertStrip").classList.remove("visible");
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DECISIONS
+// ─────────────────────────────────────────────────────────────────────────────
+async function saveDecision(candidateId, decision, selectEl) {
+  decisions[candidateId] = decision;
+  selectEl.className = `decision-select ${decisionClass(decision)}`;
+  try {
+    await db.collection("decisions").doc(candidateId).set({
+      decision,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      updatedByUid: currentUser?.uid
+    }, { merge: true });
+  } catch (e) { console.warn("Decision save failed:", e.message); }
+}
+
+function decisionClass(dec) {
+  if (dec === "pass")  return "pass";
+  if (dec === "fail")  return "fail";
+  if (dec === "defer") return "defer";
+  return "";
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// BROADCAST MESSAGE
+// ─────────────────────────────────────────────────────────────────────────────
+async function sendBroadcast() {
+  const text   = document.getElementById("msgText").value.trim();
+  const target = document.getElementById("msgTarget").value;
+  const fb     = document.getElementById("msgFeedback");
+  if (!text) return;
+  try {
+    await db.collection(COLLECTIONS.messages).add({
+      text, target,
+      sentAt: firebase.firestore.FieldValue.serverTimestamp(),
+      sentByUid: currentUser?.uid
+    });
+    document.getElementById("msgText").value = "";
+    fb.textContent = "Message sent ✓";
+    setTimeout(() => { fb.textContent = ""; }, 3000);
+  } catch (e) { fb.textContent = "Send failed — check connection"; }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// REPORT
+// ─────────────────────────────────────────────────────────────────────────────
+async function saveReport() {
+  const fields = ["overview","outcomes","faculty","itc","logistics","actions"];
+  const data = {};
+  fields.forEach(f => { data[f] = document.getElementById("rep-" + f).value; });
+  data.savedAt = firebase.firestore.FieldValue.serverTimestamp();
+  try {
+    await db.collection("report").doc("2026-birmingham").set(data, { merge: true });
+    document.getElementById("reportSaveMsg").textContent = "Saved ✓";
+    setTimeout(() => { document.getElementById("reportSaveMsg").textContent = ""; }, 3000);
+  } catch { document.getElementById("reportSaveMsg").textContent = "Save failed"; }
+}
+
+async function loadReport() {
+  try {
+    const snap = await db.collection("report").doc("2026-birmingham").get();
+    if (!snap.exists) return;
+    const d = snap.data();
+    ["overview","outcomes","faculty","itc","logistics","actions"].forEach(f => {
+      const el = document.getElementById("rep-" + f);
+      if (el && d[f]) el.value = d[f];
+    });
+  } catch { /* no saved report */ }
+}
+
+function exportReport() {
+  const fields = {
+    "Course Overview":  document.getElementById("rep-overview").value,
+    "Candidate Outcomes": document.getElementById("rep-outcomes").value,
+    "Faculty Performance": document.getElementById("rep-faculty").value,
+    "ITC Assessment":   document.getElementById("rep-itc").value,
+    "Course Logistics": document.getElementById("rep-logistics").value,
+    "Actions":          document.getElementById("rep-actions").value
+  };
+
+  // Candidate summary
+  const candidates = allPeople.filter(p => [ROLES.INSTRUCTOR, ROLES.ASSESSOR].includes(p.role));
+  const decisionLines = candidates.map(c =>
+    `  - ${c.name}: ${decisions[c.id] ? decisions[c.id].toUpperCase() : "No decision recorded"}`
+  ).join("\n");
+
+  let text = `RMD INSTRUCTOR WEEKEND 2026 — COURSE REPORT\nBirmingham Medical School\n`;
+  text += `Generated: ${new Date().toLocaleString("en-GB")}\n\n`;
+  text += `CANDIDATE DECISIONS:\n${decisionLines || "  None recorded."}\n\n`;
+  Object.entries(fields).forEach(([label, val]) => {
+    if (val.trim()) text += `\n${label.toUpperCase()}\n${"─".repeat(label.length)}\n${val}\n`;
+  });
+
+  const blob = new Blob([text], { type: "text/plain" });
+  const a    = document.createElement("a");
+  a.href     = URL.createObjectURL(blob);
+  a.download = "RMD-2026-Course-Report.txt";
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// NAV
+// ─────────────────────────────────────────────────────────────────────────────
+function switchSection(name) {
+  document.getElementById("section-" + currentSection).classList.remove("active");
+  document.getElementById("nav-"     + currentSection).classList.remove("active");
+  currentSection = name;
+  document.getElementById("section-" + name).classList.add("active");
+  document.getElementById("nav-"     + name).classList.add("active");
+
+  // Lazy renders
+  if (name === "candidates") renderCandidates();
+  if (name === "itcs")       renderITCs();
+  if (name === "feedback")   renderFeedback(currentFeedbackDay);
+  if (name === "programme")  renderProgramme(currentProgDay);
+
+  window.scrollTo(0, 0);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// UTILITIES
+// ─────────────────────────────────────────────────────────────────────────────
+function updateClock() {
+  const now = new Date();
+  const t = String(now.getHours()).padStart(2,"0") + ":" + String(now.getMinutes()).padStart(2,"0");
+  document.getElementById("dashTime").textContent = t;
+}
+
+function signOut() {
+  auth.signOut().then(() => window.location.href = "index.html");
+}
+
+function esc(s) {
+  return (s || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+</script>
+</body>
+</html>

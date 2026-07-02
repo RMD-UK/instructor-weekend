@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Registration — RMD 2026</title>
+  <link rel="stylesheet" href="css/rmd.css">
+  <style>
+    * { box-sizing: border-box; }
+    body { background: #f0f3f6; font-family: var(--font); margin: 0; padding: 0 0 20px; }
+
+    /* ── Top bar ── */
+    .top-bar {
+      background: var(--rmd-navy); color: white;
+      padding: 10px 14px; display: flex; align-items: center; gap: 10px;
+      position: sticky; top: 0; z-index: 100;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    }
+    .top-bar img { height: 28px; border-radius: 50%; background: white; }
+    .top-bar-title { flex: 1; font-size: 15px; font-weight: 700; }
+    .top-bar-sub { font-size: 11px; font-weight: 400; opacity: 0.65; display: block; }
+    .top-bar-time { font-size: 13px; opacity: 0.7; font-variant-numeric: tabular-nums; }
+
+    /* ── Stats strip ── */
+    .stats-strip {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 0;
+      background: white; border-bottom: 1px solid #e8edf2;
+    }
+    .stat-cell {
+      text-align: center; padding: 10px 6px;
+      border-right: 1px solid #e8edf2;
+    }
+    .stat-cell:last-child { border-right: none; }
+    .stat-cell .num { font-size: 22px; font-weight: 700; color: var(--rmd-navy); line-height: 1; }
+    .stat-cell .lbl { font-size: 10px; color: var(--rmd-muted); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .stat-cell.arrived .num { color: #1a6e31; }
+    .stat-cell.outstanding .num { color: #c17a00; }
+
+    /* ── Search ── */
+    .search-wrap {
+      padding: 12px 14px;
+      background: white;
+      border-bottom: 2px solid #e8edf2;
+      position: sticky; top: 54px; z-index: 90;
+    }
+    .search-box {
+      width: 100%; padding: 11px 14px;
+      font-size: 16px; font-family: var(--font);
+      border: 2px solid #dce3ea; border-radius: 8px;
+      color: var(--rmd-navy);
+    }
+    .search-box:focus { outline: none; border-color: var(--rmd-blue); }
+
+    /* ── Tabs ── */
+    .tabs {
+      display: flex; background: white;
+      border-bottom: 2px solid #e8edf2;
+    }
+    .tab {
+      flex: 1; padding: 10px 6px; font-size: 13px; font-weight: 700;
+      color: var(--rmd-muted); cursor: pointer; text-align: center;
+      border-bottom: 3px solid transparent; margin-bottom: -2px;
+    }
+    .tab.active { color: var(--rmd-navy); border-bottom-color: var(--rmd-blue); }
+
+    /* ── List ── */
+    .wrap { max-width: 680px; margin: 0 auto; padding: 10px 14px; }
+
+    .person-row {
+      display: flex; align-items: center; gap: 12px;
+      background: white; border-radius: 8px; padding: 12px 14px;
+      margin-bottom: 7px; box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      border-left: 4px solid transparent;
+    }
+    .person-row.arrived   { border-left-color: #1a6e31; }
+    .person-row.not-here  { border-left-color: #dce3ea; }
+
+    .person-avatar {
+      width: 38px; height: 38px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 15px; font-weight: 700; color: white;
+      flex-shrink: 0; text-transform: uppercase;
+    }
+    .avatar-navy  { background: var(--rmd-navy); }
+    .avatar-blue  { background: var(--rmd-blue); }
+    .avatar-green { background: #1a6e31; }
+    .avatar-muted { background: #aab8c2; }
+
+    .person-info { flex: 1; min-width: 0; }
+    .person-name { font-size: 14px; font-weight: 700; color: var(--rmd-navy); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .person-sub  { font-size: 11px; color: var(--rmd-muted); margin-top: 2px; }
+
+    .person-status { flex-shrink: 0; text-align: right; }
+    .arrived-time { font-size: 11px; color: #1a6e31; font-weight: 700; }
+
+    .btn-checkin {
+      padding: 8px 16px; border-radius: 6px; border: none;
+      background: var(--rmd-blue); color: white;
+      font-family: var(--font); font-size: 13px; font-weight: 700;
+      cursor: pointer; transition: background 0.12s;
+    }
+    .btn-checkin:hover  { background: var(--rmd-navy); }
+    .btn-checkin:active { opacity: 0.8; transform: scale(0.96); }
+    .btn-undo {
+      padding: 6px 12px; border-radius: 6px; border: 2px solid #dce3ea;
+      background: white; color: var(--rmd-muted);
+      font-family: var(--font); font-size: 12px; font-weight: 600;
+      cursor: pointer;
+    }
+    .btn-undo:hover { border-color: #aab8c2; }
+
+    /* ── Section headings ── */
+    .list-heading {
+      font-size: 11px; font-weight: 700; color: var(--rmd-muted);
+      text-transform: uppercase; letter-spacing: 0.7px;
+      padding: 10px 2px 5px;
+    }
+
+    /* ── Toast ── */
+    .toast {
+      position: fixed; top: 70px; left: 50%; transform: translateX(-50%);
+      background: #1a333f; color: white;
+      padding: 10px 20px; border-radius: 8px;
+      font-size: 14px; font-weight: 700;
+      z-index: 999; opacity: 0; transition: opacity 0.25s;
+      pointer-events: none; white-space: nowrap; max-width: 90vw;
+    }
+    .toast.show  { opacity: 1; }
+    .toast.green { background: #1a6e31; }
+
+    /* ── Empty ── */
+    .empty-state { text-align: center; padding: 40px 20px; color: var(--rmd-muted); font-size: 14px; }
+    .empty-state h3 { color: var(--rmd-navy); margin-bottom: 6px; }
+
+    /* ── Manual add ── */
+    .add-card {
+      background: white; border-radius: 8px; padding: 14px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08); margin-bottom: 10px;
+    }
+    .add-card h4 { margin: 0 0 10px; font-size: 14px; color: var(--rmd-navy); }
+    .add-row { display: flex; gap: 8px; flex-wrap: wrap; }
+    .add-input {
+      flex: 1; min-width: 160px; padding: 9px 11px;
+      border: 2px solid #dce3ea; border-radius: 6px;
+      font-size: 14px; font-family: var(--font); color: var(--rmd-navy);
+    }
+    .add-input:focus { outline: none; border-color: var(--rmd-blue); }
+    .add-select {
+      padding: 9px 11px; border: 2px solid #dce3ea; border-radius: 6px;
+      font-size: 13px; font-family: var(--font); color: var(--rmd-navy);
+      background: white; cursor: pointer;
+    }
+    .btn-add {
+      padding: 9px 18px; border-radius: 6px; border: none;
+      background: var(--rmd-navy); color: white;
+      font-family: var(--font); font-size: 13px; font-weight: 700;
+      cursor: pointer;
+    }
+
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+
+<!-- Top bar -->
+<div class="top-bar">
+  <a href="timetable.html"><img src="assets/rmd-logo.png" alt="RMD"></a>
+  <div class="top-bar-title">
+    Registration
+    <span class="top-bar-sub">RMD Instructor Weekend 2026 · Birmingham</span>
+  </div>
+  <span class="top-bar-time" id="topBarTime">--:--</span>
+</div>
+
+<!-- Stats -->
+<div class="stats-strip">
+  <div class="stat-cell arrived">
+    <div class="num" id="statArrived">0</div>
+    <div class="lbl">Arrived</div>
+  </div>
+  <div class="stat-cell outstanding">
+    <div class="num" id="statOutstanding">–</div>
+    <div class="lbl">Outstanding</div>
+  </div>
+  <div class="stat-cell">
+    <div class="num" id="statTotal">–</div>
+    <div class="lbl">Expected</div>
+  </div>
+  <div class="stat-cell">
+    <div class="num" id="statPct">–%</div>
+    <div class="lbl">Checked in</div>
+  </div>
+</div>
+
+<!-- Search -->
+<div class="search-wrap">
+  <input class="search-box" type="search" id="searchBox"
+    placeholder="Search by name…" autocomplete="off" oninput="filterList(this.value)">
+</div>
+
+<!-- Tabs -->
+<div class="tabs">
+  <div class="tab active" id="tab-all"   onclick="switchTab('all')">All</div>
+  <div class="tab"        id="tab-outstanding" onclick="switchTab('outstanding')">Outstanding</div>
+  <div class="tab"        id="tab-arrived"     onclick="switchTab('arrived')">Arrived</div>
+  <div class="tab"        id="tab-add"         onclick="switchTab('add')">+ Add</div>
+</div>
+
+<!-- List -->
+<div class="wrap" id="listWrap"></div>
+
+<!-- Add panel -->
+<div class="wrap hidden" id="addWrap">
+  <div class="add-card">
+    <h4>Register a walk-in or unlisted attendee</h4>
+    <div class="add-row">
+      <input class="add-input" type="text" id="addName" placeholder="Full name" autocomplete="off">
+      <select class="add-select" id="addRole">
+        <option value="instructor">Instructor Candidate</option>
+        <option value="assessor">Assessor Candidate</option>
+        <option value="faculty">Faculty</option>
+        <option value="full-instructor">Full Instructor</option>
+        <option value="itc">ITC</option>
+      </select>
+      <input class="add-input" type="text" id="addGroup" placeholder="Group (optional)" style="max-width:140px;">
+    </div>
+    <div style="margin-top:8px;display:flex;gap:8px;align-items:center;">
+      <button class="btn-add" onclick="addWalkIn()">Register &amp; check in</button>
+      <span id="addMsg" style="font-size:12px;color:var(--rmd-muted);"></span>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+<script>
+// ─────────────────────────────────────────────────────────────────────────────
+// State
+// ─────────────────────────────────────────────────────────────────────────────
+let allPeople    = [];
+let attendance   = {};   // { personId: { arrivedAt (timestamp) } }
+let currentTab   = "all";
+let currentFilter = "";
+let currentUser  = null;
+
+const ROLE_LABELS = {
+  "instructor":     "Instructor Candidate",
+  "assessor":       "Assessor Candidate",
+  "faculty":        "Faculty",
+  "full-instructor":"Full Instructor",
+  "itc":            "ITC",
+  "director":       "Course Director"
+};
+
+const ROLE_COLOURS = {
+  "instructor":"avatar-navy","assessor":"avatar-blue",
+  "faculty":"avatar-blue","full-instructor":"avatar-blue",
+  "itc":"avatar-muted","director":"avatar-navy"
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Boot
+// ─────────────────────────────────────────────────────────────────────────────
+initFirebase();
+
+window.addEventListener("load", () => {
+  updateClock(); setInterval(updateClock, 15000);
+
+  auth.onAuthStateChanged(async user => {
+    if (!user) { window.location.href = "index.html"; return; }
+    currentUser = user;
+    await Promise.all([loadPeople(), loadAttendance()]);
+    renderList();
+    subscribeAttendance();
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Data
+// ─────────────────────────────────────────────────────────────────────────────
+async function loadPeople() {
+  try {
+    const snap = await db.collection(COLLECTIONS.people).orderBy("name").get();
+    allPeople = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  } catch (e) {
+    // Demo data
+    allPeople = [
+      { id: "c1", name: "Alice Tan",      role: "instructor", group: "Group 1" },
+      { id: "c2", name: "Ben Osei",       role: "instructor", group: "Group 1" },
+      { id: "c3", name: "Cara Patel",     role: "assessor",   group: "Group 2" },
+      { id: "c4", name: "Dan Williams",   role: "instructor", group: "Group 2" },
+      { id: "c5", name: "Elena Kowalski", role: "instructor", group: "Group 3" },
+      { id: "c6", name: "Finn Murray",    role: "assessor",   group: "Group 3" },
+      { id: "i1", name: "Dr Emma Singh",  role: "itc",        group: "" },
+      { id: "f1", name: "Dr James Liu",   role: "faculty",    group: "Group 1" },
+      { id: "f2", name: "Dr Yemi Addo",   role: "full-instructor", group: "Group 2" }
+    ];
+  }
+}
+
+async function loadAttendance() {
+  try {
+    const snap = await db.collection(COLLECTIONS.attendance).get();
+    snap.docs.forEach(d => { attendance[d.id] = d.data(); });
+  } catch (e) { attendance = {}; }
+}
+
+function subscribeAttendance() {
+  db.collection(COLLECTIONS.attendance).onSnapshot(snap => {
+    snap.docChanges().forEach(change => {
+      if (change.type === "removed") { delete attendance[change.doc.id]; }
+      else { attendance[change.doc.id] = change.doc.data(); }
+    });
+    renderList();
+  }, err => console.warn("Attendance listener:", err.message));
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Check in / undo
+// ─────────────────────────────────────────────────────────────────────────────
+async function checkIn(personId) {
+  const now = firebase.firestore.FieldValue.serverTimestamp();
+  try {
+    await db.collection(COLLECTIONS.attendance).doc(personId).set({
+      arrived: now,
+      checkedInBy: currentUser?.uid || "manual"
+    }, { merge: true });
+    const person = allPeople.find(p => p.id === personId);
+    showToast(`${person?.name || "Attendee"} checked in ✓`, "green");
+  } catch (e) {
+    // Offline: update locally
+    attendance[personId] = { arrived: new Date() };
+    renderList();
+    showToast("Checked in (pending sync)", "");
+  }
+}
+
+async function undoCheckIn(personId) {
+  try {
+    await db.collection(COLLECTIONS.attendance).doc(personId).delete();
+    delete attendance[personId];
+    renderList();
+  } catch (e) {
+    delete attendance[personId];
+    renderList();
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Walk-in
+// ─────────────────────────────────────────────────────────────────────────────
+async function addWalkIn() {
+  const name  = document.getElementById("addName").value.trim();
+  const role  = document.getElementById("addRole").value;
+  const group = document.getElementById("addGroup").value.trim();
+  const msg   = document.getElementById("addMsg");
+  if (!name) { msg.textContent = "Enter a name first."; return; }
+
+  msg.textContent = "Adding…";
+  try {
+    const ref = db.collection(COLLECTIONS.people).doc();
+    await ref.set({ name, role, group, addedAt: firebase.firestore.FieldValue.serverTimestamp(), walkin: true });
+    await db.collection(COLLECTIONS.attendance).doc(ref.id).set({
+      arrived: firebase.firestore.FieldValue.serverTimestamp(),
+      checkedInBy: currentUser?.uid || "manual"
+    });
+    allPeople.push({ id: ref.id, name, role, group });
+    attendance[ref.id] = { arrived: new Date() };
+    document.getElementById("addName").value  = "";
+    document.getElementById("addGroup").value = "";
+    msg.textContent = `${name} registered and checked in.`;
+    renderList();
+    showToast(`${name} added ✓`, "green");
+    setTimeout(() => { msg.textContent = ""; }, 4000);
+  } catch (e) {
+    msg.textContent = "Failed — check connection.";
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Render
+// ─────────────────────────────────────────────────────────────────────────────
+function renderList() {
+  updateStats();
+
+  const wrap = document.getElementById("listWrap");
+
+  // Filter
+  const search = currentFilter.toLowerCase();
+  let people = allPeople.filter(p => !search || p.name.toLowerCase().includes(search));
+
+  if (currentTab === "arrived")     people = people.filter(p => !!attendance[p.id]);
+  if (currentTab === "outstanding") people = people.filter(p => !attendance[p.id]);
+
+  if (!people.length) {
+    wrap.innerHTML = `<div class="empty-state"><h3>${currentFilter ? "No results" : "Nobody listed yet"}</h3><p>${currentFilter ? "Try a different name." : "People added via admin tools will appear here."}</p></div>`;
+    return;
+  }
+
+  // Group by role category
+  const candidates = people.filter(p => ["instructor","assessor"].includes(p.role));
+  const faculty    = people.filter(p => ["faculty","full-instructor","itc","director"].includes(p.role));
+
+  let html = "";
+  if (candidates.length) {
+    html += `<div class="list-heading">Candidates (${candidates.length})</div>`;
+    html += candidates.map(p => personRow(p)).join("");
+  }
+  if (faculty.length) {
+    html += `<div class="list-heading">Faculty &amp; Team (${faculty.length})</div>`;
+    html += faculty.map(p => personRow(p)).join("");
+  }
+
+  wrap.innerHTML = html;
+}
+
+function personRow(p) {
+  const rec     = attendance[p.id];
+  const arrived = !!rec;
+  const initials = (p.name || "?").split(" ").map(w => w[0]).slice(0, 2).join("").toUpperCase();
+  const colour  = arrived ? "avatar-green" : (ROLE_COLOURS[p.role] || "avatar-muted");
+  const label   = ROLE_LABELS[p.role] || p.role;
+  const sub     = [label, p.group].filter(Boolean).join(" · ");
+
+  let timeStr = "";
+  if (arrived && rec.arrived) {
+    const d = rec.arrived.toDate ? rec.arrived.toDate() : new Date(rec.arrived);
+    timeStr = String(d.getHours()).padStart(2,"0") + ":" + String(d.getMinutes()).padStart(2,"0");
+  }
+
+  return `
+    <div class="person-row ${arrived ? "arrived" : "not-here"}" id="row-${esc(p.id)}">
+      <div class="person-avatar ${colour}">${esc(initials)}</div>
+      <div class="person-info">
+        <div class="person-name">${esc(p.name)}</div>
+        <div class="person-sub">${esc(sub)}</div>
+      </div>
+      <div class="person-status">
+        ${arrived
+          ? `<div class="arrived-time">✓ ${timeStr}</div>
+             <button class="btn-undo" onclick="undoCheckIn('${esc(p.id)}')">Undo</button>`
+          : `<button class="btn-checkin" onclick="checkIn('${esc(p.id)}')">Check in</button>`
+        }
+      </div>
+    </div>`;
+}
+
+function updateStats() {
+  const total    = allPeople.length;
+  const arrived  = Object.keys(attendance).length;
+  const outstand = Math.max(0, total - arrived);
+  const pct      = total ? Math.round(arrived / total * 100) : 0;
+
+  document.getElementById("statArrived").textContent    = arrived;
+  document.getElementById("statOutstanding").textContent = outstand;
+  document.getElementById("statTotal").textContent       = total;
+  document.getElementById("statPct").textContent         = pct + "%";
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Tabs + filter
+// ─────────────────────────────────────────────────────────────────────────────
+function switchTab(tab) {
+  currentTab = tab;
+  ["all","outstanding","arrived","add"].forEach(t => {
+    document.getElementById("tab-" + t)?.classList.toggle("active", t === tab);
+  });
+  document.getElementById("listWrap").classList.toggle("hidden", tab === "add");
+  document.getElementById("addWrap").classList.toggle("hidden",  tab !== "add");
+  if (tab !== "add") renderList();
+}
+
+function filterList(val) {
+  currentFilter = val;
+  if (currentTab === "add") switchTab("all");
+  renderList();
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Utilities
+// ─────────────────────────────────────────────────────────────────────────────
+let toastTimer;
+function showToast(msg, type) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.className   = "toast show" + (type ? " " + type : "");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove("show"), 2800);
+}
+
+function updateClock() {
+  const now = new Date();
+  document.getElementById("topBarTime").textContent =
+    String(now.getHours()).padStart(2,"0") + ":" + String(now.getMinutes()).padStart(2,"0");
+}
+
+function esc(s) {
+  return (s || "").toString().replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+}
+</script>
+</body>
+</html>
