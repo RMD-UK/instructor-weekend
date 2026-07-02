@@ -257,8 +257,10 @@ const PROGRAMME = {
         location: "ATH",
         lead: "",
         roles: ["instructor", "faculty", "director"],
-        notes: "Video to be added.",
-        resources: [],
+        notes: "",
+        resources: [
+          { title: "Life Support & Real Life", embedUrl: "https://drive.google.com/file/d/1VEtscI35nt5las1uHSQgD9CH13Qnvz9i/preview", icon: "🎬" }
+        ],
         tags: []
       },
       {
@@ -466,7 +468,9 @@ const PROGRAMME = {
         lead: "",
         roles: ["instructor", "faculty", "director"],
         notes: "",
-        resources: [],
+        resources: [
+          { title: "RMD Reasonable Adjustments Pathway", embedUrl: "https://drive.google.com/file/d/1_CbK9Pv4-fcTkPXy2NQ8WPfSzpUOPOmX/preview", icon: "🎬" }
+        ],
         tags: []
       },
       {
@@ -527,8 +531,10 @@ const PROGRAMME = {
         location: "WF15",
         lead: "",
         roles: ["instructor", "faculty", "director"],
-        notes: "Video to be added.",
-        resources: [],
+        notes: "",
+        resources: [
+          { title: "Food for Thought", embedUrl: "https://drive.google.com/file/d/1-2rSHlXkC7t_NslbeWFCVpy5Q-hLL53e/preview", icon: "🎬" }
+        ],
         tags: []
       },
       {
