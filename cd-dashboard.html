@@ -381,6 +381,9 @@
       <div class="nav-item" onclick="switchSection('report')" id="nav-report">
         <span class="nav-icon">📄</span><span>Report</span>
       </div>
+      <div class="nav-item" onclick="switchSection('faculty')" id="nav-faculty">
+        <span class="nav-icon">📋</span><span>Faculty</span>
+      </div>
     </div>
   </nav>
 
@@ -586,6 +589,34 @@
             <button class="btn-sm btn-primary" onclick="saveReport()">Save draft</button>
             <span class="text-sm text-muted" id="reportSaveMsg"></span>
           </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── FACULTY ── -->
+    <section class="section" id="section-faculty">
+      <div class="section-title">Faculty Registration</div>
+      <div class="stats-row" id="facStatsRow">
+        <div class="stat-card"><div class="stat-num" id="facStatTotal">–</div><div class="stat-lbl">Responses</div></div>
+        <div class="stat-card"><div class="stat-num" id="facStatFaculty">–</div><div class="stat-lbl">Faculty</div></div>
+        <div class="stat-card"><div class="stat-num" id="facStatITC">–</div><div class="stat-lbl">ITCs</div></div>
+        <div class="stat-card green"><div class="stat-num" id="facStatFriDinner">–</div><div class="stat-lbl">Fri dinner</div></div>
+        <div class="stat-card green"><div class="stat-num" id="facStatSatDinner">–</div><div class="stat-lbl">Sat dinner</div></div>
+        <div class="stat-card red-stat"><div class="stat-num" id="facStatERC">–</div><div class="stat-lbl">ERC issues</div></div>
+      </div>
+      <div class="card">
+        <div class="card-header">Pre-Course Responses (recent)
+          <div class="card-actions">
+            <a href="admin-faculty-responses.html" style="color:white;font-size:12px;text-decoration:none;background:rgba(255,255,255,0.18);padding:4px 11px;border-radius:4px;">View all →</a>
+          </div>
+        </div>
+        <div class="card-body" id="facResponsesBody"><div class="loading">Loading…</div></div>
+      </div>
+      <div class="card" style="margin-top:12px;">
+        <div class="card-header">Admin Tools</div>
+        <div class="card-body" style="display:flex;gap:10px;flex-wrap:wrap;">
+          <a href="admin-faculty-responses.html" style="display:inline-block;padding:10px 16px;background:var(--rmd-blue);color:white;border-radius:6px;text-decoration:none;font-size:13px;font-weight:700;">📋 Faculty Responses</a>
+          <a href="admin-room-allocation.html" style="display:inline-block;padding:10px 16px;background:var(--rmd-navy);color:white;border-radius:6px;text-decoration:none;font-size:13px;font-weight:700;">🏫 Room Allocation</a>
         </div>
       </div>
     </section>
@@ -1255,6 +1286,49 @@ function exportReport() {
 // ─────────────────────────────────────────────────────────────────────────────
 // NAV
 // ─────────────────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// FACULTY RESPONSES
+// ─────────────────────────────────────────────────────────────────────────────
+let facResponsesLoaded = false;
+
+async function loadFacultyResponses() {
+  if (facResponsesLoaded) return;
+  try {
+    const snap = await db.collection("faculty_responses").get();
+    const rs   = snap.docs.map(d => d.data());
+    facResponsesLoaded = true;
+
+    document.getElementById("facStatTotal").textContent     = rs.length;
+    document.getElementById("facStatFaculty").textContent   = rs.filter(r => r.role === "Faculty").length;
+    document.getElementById("facStatITC").textContent       = rs.filter(r => r.role === "ITC").length;
+    document.getElementById("facStatFriDinner").textContent = rs.filter(r => r.meals && r.meals.friday   === "yes").length;
+    document.getElementById("facStatSatDinner").textContent = rs.filter(r => r.meals && r.meals.saturday === "yes").length;
+    document.getElementById("facStatERC").textContent       = rs.filter(r => r.ercCorrectlyListed === "no").length;
+
+    if (!rs.length) {
+      document.getElementById("facResponsesBody").innerHTML = '<div style="color:var(--rmd-muted);font-size:13px;padding:12px 0;">No responses yet.</div>';
+      return;
+    }
+
+    const sorted = rs.slice().sort((a,b) => (b.submittedAt?.seconds||0) - (a.submittedAt?.seconds||0));
+    const roleColour = r => r.role === "ITC" ? "#3d52a0" : "#0067A4";
+    document.getElementById("facResponsesBody").innerHTML =
+      sorted.slice(0, 12).map(r => {
+        const name = [r.firstName, r.lastName].filter(Boolean).join(" ") || r.email || "–";
+        const days = r.days ? Object.entries(r.days).filter(([,v])=>v).map(([k])=>k.slice(0,3)).join(", ") : "–";
+        return `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f0f3f6;">
+          <div style="flex:1;font-size:13px;font-weight:600;color:var(--rmd-navy);">${name}</div>
+          <span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;background:#e8f0fe;color:${roleColour(r)};">${r.role||"–"}</span>
+          <span style="font-size:11px;color:var(--rmd-muted);">${days}</span>
+        </div>`;
+      }).join("") +
+      (rs.length > 12 ? `<div style="font-size:12px;color:var(--rmd-muted);margin-top:10px;text-align:center;">+ ${rs.length-12} more — <a href="admin-faculty-responses.html">view all</a></div>` : "");
+  } catch(e) {
+    document.getElementById("facResponsesBody").innerHTML =
+      `<div style="color:#b7410e;font-size:13px;padding:8px 0;">Could not load: ${e.message}</div>`;
+  }
+}
+
 function switchSection(name) {
   document.getElementById("section-" + currentSection).classList.remove("active");
   document.getElementById("nav-"     + currentSection).classList.remove("active");
@@ -1267,6 +1341,7 @@ function switchSection(name) {
   if (name === "itcs")       renderITCs();
   if (name === "feedback")   renderFeedback(currentFeedbackDay);
   if (name === "programme")  renderProgramme(currentProgDay);
+  if (name === "faculty")    loadFacultyResponses();
 
   window.scrollTo(0, 0);
 }

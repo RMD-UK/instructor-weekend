@@ -275,18 +275,45 @@ auth.onAuthStateChanged(async user => {
 
 // ── Load ───────────────────────────────────────────────────────────────────
 async function loadData() {
+  // ① Build mou_roster role map — used to classify Faculty respondents
+  //   Candidates (role=instructor) always attend and come directly from this
+  const rosterRoleByEmail = {};
   try {
-    const snap = await db.collection(COLLECTIONS.mouRoster).get();
-    snap.forEach(doc => {
-      const d = doc.data();
-      const p = { name: d.name || doc.id, email: d.email || doc.id, role: d.role };
-      allPeople.push(p);
-      if      (d.role === ROLES.INSTRUCTOR)      allCandidates.push(p);
-      else if (d.role === "full-instructor")      allInstructors.push(p);
-      else if (d.role === ROLES.FACULTY)          allFaculty.push(p);
+    const rSnap = await db.collection(COLLECTIONS.mouRoster).get();
+    rSnap.forEach(doc => {
+      const d  = doc.data();
+      const em = (d.email || doc.id).toLowerCase();
+      rosterRoleByEmail[em] = d.role;
+      if (d.role === ROLES.INSTRUCTOR) {
+        const p = { name: d.name || doc.id, email: em };
+        allCandidates.push(p);
+        allPeople.push(p);
+      }
     });
-    [allCandidates, allInstructors, allFaculty, allPeople].forEach(a => a.sort((x,y) => x.name.localeCompare(y.name)));
   } catch(e) { console.warn("Roster load failed:", e.message); }
+
+  // ② Confirmed IW attendees from faculty_responses
+  //   Faculty role → room-lead dropdown (allFaculty) + pool if full-instructor (allInstructors)
+  //   ITC role → ITC picker only (via allPeople)
+  try {
+    const fSnap = await db.collection("faculty_responses").get();
+    fSnap.forEach(doc => {
+      const d   = doc.data();
+      const em  = (d.email || "").toLowerCase();
+      if (!em) return;
+      const name = [d.firstName, d.lastName].filter(Boolean).join(" ") || em;
+      const p   = { name, email: em };
+      if (!allPeople.some(x => x.email === em)) allPeople.push(p);
+      if (d.role === "Faculty") {
+        allFaculty.push(p);  // all Faculty respondents → room-lead dropdown
+        if (rosterRoleByEmail[em] === "full-instructor") {
+          allInstructors.push(p);  // full instructors also go in the room pool
+        }
+      }
+    });
+  } catch(e) { console.warn("Faculty responses load failed:", e.message); }
+
+  [allCandidates, allInstructors, allFaculty, allPeople].forEach(a => a.sort((x,y) => x.name.localeCompare(y.name)));
 
   try {
     const snap = await db.collection(COLLECTIONS.groups).get();
@@ -535,8 +562,13 @@ function autoDistribute() {
 }
 
 // ── Teaching Faculty ───────────────────────────────────────────────────────
+function uniquePeople(arr) {
+  const seen = new Set();
+  return arr.filter(p => !seen.has(p.email) && seen.add(p.email));
+}
+
 function renderTeachingFaculty() {
-  const people = [...allFaculty,...allInstructors].sort((a,b)=>a.name.localeCompare(b.name));
+  const people = uniquePeople([...allFaculty,...allInstructors]).sort((a,b)=>a.name.localeCompare(b.name));
   document.getElementById("tfCount").textContent = teachingFaculty.size;
   document.getElementById("tfGrid").innerHTML = people.map(p => {
     const checked = teachingFaculty.has(p.email);
@@ -555,7 +587,7 @@ function toggleTF(email, checked) {
   document.querySelectorAll(".tf-item").forEach(el => { const cb=el.querySelector("input"); if(cb) el.classList.toggle("checked",cb.checked); });
 }
 function tfSelectAll(state) {
-  [...allFaculty,...allInstructors].forEach(p => { if(state) teachingFaculty.add(p.email); else teachingFaculty.delete(p.email); });
+  uniquePeople([...allFaculty,...allInstructors]).forEach(p => { if(state) teachingFaculty.add(p.email); else teachingFaculty.delete(p.email); });
   renderTeachingFaculty();
 }
 
@@ -622,7 +654,7 @@ async function saveAll() {
     });
 
     // Teaching faculty
-    const tfList = [...allFaculty,...allInstructors]
+    const tfList = uniquePeople([...allFaculty,...allInstructors])
       .filter(p => teachingFaculty.has(p.email))
       .map(p => ({ name: p.name, email: p.email }));
     batch.set(db.collection("config").doc("teaching_faculty"), { members: tfList, year: CURRENT_MOU_YEAR, updatedAt: ts });
